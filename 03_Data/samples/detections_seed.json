@@ -1,0 +1,8 @@
+[
+  {"event_id": "seed-1", "plate": "GJ01AB1234", "plate_raw": "GJ 01 AB 1234", "confidence": 0.99, "camera_id": "CAM-VAL-001", "lat": 20.5992, "lon": 72.9342, "ts": "2026-08-31T06:12:00+05:30", "pts_ms": 0, "crop_uri": "", "category": "STOLEN", "priority": "CRITICAL", "source_case_id": "WL-001"},
+  {"event_id": "seed-2", "plate": "GJ01AB1234", "plate_raw": "GJ01AB1234", "confidence": 0.99, "camera_id": "CAM-SUR-001", "lat": 21.1860, "lon": 72.7933, "ts": "2026-08-31T07:48:00+05:30", "pts_ms": 0, "crop_uri": "", "category": "STOLEN", "priority": "CRITICAL", "source_case_id": "WL-001"},
+  {"event_id": "seed-3", "plate": "GJ01AB1234", "plate_raw": "GJ-01-AB-1234", "confidence": 0.99, "camera_id": "CAM-AHD-004", "lat": 22.9800, "lon": 72.6100, "ts": "2026-08-31T09:05:00+05:30", "pts_ms": 0, "crop_uri": "", "category": "STOLEN", "priority": "CRITICAL", "source_case_id": "WL-001"},
+  {"event_id": "seed-4", "plate": "GJ01AB1234", "plate_raw": "GJ01AB1234", "confidence": 0.99, "camera_id": "CAM-AHD-001", "lat": 23.0472, "lon": 72.5312, "ts": "2026-08-31T09:22:00+05:30", "pts_ms": 0, "crop_uri": "", "category": "STOLEN", "priority": "CRITICAL", "source_case_id": "WL-001"},
+  {"event_id": "seed-5", "plate": "GJ01AB1234", "plate_raw": "GJ01 AB 1234", "confidence": 0.99, "camera_id": "CAM-GNR-003", "lat": 23.1680, "lon": 72.6690, "ts": "2026-08-31T09:51:00+05:30", "pts_ms": 0, "crop_uri": "", "category": "STOLEN", "priority": "CRITICAL", "source_case_id": "WL-001"},
+  {"event_id": "seed-6", "plate": "GJ01AB1234", "plate_raw": "GJ01AB1234", "confidence": 0.99, "camera_id": "CAM-GNR-001", "lat": 23.2230, "lon": 72.6500, "ts": "2026-08-31T10:04:00+05:30", "pts_ms": 0, "crop_uri": "", "category": "STOLEN", "priority": "CRITICAL", "source_case_id": "WL-001"}
+]

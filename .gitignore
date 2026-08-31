@@ -1,0 +1,36 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Secrets and local runtime
+.env
+*.log
+
+# Capture artefacts
+02_Code/prahari/data/prahari.db
+02_Code/prahari/data/crops/
+02_Code/prahari/data/hls/
+03_Data/sentinel_catalogue/catalogue.last.json
+03_Data/recordings/*.mp4
+03_Data/recordings/*.png
+05_Output/deliverables/*.mp4
+
+# Internal working notes (not part of the submission tree)
+08_Misc/20_Prompts/
+08_Misc/30_Project_Management/
+02_Code/prahari/AGENTS.md
+05_Output/deliverables/PPT_PUNCH_LIST.md
+05_Output/deliverables/SUBMISSION_LINKS.md
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+07_Communications/*.png

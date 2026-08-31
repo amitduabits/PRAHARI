@@ -1,0 +1,12 @@
+camera_id,department,ownership,consent,lat,lon,protocol,url,retention_days,cam_type,health,location,codec,width,height
+CAM-VAL-001,Home,Gov,true,20.5992,72.9342,rtsp,,7,checkpoint,unknown,Valsad NH-48 Toll,h264,1920,1080
+CAM-SUR-001,Home,Gov,true,21.1860,72.7933,rtsp,,7,junction,unknown,Surat Adajan Circle,h264,1920,1080
+CAM-AHD-004,Home,Gov,true,22.9800,72.6100,hls,,7,highway,unknown,Narol-Naroda Hwy,h264,1280,720
+CAM-AHD-001,Home,Gov,true,23.0472,72.5312,rtsp,,7,junction,unknown,SG Highway Junction,h265,1920,1080
+CAM-GNR-003,Home,Gov,true,23.1680,72.6690,rtsp,,7,circle,unknown,Koba Circle,h264,1920,1080
+CAM-GNR-001,Home,Gov,true,23.2230,72.6500,rtsp,,7,command,unknown,CH-0 Sector 21 GNR,h264,1920,1080
+CAM-RTO-001,RTO,Gov,true,23.0225,72.5714,hls,,15,office,unknown,Ahmedabad RTO Naroda,h264,1280,720
+CAM-FCS-001,Food & Civil Supplies,Gov,true,22.3072,73.1812,rtsp,,7,godown,unknown,Vadodara PDS godown,h264,1280,720
+CAM-GSRTC-DAHOD,GSRTC,Gov,true,22.8370,74.2570,rtsp,,7,depot,offline,Dahod GSRTC depot,h264,1280,720
+CAM-MALL-001,Private,Private-Permitted,true,23.0330,72.5570,hls,,15,atrium,unknown,Ahmedabad permitted mall atrium,h264,1920,1080
+CAM-OWN-001,Own,Own,true,0,0,file,../../03_Data/recordings/own_feed.mp4,0,demo,unknown,Own-feed demonstration clip,h264,1920,1080

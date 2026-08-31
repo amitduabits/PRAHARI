@@ -1,0 +1,6 @@
+source_case_id,entity_type,plate,name,category,priority,source,notes
+WL-001,vehicle,GJ01AB1234,,STOLEN,CRITICAL,VAHAN,Seeded evaluation plate. Do not delete.
+WL-002,vehicle,GJ05CD5678,,BLACKLIST,HIGH,eGujCop,Interstate watch.
+WL-003,vehicle,MH12EF9012,,STOLEN,CRITICAL,VAHAN,"Maharashtra stolen, recovered-unconfirmed."
+WL-004,person,,Ramesh K,MISSING_ASSOCIATE,HIGH,eGujCop,Associate vehicle to be linked at eval.
+WL-005,vehicle,GJ27XY0001,,OBSERVE,LOW,SARTHI,Low-priority observe list.

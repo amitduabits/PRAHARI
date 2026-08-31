@@ -1,0 +1,38 @@
+{
+  "cameras": [
+    {
+      "id": 1,
+      "location": "Valsad NH-48 Toll (fixture)",
+      "codec": "h264",
+      "live": true,
+      "width": 1920,
+      "height": 1080,
+      "fps_declared": 25,
+      "rtsp": "rtsp://sentinel.example.invalid:8554/stream/1",
+      "whep": "http://sentinel.example.invalid:8889/stream/1/whep",
+      "hls": "http://sentinel.example.invalid/live/stream/1/index.m3u8"
+    },
+    {
+      "id": "2",
+      "location": "SG Highway Junction (fixture H.265)",
+      "codec": "h265",
+      "live": true,
+      "width": 1920,
+      "height": 1080,
+      "HlsUrl": "http://sentinel.example.invalid/live/stream/2/index.m3u8",
+      "rtsp": "rtsp://sentinel.example.invalid:8554/stream/2",
+      "whep": "http://sentinel.example.invalid:8889/stream/2/whep"
+    },
+    {
+      "id": 3,
+      "location": "Dahod GSRTC depot (fixture offline)",
+      "codec": "h264",
+      "live": false,
+      "width": 1280,
+      "height": 720,
+      "rtsp": "rtsp://sentinel.example.invalid:8554/stream/3",
+      "whep": "http://sentinel.example.invalid:8889/stream/3/whep",
+      "hls": "http://sentinel.example.invalid/live/stream/3/index.m3u8"
+    }
+  ]
+}

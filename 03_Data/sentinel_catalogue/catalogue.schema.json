@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "prahari://sentinel-catalogue",
+  "title": "Sentinel /api/ingest catalogue (inferred from integrator guide)",
+  "description": "The live schema is the contract. This file is a working hypothesis until the first real payload is cached as catalogue.last.json. Camera ids and the set of cameras can change.",
+  "type": "object",
+  "required": ["cameras"],
+  "properties": {
+    "cameras": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "location", "codec", "live", "rtsp", "whep", "hls"],
+        "properties": {
+          "id": { "type": ["string", "integer"] },
+          "location": { "type": "string" },
+          "codec": { "type": "string", "description": "h264 or h265, case-insensitive" },
+          "live": { "type": "boolean" },
+          "width": { "type": "integer" },
+          "height": { "type": "integer" },
+          "fps_declared": { "type": "number", "description": "Do not trust. Measure or ignore." },
+          "rtsp": { "type": "string" },
+          "whep": { "type": "string" },
+          "hls": { "type": "string" }
+        }
+      }
+    }
+  }
+}

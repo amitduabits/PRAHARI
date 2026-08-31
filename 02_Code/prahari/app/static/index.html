@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PRAHARI · Gujarat Police Innovation Challenge 2026</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="login-card" class="login">
+    <h1>PRAHARI</h1>
+    <p>Gujarat Police Innovation Challenge 2026</p>
+    <label>User <input id="user" value="judge" autocomplete="username"></label>
+    <label>Password <input id="pass" type="password" autocomplete="current-password"></label>
+    <button type="button" id="login-btn">Sign in</button>
+    <p id="login-err" class="err"></p>
+    <p class="hint">Default judge password is in .env (JUDGE_PASSWORD). Change before submit.</p>
+  </div>
+
+  <div id="app" class="hidden">
+    <header class="top">
+      <div>
+        <p class="kicker">PRAHARI · Gujarat Police Innovation Challenge 2026</p>
+        <h1>PRAHARI</h1>
+        <p class="sub">Hybrid Models 1 + 2 + thin 3 · intelligence plane, not a VMS replacement</p>
+      </div>
+      <div>
+        <div id="health-line" class="health">Loading health…</div>
+        <div id="banner" class="banner"></div>
+      </div>
+    </header>
+    <nav class="tabs" role="tablist">
+      <button class="tab on" data-tab="operations" type="button">Operations</button>
+      <button class="tab" data-tab="cameras" type="button">Cameras</button>
+      <button class="tab" data-tab="track" type="button">Vehicle Track</button>
+      <button class="tab" data-tab="alerts" type="button">Alerts</button>
+      <button class="tab" data-tab="watchlist" type="button">Watchlist</button>
+      <button class="tab" data-tab="onboard" type="button">Onboard</button>
+      <button class="tab" data-tab="gaps" type="button">Analytics &amp; Gaps</button>
+    </nav>
+    <main>
+      <section id="panel-operations" class="panel on">
+        <div class="split">
+          <div id="map" class="map"></div>
+          <div>
+            <h2>Video wall (max 4)</h2>
+            <p id="tile-empty" class="empty">Click a map pin, then Open tile. Drop own_feed.mp4 into 03_Data/recordings for CAM-OWN-001.</p>
+            <p id="tile-err" class="err"></p>
+            <div id="wall" class="wall"></div>
+          </div>
+        </div>
+      </section>
+      <section id="panel-cameras" class="panel">
+        <h2>Cameras</h2>
+        <div id="filters" class="chips"></div>
+        <div class="table-wrap"><table id="cam-table"></table></div>
+      </section>
+      <section id="panel-track" class="panel">
+        <h2>Vehicle Track</h2>
+        <form id="track-form">
+          <input id="plate-search" value="GJ01AB1234" aria-label="plate">
+          <button type="submit">Reconstruct</button>
+          <a id="csv-link" href="/api/track/GJ01AB1234/report.csv">Download CSV</a>
+        </form>
+        <p id="track-meta"></p>
+        <div id="track-map" class="map"></div>
+        <div class="table-wrap"><table id="track-table"></table></div>
+      </section>
+      <section id="panel-alerts" class="panel">
+        <h2>Alerts</h2>
+        <p id="alert-empty" class="empty">No open alerts</p>
+        <div id="alert-list"></div>
+      </section>
+      <section id="panel-watchlist" class="panel">
+        <h2>Watchlist</h2>
+        <p>Representative VAHAN / eGujCop-style rows. WL-001 cannot be deleted.</p>
+        <div class="table-wrap"><table id="wl-table"></table></div>
+        <form id="wl-form" class="form-grid">
+          <input name="source_case_id" placeholder="source_case_id" required>
+          <input name="plate" placeholder="plate">
+          <input name="category" placeholder="category">
+          <input name="priority" placeholder="priority" value="HIGH">
+          <button type="submit">Save</button>
+        </form>
+      </section>
+      <section id="panel-onboard" class="panel">
+        <h2>Onboard</h2>
+        <form id="onboard-form" class="form-grid">
+          <input name="camera_id" placeholder="camera_id" required>
+          <input name="department" placeholder="department" value="Home">
+          <input name="ownership" placeholder="ownership" value="Gov">
+          <input name="location" placeholder="location">
+          <input name="lat" placeholder="lat" value="23.02">
+          <input name="lon" placeholder="lon" value="72.57">
+          <input name="protocol" placeholder="protocol" value="file">
+          <input name="url" placeholder="url">
+          <label class="wide"><input type="checkbox" name="consent" checked> consent</label>
+          <button type="submit">Add camera</button>
+        </form>
+        <h3>CSV import</h3>
+        <input type="file" id="csv-file" accept=".csv">
+        <h3>ANPR this still</h3>
+        <input type="file" id="anpr-file" accept="image/*">
+        <input id="anpr-cam" value="CAM-OWN-001">
+        <pre id="anpr-out"></pre>
+        <h3>Operator confirm</h3>
+        <form id="confirm-form">
+          <input name="camera_id" value="CAM-OWN-001">
+          <input name="plate" value="GJ01AB1234">
+          <button type="submit">Confirm plate</button>
+        </form>
+      </section>
+      <section id="panel-gaps" class="panel">
+        <h2>Analytics &amp; Gaps</h2>
+        <pre id="gap-out"></pre>
+      </section>
+    </main>
+    <footer>
+      <span>SOC video wall pulls selected tiles. Everything else is metadata + crops. At 80,000 cameras we sample 1 fps at the region.</span>
+      <span id="footer-health"></span>
+    </footer>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
