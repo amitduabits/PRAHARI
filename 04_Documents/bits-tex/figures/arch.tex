@@ -1,0 +1,19 @@
+\begin{tikzpicture}[
+  font=\sffamily\footnotesize,
+  node distance=7mm and 8mm,
+  box/.style={draw=bitsblue, rounded corners=2pt, align=center,
+              inner sep=5pt, minimum height=10mm, minimum width=28mm, fill=white},
+  arr/.style={-{Stealth[length=2.2mm]}, bitsblue, thick}]
+\node[box, fill=codebg] (src) {Dept VMS / NVR};
+\node[box, right=of src] (ing) {Ingest\\RTSP-TCP / HLS};
+\node[box, right=of ing] (anpr) {ANPR 1 fps};
+\node[box, right=of anpr] (bus) {Event JSON};
+\node[box, above=of bus] (reg) {Registry + GIS};
+\node[box, right=of bus] (act) {Watchlist\\Track CSV\\SOC UI};
+\draw[arr] (src) -- (ing);
+\draw[arr] (ing) -- (anpr);
+\draw[arr] (anpr) -- (bus);
+\draw[arr] (ing) |- (reg);
+\draw[arr] (reg) -| (bus);
+\draw[arr] (bus) -- (act);
+\end{tikzpicture}

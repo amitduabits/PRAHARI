@@ -1,0 +1,11 @@
+PRAHARI slides and notes (BITS Beamer / notes class)
+
+Style files sit beside the .tex files. No TEXINPUTS setup is required.
+
+  latexmk -pdf slides.tex
+  latexmk -pdf notes.tex
+
+Engine is listings (no minted, no -shell-escape).
+
+Outputs: slides.pdf, notes.pdf
+Copy those to 04_Documents/PRAHARI-Slides.pdf and PRAHARI-Notes.pdf for GitHub.

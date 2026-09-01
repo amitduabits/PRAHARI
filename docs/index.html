@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PRAHARI · BITS Pilani</title>
+  <style>
+    body { font-family: "Segoe UI", system-ui, sans-serif; max-width: 44rem; margin: 2rem auto; padding: 0 1rem; color: #111; line-height: 1.45; }
+    a { color: #1A1A80; }
+    code { font-size: 0.95em; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { border-bottom: 1px solid #ddd; padding: 0.35rem 0.4rem; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>PRAHARI</h1>
+  <p>BITS Pilani student entry. Gujarat Police Innovation Challenge 2026. Hybrid CCTV intelligence plane (Models 1 + 2 + thin 3). Source: <a href="https://github.com/amitduabits/PRAHARI">github.com/amitduabits/PRAHARI</a>.</p>
+
+  <h2>Documents</h2>
+  <ul>
+    <li><a href="PRAHARI-Slides.pdf">Slides (PDF, BITS Beamer)</a></li>
+    <li><a href="PRAHARI-Notes.pdf">Notes (PDF)</a></li>
+    <li><a href="https://github.com/amitduabits/PRAHARI/blob/main/04_Documents/PRAHARI_HLD.md">High-level design</a></li>
+  </ul>
+
+  <h2>Run the PoC on your machine</h2>
+  <pre><code>git clone https://github.com/amitduabits/PRAHARI.git
+cd PRAHARI/02_Code/prahari
+copy .env.example .env
+.\run.ps1</code></pre>
+  <p>Unix: <code>cp .env.example .env</code> then <code>./run.sh</code>. Open <code>http://127.0.0.1:8080</code>.</p>
+  <table>
+    <tr><th>User</th><th>Role</th></tr>
+    <tr><td><code>judge</code></td><td>soc_operator (demo)</td></tr>
+    <tr><td><code>admin</code></td><td>superadmin</td></tr>
+    <tr><td><code>home.viewer</code></td><td>Home cameras only</td></tr>
+    <tr><td><code>auditor</code></td><td>read only</td></tr>
+  </table>
+  <p>Passwords are in <code>.env.example</code>. Change them before a public host. Reconstruct plate <code>GJ01AB1234</code>.</p>
+</body>
+</html>

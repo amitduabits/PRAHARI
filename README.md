@@ -6,7 +6,19 @@ Student-category entry for the [Gujarat Police Innovation Challenge 2026](https:
 
 Challenge portal: https://sentinel.gujarat.gov.in  
 Integrator guide: https://sentinel.gujarat.gov.in/resource  
-This repository: https://github.com/amitduabits/PRAHARI
+This repository: https://github.com/amitduabits/PRAHARI  
+Team site (slides, notes, run instructions): https://amitduabits.github.io/PRAHARI/
+
+## Documents (BITS format)
+
+| Artefact | File |
+|---|---|
+| Slides (Beamer, logo top right) | [PRAHARI-Slides.pdf](04_Documents/PRAHARI-Slides.pdf) |
+| Notes | [PRAHARI-Notes.pdf](04_Documents/PRAHARI-Notes.pdf) |
+| TeX sources | [04_Documents/bits-tex/](04_Documents/bits-tex/) |
+| HLD | [PRAHARI_HLD.md](04_Documents/PRAHARI_HLD.md) |
+
+Build: `cd 04_Documents/bits-tex` then `pdflatex slides.tex` and `pdflatex notes.tex`.
 
 ---
 

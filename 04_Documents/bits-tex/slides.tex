@@ -1,0 +1,201 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usepackage[listings]{csf301-beamer}
+\usepackage{ifthen}
+\input{tikz-library}
+\moduleinfo{01}{PRAHARI}{Hackathon demo}{Amit Dua, Arnav, Aria}
+\renewcommand{\coursecode}{GPIC 2026}
+\renewcommand{\coursetitle}{Gujarat Police Innovation Challenge}
+\renewcommand{\bitssemester}{September 2026}
+
+\begin{document}
+\titleframecsf
+
+\outcomesframe{
+\item State why PRAHARI does not replace departmental VMS
+\item Name the three layers that run in the PoC and the one that does not
+\item Recite the Sentinel ingest rules that the capture client obeys
+\item Walk the evaluation test: plate, track, watchlist alert, CSV}
+
+\begin{frame}{The deployed problem}
+\begin{itemize}\itemsep0.7em
+\item 26 departments run independent CCTV estates across about 1{,}000\,km
+\item Mix of analog and IP, cloud and local NVR, 7-day vs 15-day retention
+\item VAHAN, SARTHI, eGujCop, AFIS, NAFIS already exist and the cameras do not match against them
+\item There is no statewide camera census
+\end{itemize}
+\end{frame}
+
+\begin{frame}{What we are not building}
+\begin{itemize}\itemsep0.7em
+\item A rip-and-replace of 26 VMS contracts
+\item Central recording of 80{,}000 cameras $\times$ 15 days on day one
+\item Face recognition as the evaluation demo
+\item A mock UI with no detection row in the database
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Chosen model}
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Layer & Official model & PoC \\
+\midrule
+Census, GIS, health, gaps & 1 & now \\
+Unified viewing + ANPR & 2 & now \\
+Event bus, watchlist, track & thin 3 & now \\
+Central VMS recording & 4 & Phase-2, selected cameras \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\begin{itemize}\itemsep0.6em
+\item A new vendor is one adapter on RTSP / HLS / WHEP / ONVIF
+\item Detection JSON does not change if the bus later becomes Kafka
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Logical architecture}
+\begin{center}\resizebox{0.96\textwidth}{!}{\input{figures/arch}}\end{center}
+\medskip
+\begin{itemize}\itemsep0.5em
+\item Analytics samples 1 frame per second, not 25\,fps GOP
+\item PoC bus is an in-process WebSocket; the JSON is the contract
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Sentinel camera grid}
+\begin{itemize}\itemsep0.55em
+\item Catalogue: \code{GET http://<host>/api/ingest}. Camera ids change. The JSON is the contract
+\item RTSP \code{rtsp://<host>:8554/stream/<id>} for inference, TCP only
+\item HLS if port 8554 is blocked; WHEP for low-latency preview
+\item One second of video takes one second to arrive. There is no file download
+\item Host in use: \code{live.corp8.cloud} (ingest returned HTTP 502 on 01 Sep)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Integrator laws in the capture client}
+\begin{itemize}\itemsep0.45em
+\item Set \code{OPENCV\_FFMPEG\_CAPTURE\_OPTIONS=rtsp\_transport;tcp} before \code{import cv2}
+\item Event time is PTS (\code{CAP\_PROP\_POS\_MSEC}), never arrival time, never declared FPS
+\item Reconnect backoff starts at 2\,s and caps at 30\,s
+\item Decoder warnings at join are logged, not fatal
+\item PTS rewind or gap $>$ 5\,s is a scene cut (feeds loop)
+\item Consume only. Do not publish. Do not wget \code{/stream/<id>}
+\item Tests: \code{tests/test\_integrator\_laws.py}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{ANPR}
+\begin{itemize}\itemsep0.6em
+\item Sampled frame $\to$ plate box $\to$ Tesseract $\to$ Indian normaliser
+\item Regex after stripping space and hyphen: \code{\^{}[A-Z]\{2\}[0-9]\{1,2\}[A-Z]\{1,3\}[0-9]\{3,4\}\$}
+\item Interface: \code{recognize(frame) -> \{plate, plate\_raw, confidence, crop\}}
+\item Operator confirm writes confidence 1.0 so a readable plate cannot fail the demo
+\item Production swap (same function): YOLO plate detector + PaddleOCR
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Watchlist and alerts}
+\begin{itemize}\itemsep0.55em
+\item In-memory plate set, O(1) match, reload every 60\,s
+\item Representative sources: VAHAN, SARTHI, eGujCop. No live ministry API in the PoC
+\item CRITICAL stolen/wanted (red); HIGH (amber); LOW (log)
+\item Same plate + same camera within 120\,s increments a counter
+\item WebSocket \code{/ws/alerts} plus 5\,s poll fallback
+\item \code{WL-001} is \code{GJ01AB1234} / STOLEN and cannot be deleted
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Evaluation test: designated vehicle}
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Time & Camera & Location \\
+\midrule
+06:12 & CAM-VAL-001 & Valsad NH-48 Toll \\
+07:48 & CAM-SUR-001 & Surat Adajan Circle \\
+09:05 & CAM-AHD-004 & Narol--Naroda Hwy \\
+09:22 & CAM-AHD-001 & SG Highway Junction \\
+09:51 & CAM-GNR-003 & Koba Circle \\
+10:04 & CAM-GNR-001 & CH-0 Sector 21 GNR \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\begin{itemize}\itemsep0.5em
+\item \code{GET /api/track/GJ01AB1234} plus CSV download
+\item Live detections append; they do not replace the six seed points
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Eighty thousand cameras (design target)}
+\begin{itemize}\itemsep0.6em
+\item About 45{,}000 public-domain cameras run analytics at 1\,fps, 720p crop $\approx$ 80\,KB
+\item Naive centre: $45{,}000 \times 80\,\mathrm{KB/s} \approx 3.6\,\mathrm{GB/s}$
+\item Five regions (Ahmedabad, Surat, Rajkot, Vadodara, Bhuj): $\approx$ 720\,MB/s each
+\item SOC wall pulls 16--64 HLS tiles. Everything else is metadata + crops
+\item These numbers are design targets, not measured laptop throughput
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Cost of the intelligence plane}
+\begin{center}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Item (statewide, per year) & INR \\
+\midrule
+5 regional GPU nodes (3-yr amortised) & 1.8--2.4 Cr \\
+Object storage for crops + selected video & 0.8--1.2 Cr \\
+SWAN / leased bandwidth top-up & 0.6--1.0 Cr \\
+Integration + SOC ops (12 engineers) & 1.5 Cr \\
+\midrule
+Total intelligence plane & $\sim$5--6 Cr \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\begin{itemize}\itemsep0.5em
+\item This is not the bill for replacing 26 VMS estates
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Security in the PoC}
+\begin{itemize}\itemsep0.55em
+\item Roles: \code{superadmin}, \code{soc\_operator}, \code{dept\_viewer}, \code{auditor}
+\item \code{home.viewer} sees Home cameras only; private-permitted mall is hidden
+\item HLS/file tiles use a 60\,s HMAC token. Raw RTSP never reaches the browser
+\item Private-permitted onboard requires \code{consent=true}
+\item Audit: onboard, watchlist edit, ack, report download, operator confirm
+\end{itemize}
+\end{frame}
+
+\begin{frame}{PoC mapped to evaluation}
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Evaluation item & Where it lives \\
+\midrule
+Onboard gov + own feeds & \code{/api/cameras}, CSV, sync-catalogue \\
+Unified viewing & map + tokenised \code{/api/stream} \\
+ANPR + timestamps & \code{/api/ingest/frame}, confirm \\
+Designated vehicle & \code{/api/track/GJ01AB1234} + CSV \\
+Watchlist + alert & \code{/api/watchlist}, \code{/ws/alerts} \\
+80k readiness & HLD \S5 (design target) and \S10 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}{Demo run (3 minutes)}
+\begin{itemize}\itemsep0.5em
+\item Open \url{http://127.0.0.1:8080}. Login \code{judge}
+\item Operations map: two pins, Dahod offline
+\item Vehicle Track: reconstruct \code{GJ01AB1234}, download CSV
+\item Alerts: CRITICAL queue, Ack writes audit
+\item Onboard: still ANPR or Operator confirm
+\item Gaps: short retention on Food and Civil Supplies
+\item GitHub: \url{https://github.com/amitduabits/PRAHARI}
+\end{itemize}
+\end{frame}
+
+\end{document}
