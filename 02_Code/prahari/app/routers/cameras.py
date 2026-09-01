@@ -142,7 +142,13 @@ def sync_catalogue(user: User = Depends(require_user)) -> dict:
     host = config.getenv("SENTINEL_HOST", "").strip()
     if not host:
         raise HTTPException(status_code=400, detail="SENTINEL_HOST not configured")
-    cams = fetch(host)
+    try:
+        cams = fetch(host)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=f"catalogue unreachable at {host}: {exc}",
+        ) from exc
     for cam in cams:
         store.upsert_camera(to_registry_row(cam))
     store.audit(user.username, "sync_catalogue", f"n={len(cams)}")
