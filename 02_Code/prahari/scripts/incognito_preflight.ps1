@@ -1,8 +1,7 @@
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "_env_helpers.ps1")
 $base = "http://127.0.0.1:8080"
-$pair = "judge:set-this-before-submit"
-$basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
-$h = @{ Authorization = "Basic $basic" }
+$h = Get-JudgeBasicHeader
 Write-Host "LOCAL"
 foreach ($p in @("/api/health","/api/cameras","/api/track/GJ01AB1234","/api/alerts?status=open")) {
   try {

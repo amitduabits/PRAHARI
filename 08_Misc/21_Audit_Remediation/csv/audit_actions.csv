@@ -1,6 +1,6 @@
 prompt_id,audit_id,severity,day,date,phase,assignee,expected_output,depends_on,estimated_minutes,priority,status
 A00-001,GATE,Blocker,D4,2026-09-04,A00,agent,audit_gate.py runs; gitignore on .env,,20,P0,DONE
-A01-001,S1,High,D4,2026-09-04,A01,lead,.env rotated not committed,,10,P0,NOT_STARTED
+A01-001,S1,High,D4,2026-09-04,A01,lead,.env rotated not committed,,10,P0,DONE
 A02-001,S2,High,D4,2026-09-04,A02,agent,path jail + test_path_jail.py,A00-001,40,P0,DONE
 A03-001,S3,Medium,D4,2026-09-04,A03,agent,origin_allowed pin,A00-001,30,P0,DONE
 A04-001,S4,Medium,D4,2026-09-04,A04,agent,full HMAC + compare_digest,A00-001,30,P0,DONE

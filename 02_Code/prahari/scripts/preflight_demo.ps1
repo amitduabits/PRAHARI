@@ -1,4 +1,5 @@
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "_env_helpers.ps1")
 $base = "http://127.0.0.1:8080"
 $script:fail = 0
 function Check($name, $ok) {
@@ -10,13 +11,12 @@ try {
   Check "detections>=6" ($h.detections -ge 6)
   Check "cameras>=11" ($h.cameras -ge 11)
 } catch { Check "health reachable" $false }
-$pair = "judge:set-this-before-submit"
-$basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
 try {
-  $wl = Invoke-RestMethod "$base/api/watchlist" -Headers @{ Authorization = "Basic $basic" }
+  $hdr = Get-JudgeBasicHeader
+  $wl = Invoke-RestMethod "$base/api/watchlist" -Headers $hdr
   $has = @($wl | Where-Object { $_.source_case_id -eq "WL-001" }).Count -gt 0
   Check "WL-001 present" $has
-} catch { Check "watchlist" $false }
+} catch { Write-Host $_.Exception.Message; Check "watchlist" $false }
 try {
   $html = & curl.exe -s "$base/"
   Check "UI PRAHARI" ($html -match "PRAHARI")
