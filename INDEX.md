@@ -12,6 +12,7 @@ PRAHARI is a hybrid statewide CCTV intelligence plane: Model 1 registry and GIS,
 | One-page brief | `01_Overview/BRIEF.md` |
 | Architecture | `04_Documents/PRAHARI_HLD.md` |
 | Investment audit (DGP, security, Palantir seats) | `04_Documents/PRAHARI_Investment_Audit.md` |
+| Audit remediation prompt book | `08_Misc/21_Audit_Remediation/START_HERE.md` |
 | Deck | `04_Documents/PRAHARI_Solution.pptx` |
 | Official integrator guide (archived) | `06_References/SENTINEL_Integrator_Guide.md` |
 | Official problems page (verbatim, 03 Sep 2026) | `06_References/SENTINEL_Problems_Page.md` |

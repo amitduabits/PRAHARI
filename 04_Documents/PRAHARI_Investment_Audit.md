@@ -149,6 +149,8 @@ UDP SETUP 461 then TCP success is not a down camera. Do not mail SCRB.
 
 ---
 
+The prompt book that closes these rows is `08_Misc/21_Audit_Remediation/START_HERE.md`. `python scripts/audit_gate.py` from `02_Code/prahari` is the machine gate. Hosted URL is forbidden until that gate prints PASS.
+
 ## Actions before submit (ordered)
 
 1. Record own-feed ≤ 3 min from `own_feed_demo_script.md`. Unlisted YouTube. Incognito play.
