@@ -13,9 +13,9 @@ Category: Academic, Research and DPIIT Recognised Startup / Individual Participa
 | Investment audit | `04_Documents/PRAHARI_Investment_Audit.md` | DGP / security / Palantir seats; internal |
 | Track CSV | `05_Output/deliverables/track_GJ01AB1234.csv` | seeded path; live hits append |
 | Own-feed file | `03_Data/recordings/own_feed.mp4` | 130 s plate stand-in; replace with Aria road clip if filmed |
-| Own-feed YouTube | pending screen record | script: `own_feed_demo_script.md` |
-| Gov-feed YouTube | pending screen record | live host is up; shoot W03 today |
-| Gov CSV | `gov_feed_plates.csv` | 1 row: operator confirm `GJ01AB1234` on `cam04` (Paldi Circle). Tesseract not on PATH. |
+| Own-feed YouTube | pending screen record | Backend ready. Script: `own_feed_demo_script.md`. Own tile 200 (mp4). |
+| Gov-feed YouTube | pending screen record | Catalogue sync 200 (30 live). `cam04` HLS playlist 200. Script: `gov_feed_demo_script.md`. Record now before cooldown returns. |
+| Gov CSV | `gov_feed_plates.csv` | 2 confirm rows `GJ01AB1234` on `cam04`. Tesseract not on PATH. Upload Drive Anyone+Viewer. |
 | Hosted URL | http://127.0.0.1:8080 (local; no public tunnel) | `admin` / `admin` or `judge` / `JUDGE_PASSWORD`. Do not put this on the public internet. |
 | Onboard log | `onboard_failures.md` | 30 cameras from `/cameras.json`; cam01 and cam04 RTSP-TCP live |
 
