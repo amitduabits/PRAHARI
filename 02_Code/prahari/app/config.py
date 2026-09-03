@@ -41,7 +41,9 @@ JUDGE_PASSWORD = getenv("JUDGE_PASSWORD", "set-this-before-submit")
 SECRET_KEY = getenv("SECRET_KEY", "change-me")
 
 SENTINEL_HOST = getenv("SENTINEL_HOST", "")
-SENTINEL_CATALOGUE_PATH = getenv("SENTINEL_CATALOGUE_PATH", "/api/ingest")
+SENTINEL_CATALOGUE_PATH = getenv("SENTINEL_CATALOGUE_PATH", "/cameras.json")
+SENTINEL_PASSWORD = getenv("SENTINEL_PASSWORD", "")
+SENTINEL_RTSP_HOST = getenv("SENTINEL_RTSP_HOST", "")
 
 RTSP_TRANSPORT = getenv("RTSP_TRANSPORT", "tcp")
 RECONNECT_MIN_S = int(getenv("RECONNECT_MIN_S", "2") or "2")

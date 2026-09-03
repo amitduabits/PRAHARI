@@ -5,7 +5,7 @@ Wi-Fi may die. HLS-first. Consume only.
 ## Setup (before walking on stage)
 
 1. `cd 02_Code\prahari`
-2. `.env` has `SENTINEL_HOST=live.corp8.cloud` and a non-default `JUDGE_PASSWORD`
+2. `.env` has `SENTINEL_HOST=cctv.corp8.cloud`, `SENTINEL_RTSP_HOST=103.250.160.189`, a set `SENTINEL_PASSWORD`, and a non-default `JUDGE_PASSWORD`. Do not commit `.env`.
 3. `.\run.ps1`
 4. Login `judge`
 5. If `/api/cameras/sync-catalogue` is 503, skip gov tiles and use own-feed + seeded track

@@ -1,1 +1,1 @@
-No catalogue detections yet. SENTINEL_HOST empty or no live ANPR hits.
+OCR empty, confirm used

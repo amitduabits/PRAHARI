@@ -1,8 +1,14 @@
-"""Sentinel /api/ingest client. Camera ids change; JSON fields are the contract."""
+"""Sentinel catalogue client. Camera ids change; JSON fields are the contract.
+
+Live portal (2026-09-03): session cookie, GET /cameras.json as [{id, name}].
+HLS at https://<web-host>/<id>/index.m3u8 (browser User-Agent required).
+RTSP/WHEP on the public IP from the live /resource page, not on the TLS host.
+"""
 
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +18,11 @@ from app import config
 
 FIXTURE_PATH = config.ROOT / "tests" / "fixtures" / "catalogue_sample.json"
 CACHE_PATH = config.REPO_ROOT / "03_Data" / "sentinel_catalogue" / "catalogue.last.json"
+
+BROWSER_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+)
 
 _ALIASES = {
     "id": ("id", "camera_id", "cameraid", "camid"),
@@ -25,6 +36,8 @@ _ALIASES = {
     "whep": ("whep", "whep_url", "whepurl"),
     "hls": ("hls", "hlsurl", "hls_url", "m3u8"),
 }
+
+_SESSION: dict[str, Any] = {"client": None, "base": ""}
 
 
 def _fold(raw: dict[str, Any]) -> dict[str, Any]:
@@ -93,6 +106,77 @@ def parse_payload(payload: Any) -> list[dict[str, Any]]:
     return [normalise_camera(c) for c in cameras if isinstance(c, dict)]
 
 
+def web_base(host: str) -> str:
+    host = (host or "").strip()
+    if not host:
+        return ""
+    if "://" in host:
+        return host.rstrip("/")
+    return "https://" + host.rstrip("/")
+
+
+def apply_origin_urls(cam: dict[str, Any], web: str, rtsp_host: str = "") -> dict[str, Any]:
+    """Fill HLS/RTSP/WHEP only when the catalogue row omitted them.
+
+    Camera identity still comes from JSON. The live /resource page documents
+    these origins; ids are never invented here.
+    """
+    cid = cam.get("id") or ""
+    web = (web or "").rstrip("/")
+    rtsp_host = (rtsp_host or "").strip()
+    if cid and web and not cam.get("hls"):
+        cam["hls"] = web + "/" + cid + "/index.m3u8"
+    if cid and rtsp_host and not cam.get("rtsp"):
+        cam["rtsp"] = "rtsp://" + rtsp_host + ":8554/stream/" + cid
+    if cid and rtsp_host and not cam.get("whep"):
+        cam["whep"] = "http://" + rtsp_host + ":8889/stream/" + cid + "/whep"
+    return cam
+
+
+def _looks_json(response: httpx.Response) -> bool:
+    ctype = (response.headers.get("content-type") or "").lower()
+    if "json" in ctype:
+        return True
+    text = response.text.lstrip()
+    return text.startswith("{") or text.startswith("[")
+
+
+def _login(client: httpx.Client, base: str) -> None:
+    password = config.getenv("SENTINEL_PASSWORD", "").strip()
+    if not password:
+        return
+    client.post(base + "/auth/login", data={"password": password})
+
+
+def session(host: str | None = None) -> tuple[httpx.Client, str]:
+    host = (host if host is not None else config.getenv("SENTINEL_HOST", "")).strip()
+    base = web_base(host)
+    if _SESSION["client"] is not None and _SESSION["base"] == base:
+        return _SESSION["client"], base
+    if _SESSION["client"] is not None:
+        _SESSION["client"].close()
+    client = httpx.Client(
+        timeout=20.0,
+        follow_redirects=True,
+        headers={"User-Agent": BROWSER_UA, "Referer": base + "/", "Accept": "*/*"},
+    )
+    _login(client, base)
+    _SESSION["client"] = client
+    _SESSION["base"] = base
+    return client, base
+
+
+def origin_get(url: str, host: str | None = None) -> httpx.Response:
+    client, _ = session(host)
+    response = client.get(url)
+    if response.status_code in {401, 403} or (
+        response.status_code == 200 and "sign in" in response.text[:400].lower()
+    ):
+        _login(client, _SESSION["base"])
+        response = client.get(url)
+    return response
+
+
 def load_fixture(path: Path | None = None) -> list[dict[str, Any]]:
     target = path or FIXTURE_PATH
     payload = json.loads(target.read_text(encoding="utf-8"))
@@ -111,14 +195,39 @@ def fetch(host: str | None = None) -> list[dict[str, Any]]:
     host = (host if host is not None else config.getenv("SENTINEL_HOST", "")).strip()
     if not host:
         return load_fixture()
-    base = host if "://" in host else f"http://{host}"
-    url = base.rstrip("/") + config.getenv("SENTINEL_CATALOGUE_PATH", "/api/ingest")
-    with httpx.Client(timeout=10.0, follow_redirects=True) as client:
-        response = client.get(url)
-        response.raise_for_status()
+    client, base = session(host)
+    configured = config.getenv("SENTINEL_CATALOGUE_PATH", "/cameras.json") or "/cameras.json"
+    if not configured.startswith("/"):
+        configured = "/" + configured
+    candidates = [configured]
+    for alt in ("/cameras.json", "/api/ingest"):
+        if alt not in candidates:
+            candidates.append(alt)
+    last_error = "catalogue unreachable"
+    payload: Any = None
+    for path in candidates:
+        response = client.get(base + path)
+        if response.status_code == 404:
+            last_error = f"{path} HTTP 404"
+            continue
+        if not _looks_json(response):
+            if not config.getenv("SENTINEL_PASSWORD", "").strip():
+                raise RuntimeError(
+                    "catalogue is session-gated; set SENTINEL_PASSWORD in .env"
+                )
+            _login(client, base)
+            response = client.get(base + path)
+        if not _looks_json(response):
+            last_error = f"{path} HTTP {response.status_code} not JSON"
+            continue
         payload = response.json()
+        break
+    if payload is None:
+        raise RuntimeError(last_error)
     save_cache(payload)
-    return parse_payload(payload)
+    cams = parse_payload(payload)
+    rtsp_host = config.getenv("SENTINEL_RTSP_HOST", "").strip()
+    return [apply_origin_urls(c, base, rtsp_host) for c in cams if c.get("id")]
 
 
 def to_registry_row(cam: dict[str, Any]) -> dict[str, Any]:

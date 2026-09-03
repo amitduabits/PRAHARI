@@ -11,8 +11,10 @@ PRAHARI is a hybrid statewide CCTV intelligence plane: Model 1 registry and GIS,
 | GitHub README (clone and run) | `README.md` |
 | One-page brief | `01_Overview/BRIEF.md` |
 | Architecture | `04_Documents/PRAHARI_HLD.md` |
+| Investment audit (DGP, security, Palantir seats) | `04_Documents/PRAHARI_Investment_Audit.md` |
 | Deck | `04_Documents/PRAHARI_Solution.pptx` |
 | Official integrator guide (archived) | `06_References/SENTINEL_Integrator_Guide.md` |
+| Official problems page (verbatim, 03 Sep 2026) | `06_References/SENTINEL_Problems_Page.md` |
 | Working tree | `02_Code/prahari/` |
 
 ## Folder map
@@ -27,7 +29,7 @@ PRAHARI is a hybrid statewide CCTV intelligence plane: Model 1 registry and GIS,
 
 ## Integrator rules
 
-Force RTSP over TCP. Time every event from PTS, never from arrival time or declared frame rate. Reconnect with backoff. Treat decoder warnings at join as non-fatal. Read cameras from `/api/ingest`. Consume only. Never publish to the gateway. Do not treat `/stream/<id>` as a file download.
+Force RTSP over TCP. Time every event from PTS, never from arrival time or declared frame rate. Reconnect with backoff. Treat decoder warnings at join as non-fatal. Read cameras from `/cameras.json`. Consume only. Never publish to the gateway. Do not treat `/stream/<id>` as a file download.
 
 ## Team
 

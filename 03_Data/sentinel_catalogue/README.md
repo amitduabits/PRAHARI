@@ -1,9 +1,12 @@
 # Sentinel catalogue cache
 
-After login, Resources will reveal `<host>`. Then:
+Live portal (2026-09-03): `https://cctv.corp8.cloud/` with the team access password in `.env` as `SENTINEL_PASSWORD`.
 
 ```
-curl -s http://<host>/api/ingest -o catalogue.last.json
+# after POST /auth/login (cookie `sentinel`)
+curl -s https://cctv.corp8.cloud/cameras.json -o catalogue.last.json
 ```
 
-Keep `catalogue.last.json` out of git if it contains internal hostnames. The schema file is the working hypothesis from the public integrator guide (id, location, codec, live, stream properties, three URLs). When the real payload arrives, diff it against the schema, patch `app/services/catalogue.py`, and do not assume the URL pattern ` /stream/<id>` is stable.
+The live manifest is a JSON array of `{id, name}`. HLS is `https://cctv.corp8.cloud/<id>/index.m3u8` and requires a browser User-Agent. RTSP is on the public IP from the live `/resource` page (`SENTINEL_RTSP_HOST`), not on the TLS hostname. `/api/ingest` is 404 on this host.
+
+Keep `catalogue.last.json` out of git. Camera ids still come from the JSON; do not invent them.

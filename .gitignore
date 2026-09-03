@@ -16,6 +16,10 @@ __pycache__/
 02_Code/prahari/data/crops/
 02_Code/prahari/data/hls/
 03_Data/sentinel_catalogue/catalogue.last.json
+03_Data/sentinel_catalogue/*.html
+03_Data/sentinel_catalogue/*.raw
+03_Data/sentinel_catalogue/*.raw.txt
+/Screenshot*.png
 03_Data/recordings/*.mp4
 03_Data/recordings/*.png
 05_Output/deliverables/*.mp4

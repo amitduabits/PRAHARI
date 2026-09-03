@@ -16,6 +16,7 @@ Team site (slides, notes, run instructions): https://amitduabits.github.io/PRAHA
 | Slides (Beamer, logo top right) | [PRAHARI-Slides.pdf](04_Documents/PRAHARI-Slides.pdf) |
 | Notes | [PRAHARI-Notes.pdf](04_Documents/PRAHARI-Notes.pdf) |
 | TeX sources | [04_Documents/bits-tex/](04_Documents/bits-tex/) |
+| Official problems page (verbatim) | [SENTINEL_Problems_Page.md](06_References/SENTINEL_Problems_Page.md) |
 | HLD | [PRAHARI_HLD.md](04_Documents/PRAHARI_HLD.md) |
 
 Build: `cd 04_Documents/bits-tex` then `pdflatex slides.tex` and `pdflatex notes.tex`.
@@ -158,7 +159,9 @@ Copy from `.env.example`. Never commit `.env`.
 | `JUDGE_PASSWORD` | set-this-before-submit | Committee login |
 | `SECRET_KEY` | change-me | Cookie and stream-token HMAC |
 | `SENTINEL_HOST` | empty | Sandbox host from Resources after login |
-| `SENTINEL_CATALOGUE_PATH` | `/api/ingest` | Catalogue path |
+| `SENTINEL_CATALOGUE_PATH` | `/cameras.json` | Live catalogue path |
+| `SENTINEL_PASSWORD` | empty | Portal access password; never commit |
+| `SENTINEL_RTSP_HOST` | empty | Public RTSP IP from live `/resource` |
 | `RTSP_TRANSPORT` | tcp | Forced in every capture client |
 | `RECONNECT_MIN_S` / `RECONNECT_MAX_S` | 2 / 30 | Backoff |
 | `MAX_OPEN_CAPTURES` | 4 | Pace load; fifth session is rejected |
@@ -181,7 +184,7 @@ Every sandbox camera is a live RTP/RTSP stream. One second of video takes one se
 | WHEP | `http://<host>:8889/stream/<id>/whep` | Documented; not a full WebRTC stack in the PoC |
 | HLS | `http://<host>/live/stream/<id>/index.m3u8` | Dashboard tiles; fallback if 8554 is blocked |
 
-Catalogue `GET http://<host>/api/ingest` is the contract. Camera ids change. Do not hard-code the URL pattern.
+Catalogue `GET https://cctv.corp8.cloud/cameras.json` (after password login) is the live contract. Camera ids change. Do not invent ids. `/api/ingest` is 404 on this host.
 
 Integrator rules encoded in `app/services/capture.py` and `tests/test_integrator_laws.py`:
 
@@ -210,7 +213,7 @@ After login, set `SENTINEL_HOST` and call `POST /api/cameras/sync-catalogue` (as
 | GET/POST | `/api/cameras` | Registry list / manual onboard |
 | POST | `/api/cameras/import` | CSV multipart |
 | GET | `/api/cameras/export.csv` | Census export |
-| POST | `/api/cameras/sync-catalogue` | Pull `/api/ingest` |
+| POST | `/api/cameras/sync-catalogue` | Pull `/cameras.json` |
 | GET | `/api/cameras/{id}` | One camera; playback token, never raw RTSP |
 | POST/DELETE | `/api/sessions` | Open/close a tile (max 4) |
 | GET | `/api/stream/{id}?token=` | File or HLS proxy |
@@ -271,4 +274,4 @@ Student category. Lead, Arnav, Aria.
 
 Submission lock for Phase 1: 07 September 2026, 12:00 IST. Finale (if shortlisted): 10–11 September 2026, iHub Gujarat, Ahmedabad.
 
-Contact the organisers at sentinel.hackathon@gujarat.gov.in / +91 95370 89982 only for feed faults. Include camera id, exact URL, client and version, UTC timestamp, and the client log. Confirm `live` in `/api/ingest` before reporting a camera as down.
+Contact the organisers at sentinel.hackathon@gujarat.gov.in / +91 95370 89982 only for feed faults. Include camera id, exact URL, client and version, UTC timestamp, and the client log. Confirm the camera is in `/cameras.json` and a TCP probe succeeds before reporting it as down. The live manifest has no `live` flag; treat listed cameras as live until a probe fails.

@@ -1,7 +1,8 @@
 # Consuming the Sentinel Camera Grid — Integrator's Guide
 
 Source: https://sentinel.gujarat.gov.in/resource  
-Archived for PRAHARI: 2026-08-31  
+Live grid (2026-09-03): https://cctv.corp8.cloud/resource  
+Archived for PRAHARI: 2026-08-31, patched 2026-09-03 against the live portal.  
 This is the contract the build obeys. If the live page and this file disagree, trust the live page and patch this file.
 
 ---
@@ -12,19 +13,21 @@ A guide for teams connecting to the Sentinel sandbox — how to open a live feed
 
 Every camera is published as a **live RTP/RTSP stream**. One second of video takes one second to arrive, frames carry monotonic presentation timestamps (PTS), and there is no seeking, no byte-range fetching, and no way to run ahead of real time. Treat each endpoint as you would a physical camera on an operational network.
 
-| Protocol | Endpoint | Intended for |
+| Protocol | Endpoint (live 2026-09-03) | Intended for |
 |---|---|---|
-| **RTSP** | `rtsp://<host>:8554/stream/<id>` | AI inference (OpenCV, GStreamer, FFmpeg, DeepStream) |
-| **WebRTC (WHEP)** | `http://<host>:8889/stream/<id>/whep` | Low-latency browser preview |
-| **HLS** | `http://<host>/live/stream/<id>/index.m3u8` | Dashboards, mobile, restricted networks |
+| **RTSP** | `rtsp://103.250.160.189:8554/stream/<id>` | AI inference (OpenCV, GStreamer, FFmpeg, DeepStream) |
+| **WebRTC (WHEP)** | `http://103.250.160.189:8889/stream/<id>/whep` | Low-latency browser preview |
+| **HLS** | `https://cctv.corp8.cloud/<id>/index.m3u8` | Dashboards, mobile, restricted networks |
 
-Always start from the catalogue rather than hard-coding endpoints:
+The TLS hostname `cctv.corp8.cloud` does not pass RTSP. Direct inference uses the public IP on 8554/TCP. HLS on the TLS host requires the access-password cookie and a browser User-Agent (plain curl returns `browser required`).
+
+Always start from the catalogue rather than hard-coding camera ids:
 
 ```
-curl -s http://<host>/api/ingest
+curl -s https://cctv.corp8.cloud/cameras.json
 ```
 
-It returns every camera with its id, location, codec, live status, stream properties, and all three URLs. Camera ids and the set of available cameras can change; the catalogue is the contract, the URL pattern is not.
+Live payload is a JSON array of `{id, name}` (example id `cam04`). Camera ids and the set of available cameras can change; the catalogue is the contract. `/api/ingest` returns 404 on this host.
 
 ## 2 Connecting
 
@@ -80,7 +83,7 @@ When a client connects, the gateway replays its buffered group-of-pictures so th
 
 **DON'T — Treat decode warnings at join as fatal.** The grid includes both H.264 and H.265. Attaching mid-stream can produce decoder messages such as `Error constructing the frame RPS` or `Could not find ref with POC` until the first IDR frame arrives. This is normal and self-corrects. Pipelines that abort on the first decoder error will bounce on those streams.
 
-**DON'T — Assume a uniform grid.** Cameras differ in resolution, codec, frame rate, and bitrate. Read per-camera properties from `/api/ingest` and size batching, buffers, and decoders accordingly. A fixed-shape inference batch across every camera will not work unscaled.
+**DON'T — Assume a uniform grid.** Cameras differ in resolution, codec, frame rate, and bitrate. Read the camera list from `/cameras.json` and size batching, buffers, and decoders per camera. A fixed-shape inference batch across every camera will not work unscaled.
 
 **DO — Expect a scene discontinuity.** Each feed is a continuous recording that loops. At the loop point the scene cuts abruptly, similar to a camera reboot. Long-lived state — background models, re-identification galleries, object track ids — should recover from a hard cut rather than assuming infinite continuity.
 
@@ -97,10 +100,10 @@ When a client connects, the gateway replays its buffered group-of-pictures so th
 - Inter-frame gaps do not crash or stall the pipeline.
 - Reconnect with backoff is implemented and tested by restarting a feed.
 - Decoder warnings on join are logged, not fatal.
-- Camera list and per-camera properties are read from `/api/ingest`.
+- Camera list is read from `/cameras.json`.
 - Pipeline handles mixed H.264 / H.265 and mixed resolutions.
 - Behaviour is sane across a scene discontinuity.
 
 ## 5 Support
 
-Report feed problems with the camera id, the exact URL, your client and version, the UTC timestamp, and the client-side error log. Confirm the camera's live status in `/api/ingest` before reporting it as down.
+Report feed problems with the camera id, the exact URL, your client and version, the UTC timestamp, and the client-side error log. Confirm the camera is listed in `/cameras.json` before reporting it as down. The live manifest has no `live` flag.

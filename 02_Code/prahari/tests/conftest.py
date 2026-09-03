@@ -24,6 +24,8 @@ def client(tmp_path, monkeypatch) -> TestClient:
     monkeypatch.setenv("CROP_DIR", str(tmp_path / "crops"))
     monkeypatch.setenv("JUDGE_PASSWORD", "set-this-before-submit")
     monkeypatch.delenv("SENTINEL_HOST", raising=False)
+    monkeypatch.delenv("SENTINEL_PASSWORD", raising=False)
+    monkeypatch.delenv("SENTINEL_RTSP_HOST", raising=False)
     from app.db import init_db
     from app.main import app
 

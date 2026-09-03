@@ -10,12 +10,13 @@ Category: Academic, Research and DPIIT Recognised Startup / Individual Participa
 | Solution PPT | `04_Documents/PRAHARI_Solution.pptx` | slide 1: student, BITS Pilani, Lead + Arnav + Aria |
 | Solution PDF | `05_Output/deliverables/PRAHARI_Solution.pdf` | exported |
 | HLD | `04_Documents/PRAHARI_HLD.md` | |
+| Investment audit | `04_Documents/PRAHARI_Investment_Audit.md` | DGP / security / Palantir seats; internal |
 | Track CSV | `05_Output/deliverables/track_GJ01AB1234.csv` | seeded path; live hits append |
 | Own-feed file | `03_Data/recordings/own_feed.mp4` | 130 s plate stand-in; replace with Aria road clip if filmed |
 | Own-feed YouTube | pending screen record | script: `own_feed_demo_script.md` |
-| Gov-feed YouTube | blocked | `live.corp8.cloud/api/ingest` returned HTTP 502 |
-| Gov CSV | `gov_feed_plates.csv` | empty until catalogue is 200 |
+| Gov-feed YouTube | pending screen record | live host is up; shoot W03 today |
+| Gov CSV | `gov_feed_plates.csv` | 1 row: operator confirm `GJ01AB1234` on `cam04` (Paldi Circle). Tesseract not on PATH. |
 | Hosted URL | http://127.0.0.1:8080 until a tunnel is opened | judge / JUDGE_PASSWORD |
-| Onboard log | `onboard_failures.md` | 502 on ingest, not a down camera |
+| Onboard log | `onboard_failures.md` | 30 cameras from `/cameras.json`; cam01 and cam04 RTSP-TCP live |
 
-Do not commit `.env`. Host: `live.corp8.cloud`.
+Do not commit `.env`. Web host: `cctv.corp8.cloud`. RTSP: `103.250.160.189:8554`. Access password lives only in `.env` as `SENTINEL_PASSWORD`.

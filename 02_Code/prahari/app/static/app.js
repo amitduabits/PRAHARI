@@ -54,7 +54,7 @@ async function refreshHealth() {
     $("footer-health").textContent = data.cameras + " cameras · " + data.detections + " detections · WS " + (ws && ws.readyState === 1 ? "connected" : "polling");
   }
   if ($("banner") && data.sentinel_host_configured) {
-    $("banner").textContent = "Sentinel catalogue configured";
+    $("banner").textContent = data.cameras + " cameras · Sentinel host set · sync from cameras.json";
   }
 }
 
@@ -96,8 +96,12 @@ async function loadCameras(department) {
     if (btn) btn.onclick = () => openTile(btn.getAttribute("data-open"));
   });
   const table = $("cam-table");
-  table.innerHTML = "<tr><th>id</th><th>dept</th><th>location</th><th>health</th><th>codec</th></tr>" +
-    rows.map((c) => "<tr><td>" + c.camera_id + "</td><td>" + c.department + "</td><td>" + c.location + "</td><td>" + c.health + "</td><td>" + c.codec + "</td></tr>").join("");
+  table.innerHTML = "<tr><th>id</th><th>dept</th><th>location</th><th>health</th><th>codec</th><th></th></tr>" +
+    rows.map((c) => "<tr><td>" + c.camera_id + "</td><td>" + c.department + "</td><td>" + c.location + "</td><td>" + c.health + "</td><td>" + c.codec + "</td><td><button data-open='" + c.camera_id + "'>Open tile</button></td></tr>").join("");
+  table.onclick = (e) => {
+    const btn = e.target.getAttribute && e.target.getAttribute("data-open");
+    if (btn) openTile(btn);
+  };
   const depts = [...new Set(rows.map((c) => c.department))];
   $("filters").innerHTML = ["All"].concat(depts).map((d) => "<span class='chip' data-d='" + d + "'>" + d + "</span>").join("");
   $("filters").onclick = (e) => {
@@ -124,8 +128,18 @@ async function openTile(cameraId) {
   if (tiles.has(cameraId)) return;
   const wrap = document.createElement("div");
   wrap.className = "tile";
-  wrap.innerHTML = "<p>" + cameraId + " <button data-x>close</button></p><video controls src='" + url + "'></video>";
+  wrap.innerHTML = "<p>" + cameraId + " <button data-x>close</button></p><video controls playsinline></video>";
+  const video = wrap.querySelector("video");
+  if (cam.playback && cam.playback.kind === "hls" && window.Hls && window.Hls.isSupported()) {
+    const hls = new window.Hls({ enableWorker: true, startPosition: -1 });
+    hls.loadSource(url);
+    hls.attachMedia(video);
+    wrap._hls = hls;
+  } else {
+    video.src = url;
+  }
   wrap.querySelector("[data-x]").onclick = async () => {
+    if (wrap._hls) wrap._hls.destroy();
     await api("/api/sessions/" + encodeURIComponent(cameraId), { method: "DELETE" });
     wrap.remove();
     tiles.delete(cameraId);

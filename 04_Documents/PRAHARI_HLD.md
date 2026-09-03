@@ -206,7 +206,7 @@ Gated by `02_Code/prahari/tests/test_integrator_laws.py` plus live soak when `SE
 | Inter-frame gaps are not disconnects | `StreamSession.read` continues; scene-cut callback on PTS jump |
 | Reconnect backoff 2–30 s | `backoff_sleep` |
 | Decoder warnings at join are non-fatal | logged, not raised |
-| Catalogue is `/api/ingest` | `app/services/catalogue.py`; ids from JSON, URL pattern is not the contract |
+| Catalogue is `/cameras.json` | `app/services/catalogue.py`; ids from JSON. Live host has no `/api/ingest`. |
 | Mixed H.264 / H.265 and resolutions | per-camera codec/width/height from catalogue |
 | Scene discontinuity at loop | `detect_scene_cut` |
 

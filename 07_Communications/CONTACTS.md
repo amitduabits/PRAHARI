@@ -26,4 +26,4 @@ Phase 2 (six finalists, no category split): ₹16L / ₹8L / ₹7L, plus ₹50,0
 
 ## Feed-problem reports
 
-When a Sentinel feed misbehaves, report: camera id, exact URL, client and version, UTC timestamp, client-side error log. Confirm `live` in `/api/ingest` before reporting it as down.
+When a Sentinel feed misbehaves, report: camera id, exact URL, client and version, UTC timestamp, client-side error log. Confirm the camera is listed in `/cameras.json` and a TCP probe fails before reporting it as down.
