@@ -29,7 +29,10 @@ def start(camera: dict) -> dict:
         )
     protocol = (camera.get("protocol") or "").lower()
     if protocol == "file":
-        path = resolve_media_path(camera.get("url") or "")
+        try:
+            path = resolve_media_path(camera.get("url") or "")
+        except ValueError as exc:
+            raise RuntimeError(str(exc)) from exc
         _SESSIONS[cid] = {"kind": "file", "path": str(path)}
         return {"camera_id": cid, "status": "open", "kind": "file"}
     if camera.get("hls"):

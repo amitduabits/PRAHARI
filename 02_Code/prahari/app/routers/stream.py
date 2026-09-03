@@ -13,6 +13,7 @@ from app.services import sessions
 from app.services.catalogue import origin_get
 
 router = APIRouter()
+# Query token expires in STREAM_TOKEN_TTL_S. HLS players cannot send cookies on every fragment in this PoC.
 
 _HLS_PART = re.compile(r"^[\w.\-]+$")
 
@@ -77,7 +78,10 @@ async def stream(camera_id: str, token: str = Query(...)) -> Response:
         raise HTTPException(status_code=404, detail="unknown camera")
     protocol = (cam.get("protocol") or "").lower()
     if protocol == "file":
-        path = resolve_media_path(cam.get("url") or "")
+        try:
+            path = resolve_media_path(cam.get("url") or "")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="file url outside media roots")
         if not path.is_file():
             raise HTTPException(
                 status_code=404,
@@ -92,6 +96,8 @@ async def stream(camera_id: str, token: str = Query(...)) -> Response:
         raise HTTPException(status_code=503, detail="ffmpeg session warming up")
     if cam.get("hls"):
         upstream = origin_get(cam["hls"])
+        if upstream.status_code == 403 and "not pinned" in (upstream.text or ""):
+            raise HTTPException(status_code=502, detail="hls origin not pinned")
         if upstream.status_code >= 400:
             raise HTTPException(status_code=502, detail=f"hls origin HTTP {upstream.status_code}")
         text = _rewrite_playlist(upstream.text, camera_id, token)
@@ -111,6 +117,8 @@ def stream_hls_part(camera_id: str, name: str, token: str = Query(...)) -> Respo
         raise HTTPException(status_code=404, detail="unknown camera")
     url = _hls_upstream(cam, name)
     upstream = origin_get(url)
+    if upstream.status_code == 403 and "not pinned" in (upstream.text or ""):
+        raise HTTPException(status_code=502, detail="hls origin not pinned")
     if upstream.status_code >= 400:
         raise HTTPException(status_code=502, detail=f"hls part HTTP {upstream.status_code}")
     media = "application/octet-stream"

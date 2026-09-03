@@ -32,7 +32,10 @@ def _set_fail(camera_id: str, health: str, fail_count: int) -> None:
 def probe_one(cam: dict) -> str:
     protocol = (cam.get("protocol") or "").lower()
     if protocol == "file":
-        path = resolve_media_path(cam.get("url") or "")
+        try:
+            path = resolve_media_path(cam.get("url") or "")
+        except ValueError:
+            return "fail"
         return "live" if path.is_file() else "offline"
     url, proto = capture_url(cam)
     if not url:

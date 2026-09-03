@@ -8,9 +8,9 @@ RTSP/WHEP on the public IP from the live /resource page, not on the TLS host.
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 
@@ -115,6 +115,24 @@ def web_base(host: str) -> str:
     return "https://" + host.rstrip("/")
 
 
+def origin_allowed(url: str, host: str | None = None) -> bool:
+    parsed = urlparse(url)
+    netloc = (parsed.hostname or "").lower()
+    if not netloc:
+        return False
+    allowed: set[str] = {"cctv.corp8.cloud"}
+    configured = (host if host is not None else config.getenv("SENTINEL_HOST", "")).strip()
+    if configured:
+        if "://" in configured:
+            allowed.add((urlparse(configured).hostname or "").lower())
+        else:
+            allowed.add(configured.lower())
+    rtsp_host = config.getenv("SENTINEL_RTSP_HOST", "").strip().lower()
+    if rtsp_host:
+        allowed.add(rtsp_host)
+    return netloc in allowed
+
+
 def apply_origin_urls(cam: dict[str, Any], web: str, rtsp_host: str = "") -> dict[str, Any]:
     """Fill HLS/RTSP/WHEP only when the catalogue row omitted them.
 
@@ -167,6 +185,8 @@ def session(host: str | None = None) -> tuple[httpx.Client, str]:
 
 
 def origin_get(url: str, host: str | None = None) -> httpx.Response:
+    if not origin_allowed(url, host):
+        return httpx.Response(403, text="hls origin not pinned")
     client, _ = session(host)
     response = client.get(url)
     if response.status_code in {401, 403} or (

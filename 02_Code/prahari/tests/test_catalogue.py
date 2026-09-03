@@ -1,4 +1,4 @@
-from app.services.catalogue import apply_origin_urls, load_fixture, parse_payload
+from app.services.catalogue import apply_origin_urls, load_fixture, origin_allowed, parse_payload
 
 
 def test_fixture_three_cameras_mixed_codec():
@@ -70,3 +70,32 @@ def test_apply_origin_urls_fills_missing_only():
     )
     assert kept["hls"] == "http://example/live/x.m3u8"
     assert kept["rtsp"] == "rtsp://example/stream/9"
+
+
+def test_origin_allowed_pins_host(monkeypatch):
+    monkeypatch.setenv("SENTINEL_HOST", "cctv.corp8.cloud")
+    monkeypatch.setenv("SENTINEL_RTSP_HOST", "103.250.160.189")
+    assert origin_allowed("https://cctv.corp8.cloud/cam04/index.m3u8")
+    assert origin_allowed("http://103.250.160.189:8889/stream/cam04/whep")
+    assert not origin_allowed("https://example.invalid/x.m3u8")
+
+
+def test_off_host_hls_stream_is_pinned(client, auth):
+    res = client.post(
+        "/api/cameras",
+        json={
+            "camera_id": "CAM-PIN",
+            "lat": 23.0,
+            "lon": 72.5,
+            "consent": True,
+            "protocol": "hls",
+            "hls": "https://example.invalid/x.m3u8",
+            "url": "https://example.invalid/x.m3u8",
+        },
+        auth=auth,
+    )
+    assert res.status_code == 200
+    token = res.json()["playback"]["token"]
+    streamed = client.get("/api/stream/CAM-PIN", params={"token": token})
+    assert streamed.status_code == 502
+    assert "not pinned" in streamed.json()["detail"]

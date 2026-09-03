@@ -1,4 +1,4 @@
-from app.auth import issue_stream_token, verify_stream_token
+from app.auth import issue_stream_token, lookup_user, verify_stream_token
 from fastapi import HTTPException
 
 
@@ -36,3 +36,9 @@ def test_expired_stream_token():
         raise AssertionError("expired token should 401")
     except HTTPException as exc:
         assert exc.status_code == 401
+
+
+def test_tampered_password_fails_lookup():
+    assert lookup_user("judge", "set-this-before-submit") is not None
+    assert lookup_user("judge", "wrong-password-value") is None
+    assert lookup_user("judge", "x") is None

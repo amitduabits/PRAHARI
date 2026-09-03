@@ -32,14 +32,23 @@ class User:
 
 def _sign(payload: str) -> str:
     secret = config.getenv("SECRET_KEY", "change-me").encode()
-    return hmac.new(secret, payload.encode(), hashlib.sha256).hexdigest()[:32]
+    return hmac.new(secret, payload.encode(), hashlib.sha256).hexdigest()
 
 
 def lookup_user(username: str, password: str) -> User | None:
+    found = None
+    dummy = b"\x00" * 32
+    offered = password.encode("utf-8")
     for row in config.users():
-        if row["username"] == username and row["password"] == password:
-            return User(username=username, role=row["role"], department=row["department"])
-    return None
+        stored = (row["password"] or "").encode("utf-8")
+        if len(offered) != len(stored):
+            hmac.compare_digest(dummy, dummy)
+            match = False
+        else:
+            match = hmac.compare_digest(offered, stored)
+        if row["username"] == username and match:
+            found = User(username=username, role=row["role"], department=row["department"])
+    return found
 
 
 def issue_session(user: User, ttl_s: int = 12 * 3600) -> str:

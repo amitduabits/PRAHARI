@@ -12,7 +12,10 @@ def playback_for(camera: dict[str, Any], actor: str) -> dict[str, Any]:
     protocol = (camera.get("protocol") or "").lower()
     token = issue_stream_token(camera["camera_id"], actor)
     if protocol == "file":
-        path = resolve_media_path(camera.get("url") or "")
+        try:
+            path = resolve_media_path(camera.get("url") or "")
+        except ValueError:
+            return {"kind": "unavailable", "token": token, "reason": "file url outside media roots"}
         if not path.is_file():
             return {
                 "kind": "unavailable",

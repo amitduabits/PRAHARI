@@ -8,7 +8,15 @@ from app import config
 def resolve_media_path(url: str) -> Path:
     path = Path(url)
     if not path.is_absolute():
-        path = (config.ROOT / url).resolve()
+        path = config.ROOT / url
+    path = path.resolve()
+    allowed = [
+        (config.ROOT / "data").resolve(),
+        config.SAMPLES_DIR.resolve(),
+        (config.REPO_ROOT / "03_Data").resolve(),
+    ]
+    if not any(path == root or root in path.parents for root in allowed):
+        raise ValueError("file url outside media roots")
     return path
 
 
