@@ -54,7 +54,7 @@ async function refreshHealth() {
     $("footer-health").textContent = data.cameras + " cameras · " + data.detections + " detections · WS " + (ws && ws.readyState === 1 ? "connected" : "polling");
   }
   if ($("banner") && data.sentinel_host_configured) {
-    $("banner").textContent = data.cameras + " cameras · Sentinel host set · sync from cameras.json";
+    $("banner").textContent = data.cameras + " cameras · Sentinel host set · sync from cameras.json. Live catalogue cameras have no coordinates.";
   }
 }
 
@@ -96,7 +96,8 @@ async function loadCameras(department) {
     if (btn) btn.onclick = () => openTile(btn.getAttribute("data-open"));
   });
   const table = $("cam-table");
-  table.innerHTML = "<tr><th>id</th><th>dept</th><th>location</th><th>health</th><th>codec</th><th></th></tr>" +
+  table.innerHTML = "<caption>Live catalogue cameras have no coordinates. Open them from this table.</caption>" +
+    "<tr><th>id</th><th>dept</th><th>location</th><th>health</th><th>codec</th><th></th></tr>" +
     rows.map((c) => "<tr><td>" + c.camera_id + "</td><td>" + c.department + "</td><td>" + c.location + "</td><td>" + c.health + "</td><td>" + c.codec + "</td><td><button data-open='" + c.camera_id + "'>Open tile</button></td></tr>").join("");
   table.onclick = (e) => {
     const btn = e.target.getAttribute && e.target.getAttribute("data-open");

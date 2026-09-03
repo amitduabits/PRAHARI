@@ -6,8 +6,8 @@ A03-001,S3,Medium,D4,2026-09-04,A03,agent,origin_allowed pin,A00-001,30,P0,DONE
 A04-001,S4,Medium,D4,2026-09-04,A04,agent,full HMAC + compare_digest,A00-001,30,P0,DONE
 A05-001,S5,Medium,D4,2026-09-04,A05,agent,vendored hls.min.js no jsdelivr,A00-001,25,P0,DONE
 A06-001,"D2,K2",High,D4,2026-09-04,A06,lead,tesseract or confirm spoken lock,,20,P0,NOT_STARTED
-A07-001,D3,Medium,D4,2026-09-04,A07,agent,UI no-coordinates copy,A00-001,20,P0,NOT_STARTED
-A08-001,"K1,K3",High,D4,2026-09-04,A08,agent,claims lock grep clean,A00-001,40,P0,NOT_STARTED
+A07-001,D3,Medium,D4,2026-09-04,A07,agent,UI no-coordinates copy,A00-001,20,P0,DONE
+A08-001,"K1,K3",High,D4,2026-09-04,A08,agent,claims lock grep clean,A00-001,40,P0,DONE
 A09-001,D1,Blocker,D5,2026-09-05,A09,lead,own-feed Unlisted YouTube,"A08-001,A07-001",40,P0,NOT_STARTED
 A10-001,D1,Blocker,D5,2026-09-05,A10,lead,gov-feed Unlisted YouTube,A08-001,40,P0,NOT_STARTED
 A11-001,D1,Blocker,D5,2026-09-05,A11,lead,Drive Anyone+Viewer CSV,A10-001,15,P0,NOT_STARTED

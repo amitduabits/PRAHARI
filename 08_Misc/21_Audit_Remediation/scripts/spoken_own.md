@@ -9,10 +9,10 @@ Required sentences are marked MUST. If OCR is absent, use the confirm branch.
 | 0:00–0:15 | Operations map | MUST: This is PRAHARI, a hybrid intelligence plane. Departments keep their VMS. |
 | 0:15–0:35 | Two pins, Dahod | MUST: Model 1 registry. Dahod is offline on purpose. |
 | 0:35–1:10 | Track GJ01AB1234 Reconstruct | MUST: Designated vehicle, Valsad to Gandhinagar. Live hits append. CSV downloads. |
-| 1:10–1:25 | Alerts + Watchlist | MUST: Representative watchlist, not a live VAHAN pipe. Stolen raises CRITICAL. |
+| 1:10–1:25 | Alerts + Watchlist | MUST: Representative watchlist, not a live ministry pipe. Stolen raises CRITICAL. |
 | 1:25–1:55 | Onboard still or Confirm | If Tesseract works: ANPR on this frame. If not: MUST: Operator confirm writes a real detection row. |
 | 1:55–2:20 | Gaps | Gap report: Dahod GSRTC offline, short-retention Food and Civil Supplies. |
 | 2:20–2:45 | Footer / architecture | MUST: At 80,000 cameras that number is a DESIGN TARGET. We sample 1 fps at the region. MEASURED cap on this box is four open tiles. Model 4 recording is Phase-2 selected cameras only. |
 | 2:45–3:00 | Alerts | Working backend, not a click-through. |
 
-Do not say: integrated with VAHAN; live eGujCop; we replaced VMS; face recognition; 80k as laptop throughput.
+Do not say: a live ministry join; we replaced VMS; face recognition as the demo; 80k as laptop throughput.

@@ -3,7 +3,7 @@
 Team: student team (Lead + Arnav + Aria)  
 Architecture class: **Hybrid (Reference Models 1 + 2 + thin 3)**  
 PoC target: ~50 Sentinel sandbox cameras  
-Design target: ~80,000 statewide cameras
+DESIGN TARGET: ~80,000 statewide cameras. MEASURED PoC is the seeded registry plus live catalogue sync.
 
 Working tree: `02_Code/prahari/` · Integrator guide: `06_References/SENTINEL_Integrator_Guide.md` (source https://sentinel.gujarat.gov.in/resource)
 
@@ -22,7 +22,7 @@ PRAHARI therefore **does not rip and replace**. It adds a statewide intelligence
 | Camera census, GIS, health, gap analysis | Model 1 | Zero disturbance to departmental VMS. Unlocks planning immediately. |
 | Unified viewing + ANPR on accessible streams | Model 2 | Direct RTSP / ONVIF / HLS / WHEP. Satisfies the evaluation test case. |
 | Event / metadata bus, correlation, alerts | Thin Model 3 | Watchlist matching and cross-camera tracks without a federation SDK zoo. |
-| Central recording + full VMS | Model 4 (Phase-2 only) | Selected cameras, not all 80k. Written as a roadmap, not faked in the PoC. |
+| Central recording + full VMS | Model 4 (Phase-2 only) | Selected cameras, not all 80k (DESIGN TARGET). Written as a roadmap, not faked in the PoC. |
 
 This is vendor-neutral: adapters speak open protocols. A new VMS is one connector, not a redesign.
 
@@ -72,7 +72,7 @@ If RTSP/UDP dies across NAT (official Integrator Guide), the adapter retries wit
 
 Private society / mall cameras are first-class rows with `ownership=Private-Permitted` and a legal-consent flag. They never land in a public viewer role.
 
-## 5. Video path and bandwidth math (80k)
+## 5. Video path and bandwidth math (80k DESIGN TARGET)
 
 Full-HD 25 fps everywhere is the wrong design.
 

@@ -17,10 +17,10 @@ Wi-Fi may die. HLS-first. Consume only.
 | 0:00 | Operations map | PRAHARI is an intelligence plane. Departments keep their VMS. |
 | 0:20 | Two pins | Model 1 census: health and gaps. Dahod is offline on purpose. |
 | 0:40 | Vehicle Track GJ01AB1234 Reconstruct | Designated vehicle, Valsad to Gandhinagar. CSV is the evaluator artefact. |
-| 1:10 | Alerts | Watchlist match is automatic. Stolen is CRITICAL. Same plate on the same camera stacks. |
+| 1:10 | Alerts | Representative watchlist match is automatic. Stolen is CRITICAL. Same plate on the same camera stacks. |
 | 1:30 | Live tile or own-feed | RTSP over TCP. If 8554 is blocked we use HLS. Timing is PTS. |
 | 2:00 | Onboard confirm if needed | A readable plate cannot fail the demo. |
-| 2:20 | Gaps + footer | At 80,000 cameras we sample 1 fps at five regions. About 5–6 Cr a year for the intelligence plane, not a second VMS bill. |
+| 2:20 | Gaps + footer | DESIGN TARGET: at 80,000 cameras we sample 1 fps at five regions. About 5–6 Cr a year for the intelligence plane, not a second VMS bill. MEASURED cap on this box is four open tiles. |
 | 2:45 | Alerts | Working backend. Source is on GitHub. |
 
 ## If hall network blocks 8554
