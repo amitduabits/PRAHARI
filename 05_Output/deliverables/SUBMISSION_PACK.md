@@ -16,7 +16,7 @@ Category: Academic, Research and DPIIT Recognised Startup / Individual Participa
 | Own-feed YouTube | pending screen record | script: `own_feed_demo_script.md` |
 | Gov-feed YouTube | pending screen record | live host is up; shoot W03 today |
 | Gov CSV | `gov_feed_plates.csv` | 1 row: operator confirm `GJ01AB1234` on `cam04` (Paldi Circle). Tesseract not on PATH. |
-| Hosted URL | http://127.0.0.1:8080 until a tunnel is opened | judge / JUDGE_PASSWORD |
+| Hosted URL | http://127.0.0.1:8080 (local; no public tunnel) | `admin` / `admin` or `judge` / `JUDGE_PASSWORD`. Do not put this on the public internet. |
 | Onboard log | `onboard_failures.md` | 30 cameras from `/cameras.json`; cam01 and cam04 RTSP-TCP live |
 
 Do not commit `.env`. Web host: `cctv.corp8.cloud`. RTSP: `103.250.160.189:8554`. Access password lives only in `.env` as `SENTINEL_PASSWORD`.

@@ -35,3 +35,5 @@ Use the HLS URL from the catalogue. If the catalogue is 502, play `CAM-OWN-001` 
 - Phone hotspot
 - Printed architecture one-pager
 - Judge password on paper, not on a slide
+
+Do not delete `data/prahari.db`. Do not re-run first-boot seed if the file exists. `init_db` seeds only when the cameras table is empty.
