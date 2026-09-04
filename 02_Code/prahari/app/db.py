@@ -66,7 +66,11 @@ CREATE TABLE IF NOT EXISTS detections (
     object_class TEXT,
     bbox_json TEXT,
     track_id TEXT,
-    source TEXT DEFAULT ''
+    source TEXT DEFAULT '',
+    crop_uri_original TEXT,
+    crop_uri_enhanced TEXT,
+    enhancement_method TEXT DEFAULT 'none',
+    is_ai_reconstructed INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS alerts (
@@ -277,6 +281,10 @@ _ADD_COLUMNS = {
         ("bbox_json", "TEXT"),
         ("track_id", "TEXT"),
         ("source", "TEXT DEFAULT ''"),
+        ("crop_uri_original", "TEXT"),
+        ("crop_uri_enhanced", "TEXT"),
+        ("enhancement_method", "TEXT DEFAULT 'none'"),
+        ("is_ai_reconstructed", "INTEGER DEFAULT 0"),
     ],
     "alerts": [
         ("entity_type", "TEXT"),

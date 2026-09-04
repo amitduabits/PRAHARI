@@ -13,6 +13,8 @@ This is the teaching note for PRAHARI. Readers are Home Department evaluators, d
 
 Every number is one of three labels. MEASURED is a fact from this laptop or the Sentinel sandbox. DESIGN TARGET is statewide arithmetic we have not run at 80{,}000 cameras. CONJECTURED is unused in this note.
 
+The working tree is \code{02\_Code/prahari/}. The submission GitHub is amitduabits/PRAHARI. Workshop FaceNet and YOLO code from Arnav lives at ArAv-1/PRAHARI-3.0. That workshop is not the submission repo.
+
 \section{The problem, in one picture}
 Imagine 26 schools in one city. Each school has cameras. Each school bought a different cupboard to store the tapes. Some cupboards keep tapes for 7 days. Some keep them for 15. The head office has a notebook of stolen bicycles and missing children. Nobody in the camera room opens that notebook when a bicycle rolls past.
 
@@ -25,6 +27,17 @@ The State does not need a new cupboard for every tape. It needs one notebook tha
 \end{keyidea}
 
 The official core goal is a secure, scalable, interoperable, technically feasible, and cost-effective approach that uses existing infrastructure to the maximum practical extent. A student PoC cannot replace 26 VMS contracts. A central recorder that ingests 80{,}000 full-HD streams (DESIGN TARGET) for 15 days needs statewide dark fibre, petabytes of hot storage, and a GPU farm this team does not have. PRAHARI therefore adds an intelligence plane on top of the systems that already record video.
+
+\section{The four official challenges}
+The problems page names four hard facts, not four features to demo.
+
+Heterogeneous infrastructure: vendors, VMS products, AMC contracts, analog and IP, H.264 and H.265, RTSP and HLS, 7-day and 15-day retention. A design that assumes one brand dies on day one.
+
+Geographical dispersion of about 1{,}000\,km. A border outpost and a Paldi junction do not share a LAN. UDP RTSP dies across NAT. The integrator guide therefore forces TCP.
+
+Unified analytics and event handling: the same watchlist must fire on a Home camera and on a Transport camera. The event JSON must not change when the bus later becomes Kafka.
+
+Onboarding without a redesign: a new department is a CSV plus a protocol adapter, not a rewrite of \code{analyse()}.
 
 \section{The four official models, and the choice}
 The official page lists four reference models and permits a hybrid. Think of them as four ways to organise a school.
@@ -86,7 +99,7 @@ The notebook has \code{GJ01AB1234} marked STOLEN (\code{WL-001}). Six seed camer
 \section{Architecture of the PoC}
 \begin{center}\resizebox{0.98\textwidth}{!}{\input{figures/arch}}\end{center}
 
-The PoC runs FastAPI and SQLite on one laptop. The UI is Leaflet plus vanilla JS on port 8080. Capture uses OpenCV with FFmpeg.
+The PoC runs FastAPI and SQLite on one laptop. The UI is Leaflet plus vanilla JS on port 8080. Capture uses OpenCV with FFmpeg. Seven tabs: Operations, Cameras, Vehicle Track, Alerts, Watchlist, Onboard, Analytics \& Gaps. There is no eighth tab.
 
 \begin{langbox}[PoC versus later swap]
 \begin{tabular}{@{}lll@{}}
@@ -115,10 +128,10 @@ Private-permitted mall cameras require \code{consent=true}. A Home department vi
 
 The live Sentinel catalogue has no coordinates. Those rows therefore do not sit on the map (the map already skips lat $=$ 0, lon $=$ 0). Operators open \code{cam04} from the Cameras table. The UI states that fact in words.
 
-\section{Live capture and the integrator laws}
+\section{Live Sentinel contract}
 The sandbox publishes each camera as a live RTP/RTSP stream. One second of video takes one second to arrive. There is no rewind and no file download.
 
-On 03 September 2026 the live portal is \code{https://cctv.corp8.cloud/}. Catalogue \code{GET /cameras.json}, after password login, returns a JSON array of \code{\{id, name\}}. Thirty cameras were listed. \code{/api/ingest} returns HTTP 404 on this host.
+On 03 September 2026 the live portal is \code{https://cctv.corp8.cloud/}. Catalogue \code{GET /cameras.json}, after password login, returns a JSON array of \code{\{id, name\}}. Thirty cameras were listed. \code{/api/ingest} returns HTTP 404 on this host. PRAHARI therefore reads \code{/cameras.json}, never \code{/api/ingest}.
 
 HLS playlists live at \code{https://cctv.corp8.cloud/<id>/index.m3u8}. The origin wants the access cookie and a browser User-Agent. RTSP is not on the TLS hostname. The live resource page publishes \code{rtsp://103.250.160.189:8554/stream/<id>}.
 
@@ -126,6 +139,9 @@ HLS playlists live at \code{https://cctv.corp8.cloud/<id>/index.m3u8}. The origi
 \code{/stream/<id>} answers range requests for a player. \code{curl} or \code{wget} of that path yields a partial file that looks complete. A team that ships that file as the government-feed demo has not consumed the grid. PRAHARI consumes live. It does not publish to the gateway.
 \end{warning}
 
+MEASURED 03 September 2026: catalogue sync wrote 30 rows \code{cam01} \ldots \code{cam30}. RTSP-TCP produced a live frame from \code{cam04} Paldi Circle, 1920$\times$1080, PTS 1080\,ms. UDP SETUP failed with 461. TCP succeeded. The manifest has no \code{live} flag and no lat/lon.
+
+\section{Live capture and the integrator laws}
 Why TCP, not UDP? UDP dies across NAT and most campus firewalls. Partial UDP looks like a broken model. The capture client sets \code{OPENCV\_FFMPEG\_CAPTURE\_OPTIONS=rtsp\_transport;tcp} before it imports OpenCV. If port 8554 is blocked, the client falls back to HLS.
 
 Why PTS, not the wall clock? After connect, the gateway may replay a group of pictures faster than real time. A tracker that stamps arrival time invents impossible speeds. Event time is \code{CAP\_PROP\_POS\_MSEC}. Declared FPS is unused.
@@ -133,6 +149,8 @@ Why PTS, not the wall clock? After connect, the gateway may replay a group of pi
 Why backoff 2\,s to 30\,s? Feeds restart. A tight reconnect loop is a denial of service against ourselves.
 
 Why a scene cut? Each sandbox feed loops. At the loop the picture jumps. Object track ids and face tracks reset. A PTS rewind or a gap above 5\,s is that jump.
+
+Why a cap of four open captures? A laptop is not a regional GPU site. \code{MAX\_OPEN\_CAPTURES} defaults to 4. The fifth open raises. SCALE\_BENCH MEASURED that fact on 04 September 2026.
 
 \begin{implnote}
 \code{tests/test\_integrator\_laws.py} greps the capture client for the TCP flag, forbids \code{CAP\_PROP\_FPS} in services, and forbids publish helpers. \code{test\_scene\_cut.py} checks rewind and gap, and checks that object track ids reset.
@@ -145,11 +163,17 @@ A child should not have four different ``look at this picture'' buttons that dis
 The only worker entry. It returns a list of detection dicts. It does not insert them. The ingest router writes crops, inserts rows, and calls the matcher.
 \end{definition}
 
-Default engines are \code{anpr,objects}. Own cameras may also list \code{faces}. Government catalogue ids matching \code{cam} plus digits never receive the faces engine. Ownership \code{Gov} never receives it either. The log line is \code{frs\_refused}.
+\begin{center}\resizebox{0.92\textwidth}{!}{\input{figures/engines}}\end{center}
+
+Default engines are \code{anpr,objects}. Own cameras may also list \code{faces}. Government catalogue ids matching \code{cam} plus digits never receive the faces engine. Ownership \code{Gov} never receives it either. The log line is \code{frs\_refused}. FaceAnalyzer is not constructed on those cameras. Deleting person events after the fact is not the control. The engine is never started.
 
 Godown camera \code{CAM-FCS-001} additionally runs intrusion: a person box that overlaps a stored ROI by at least 30 percent of the person area.
 
-Plate fields stay frozen so old callers keep working. Additive fields are \code{entity\_type}, \code{entity\_id}, \code{face\_id}, \code{object\_class}, \code{bbox}, \code{track\_id}, \code{source}.
+Plate fields stay frozen so old callers keep working. Additive fields: entity type and id, face id, object class, bbox, track id, source. Crop honesty fields: original uri, optional enhanced uri, enhancement method, reconstructed flag.
+
+\begin{implnote}
+\code{POST /api/ingest/frame} stays ANPR-only. \code{POST /api/ingest/analyse} is the multi-engine door. Onboard has both buttons. Tests post a face-like still to \code{cam04} through \code{/analyse} and expect zero person events.
+\end{implnote}
 
 \section{ANPR: options and the choice}
 A number plate is a name tag glued to a car. We need the letters in a standard spelling so \code{GJ 01 AB 1234} and \code{GJ-01-AB-1234} are the same name.
@@ -165,13 +189,16 @@ Option & Taken? & Constraint \\
 \midrule
 Train a detector from scratch & No & Seven days, no labelled Gujarat set. \\
 Require a GPU YOLO now & No & The laptop has GPU count MEASURED 0. \\
-Tesseract + morphology & Yes & CPU, swap behind \code{recognize()}. \\
+Tesseract + morphology & Yes (default) & CPU, swap behind \code{recognize()}. \\
+YOLO vehicle crop then Tesseract & Optional & \code{ANPR\_ENGINE=yolo}, falls back. \\
 Operator confirm & Yes & A readable plate cannot fail a live demo. \\
 \bottomrule
 \end{tabular}
 \end{langbox}
 
-\code{recognize(frame\_bgr)} returns \code{\{plate, plate\_raw, confidence, crop\}}. Callers never import Tesseract. If the Tesseract binary is missing, the function returns an empty plate. It does not crash. \code{ANPR\_ENGINE=yolo} is import-guarded and unused unless weights exist.
+\code{recognize(frame\_bgr)} returns \code{\{plate, plate\_raw, confidence, crop\}}. Callers never import Tesseract. If the Tesseract binary is missing, the function returns an empty plate. It does not crash.
+
+When \code{ANPR\_ENGINE=yolo}, the backend asks YOLO for a vehicle box, crops it, optionally asks a plate model, then runs Tesseract on that crop. Any import or empty-box failure falls back to morphology plus Tesseract on the full frame. Default remains \code{tesseract}.
 
 Operator confirm writes confidence 1.0 and \code{source=operator\_confirm}. A confirm row is never labelled \code{source=anpr}. That honesty is a test, not a slogan.
 
@@ -185,17 +212,22 @@ A person is a blob that looks like a person. A car is a blob that looks like a c
 \toprule
 Option & Taken? & Constraint \\
 \midrule
-YOLOv8n as the only path & No & Extra dependency, GPU optional, tests would skip. \\
+YOLOv8n as the only path & No & Extra dependency, tests would skip. \\
 OpenCV DNN with vendored weights & Later & Weights are large. Tests must not need a download. \\
 Skin-tone blob fallback & Yes for tests & A drawn rectangle is a person if it occupies $\ge 8\%$ of the frame. \\
+YOLO behind \code{OBJECT\_ENGINE} & Optional & Person class 0 is included. Fallback is blob. \\
 Skip objects entirely & No & Eval area 05 names them. \\
 \bottomrule
 \end{tabular}
 \end{langbox}
 
-Classes kept: person, car, motorcycle, bus, truck, bicycle. Others drop. Each box gets a per-camera \code{track\_id}. A scene cut resets those ids. Object rows do not raise a watchlist card unless they are wrapped as intrusion.
+Classes kept: person, car, motorcycle, bus, truck, bicycle. Others drop. Each box gets a per-camera \code{track\_id}. Default assignment is IoU. \code{TRACK\_ENGINE=bytetrack} uses ByteTrack when ultralytics loads. A scene cut still calls \code{objects.reset}, which also resets ByteTrack state.
+
+Object rows do not raise a watchlist card unless they are wrapped as intrusion.
 
 \code{GET /api/objects/report.csv} is the evaluator artefact: timestamp, camera, class, confidence.
+
+Weights live at \code{app/models\_data/yolov8n.pt} and are gitignored. \code{scripts/fetch\_yolo\_weights.py} downloads them once. Pytest does not download them. Default pytest stays green without ultralytics.
 
 \section{Lawful FRS: options and the choice}
 A face is a name tag a person did not pin on. Matching faces of strangers on a public street is a rights problem, not a prize feature.
@@ -209,17 +241,57 @@ No FRS at all & No & HLD text and eval 05 name recognition. \\
 Wild FRS on Paldi Circle & No & Unknown members of the public. Unlawful in this PoC. \\
 Live AFIS / NAFIS pipe & No & We have no ministry API. Claiming one is a false claim. \\
 Enrolled gallery, Own cameras & Yes & Consented adults or synthetic fixtures. Human confirm. \\
+FaceNet 512-d vectors & Optional & \code{FACE\_ENGINE=facenet}, Own only, lazy import. \\
 \bottomrule
 \end{tabular}
 \end{langbox}
 
 \begin{warning}
-The faces engine is refused when \code{ownership} is not \code{Own}, and when \code{camera\_id} matches \code{cam} plus digits. Tests post a face-like still to \code{cam04} and assert zero person events. The government-feed demo never shows FRS.
+The faces engine is refused when \code{ownership} is not \code{Own}, and when \code{camera\_id} matches \code{cam} plus digits. Tests post a face-like still to \code{cam04} and assert zero person events. A spy on FaceAnalyzer.\code{\_\_init\_\_} must stay at zero calls. The government-feed demo never shows FRS.
 \end{warning}
 
-The gallery stores crops under \code{data/faces/\{gallery\_id\}/}. Match uses a colour histogram of a 64$\times$64 crop (LBPH if OpenCV contrib is present). \code{GET /api/faces/gallery} returns ids and counts. It does not return embeddings. \code{WL-004} is a person row. The matcher fires on \code{face\_id}, not on an empty plate.
+The gallery stores crops under \code{data/faces/\{gallery\_id\}/}. Default match uses a colour histogram of a 64$\times$64 crop. \code{GET /api/faces/gallery} returns ids and counts. It does not return embeddings. \code{WL-004} is a person row. The matcher fires on \code{face\_id}, not on an empty plate.
 
 Synthetic fixtures are geometric ellipses with unique noise. Tests do not need a photograph of a real person. A human demo may add two consented adult photos. Never a minor. Never a crop from \code{cctv.corp8.cloud}.
+
+\section{Optional vision engines (Arnav pack)}
+Arnav's workshop added FaceNet, YOLO, ByteTrack, next-camera predict, and a person-enroll form. PRAHARI takes those modules as backends. It does not merge his tree over ours. It does not switch \code{origin} to ArAv-1.
+
+\begin{definition}[Engine env]
+Four getenv keys select backends. Defaults need no GPU. Optional values load only when extras exist.
+\end{definition}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Key & Default & Optional \\
+\midrule
+\code{ANPR\_ENGINE} & \code{tesseract} & \code{yolo} \\
+\code{OBJECT\_ENGINE} & \code{opencv} & \code{yolo} \\
+\code{FACE\_ENGINE} & \code{histogram} & \code{facenet} \\
+\code{TRACK\_ENGINE} & \code{iou} & \code{bytetrack} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\code{ANALYTICS\_ENGINES} defaults to \code{anpr,objects}. Add \code{faces} only for Own cameras.
+
+FaceNet path: MTCNN boxes plus InceptionResnetV1 512-d embeddings, cosine against \code{.npy} files next to gallery JPEGs. Torch is imported inside \code{FaceAnalyzer.\_\_init\_\_}, never at package import. If torch is missing, \code{match()} falls back to histogram and does not crash.
+
+His ingest ran FaceAnalyzer on every camera. Ours must not. \code{engines\_for} drops \code{faces} before \code{match()} is called. That is the FRS law, not a filter after the fact.
+
+His YOLO vehicle list omitted person. Our \code{OBJECT\_ENGINE=yolo} includes COCO class 0 so eval area 05 can score people.
+
+His enhance module labelled Gaussian blur as a branded reconstructor and cubic resize as another. Those brand names are not in \code{app/}. Optional enhanced crops are labelled \code{cubic\_upscale} or \code{none}. Matcher always sees original pixels.
+
+\begin{implnote}
+\code{requirements.txt} stays FastAPI, OpenCV, Tesseract, pytest. Vision extras live in \code{requirements-vision.txt}. A judge laptop that skips that file still runs the demo. GPU count MEASURED on 04 September 2026 is 0.
+\end{implnote}
+
+\section{Crop honesty}
+Every persisted detection writes the original JPEG uri twice (legacy field and \code{crop\_uri\_original}). An optional enhanced copy is a cubic upscale of a low-FFT crop, for a human to look at. Auto-match uses original pixels only.
+
+If a face crop is marked \code{is\_ai\_reconstructed=1}, the matcher inserts \code{status=pending\_review} and does not push a CRITICAL WebSocket card from that crop. A reconstructed face is a review item, not an automatic arrest card.
 
 \section{Intrusion on a godown}
 Food and Civil Supplies cameras watch a warehouse, not a highway. A person standing in a drawn rectangle is an intrusion.
@@ -233,26 +305,56 @@ The matcher keeps plates in a dictionary and gallery ids in another. Lookup is $
 
 \code{WL-001} cannot be deleted. That is the seeded evaluation plate.
 
+The Watchlist tab has an Enroll Missing/Wanted Person form. It posts \code{/api/faces/enroll}. A \code{home.viewer} still receives 403. Alerts that sit in \code{pending\_review} show that word. Ack still works.
+
 \begin{example}[Designated vehicle \code{GJ01AB1234}]
 \code{GET /api/track/GJ01AB1234} returns the six seed points in this order: CAM-VAL-001 Valsad 06:12, CAM-SUR-001 Surat 07:48, CAM-AHD-004 Narol--Naroda 09:05, CAM-AHD-001 SG Highway 09:22, CAM-GNR-003 Koba 09:51, CAM-GNR-001 Gandhinagar Sector 21 10:04. Live confirm on \code{cam04} appended. CSV columns include plate, camera, timestamp, location.
 \end{example}
 
-Cross-camera tracking in this PoC is plate sightings joined to camera GIS. It is not a Re-ID embedding across Paldi Circle. A teleport flag fires if implied speed exceeds 180\,km/h. That flag is information, not a hard fail.
+Cross-camera tracking in this PoC is plate sightings joined to camera GIS. It is not a Re-ID embedding across Paldi Circle. A teleport flag fires if implied speed exceeds 180\,km/h. That flag is information, not a hard fail. ByteTrack \code{track\_id} is per camera. It does not replace \code{GET /api/track/\{plate\}}.
 
 Alerts push on WebSocket \code{/ws/alerts}. The UI also polls every 5\,s so a blocked socket does not hide a CRITICAL card. Person cards show a name or gallery id, not a blank plate.
+
+\section{Next-camera predict and keyword query}
+\code{GET /api/predict/\{plate\}} ranks likely next cameras. First it counts historical transitions out of the last camera that saw the plate. If that map is empty, it ranks GIS neighbours by haversine distance. The method field is \code{frequency+distance}. It is not Kalman. It is not Re-ID. The Track tab has a Next cameras button.
+
+\code{POST /api/query} extracts a plate, a camera id, or an object class with regular expressions. The response includes \code{engine: keyword\_rules}. It is not a language model. Slides must not call it NLP.
+
+\section{Seven tabs, and how a judge walks them}
+Operations: Gujarat map, health-coloured pins, video wall of at most four tiles. HLS uses vendored \code{hls.min.js}. Stream URLs carry a 60-second HMAC token. Raw \code{rtsp://} never reaches the browser.
+
+Cameras: table with Open tile. Live catalogue rows have no coordinates. The copy says so.
+
+Vehicle Track: reconstruct \code{GJ01AB1234}, download CSV, optional Next cameras.
+
+Alerts: CRITICAL queue, \code{pending\_review} word, Ack.
+
+Watchlist: representative rows, person enroll form.
+
+Onboard: add camera, CSV import, ANPR this still, Analyse this still, operator confirm plate, confirm face.
+
+Analytics \& Gaps: object CSV, entity counts, short retention, Dahod offline.
+
+Footer: DESIGN TARGET at 80{,}000 cameras we sample 1 fps at the region. MEASURED cap is four open tiles.
 
 \section{Security and privacy}
 Roles: \code{superadmin}, \code{soc\_operator} (\code{judge}), \code{dept\_viewer}, \code{auditor}. A Home viewer sees Home cameras only. An auditor cannot POST. Stream tiles use a 60-second HMAC token. Responses to the browser omit \code{rtsp://}. The Sentinel cookie stays on the server.
 
 Path jail keeps crops inside the media root. HLS origin is pinned to the configured Sentinel host. Passwords compare with \code{hmac.compare\_digest}.
 
-Audit rows cover onboard, watchlist edit, ack, report download, plate confirm, and face confirm. Stream URLs are not stored in audit detail.
+Audit rows cover onboard, watchlist edit, ack, report download, plate confirm, face enroll, and face confirm. Stream URLs are not stored in audit detail.
+
+FRS is not AFIS and not NAFIS. Gallery JSON has no embeddings. Government CCTV of unknown people never runs FRS.
 
 \section{Scale and cost}
 \label{sec:scale}
 A ten-year-old version: do not ship every school video to one room. Ship a tiny still once a second, and only from cameras that matter. The wall shows 16 to 64 live tiles. The rest is metadata.
 
 Numbers below mix MEASURED laptop facts with DESIGN TARGET statewide arithmetic.
+
+\begin{example}[Bandwidth arithmetic (DESIGN TARGET)]
+Take 45{,}000 public-domain cameras, 1\,fps, 80\,KB JPEG crop (DESIGN TARGET). Bytes per second $= 4.5 \times 10^{4} \times 8 \times 10^{4} = 3.6 \times 10^9$, which is 3.6\,GB/s if every crop flies to one room. Five regions divide that by five: about 720\,MB/s each. The SOC wall still pulls only 16 to 64 live tiles. Metadata events are hundreds of bytes, not an 80\,KB crop.
+\end{example}
 
 Assume 45{,}000 public-domain cameras run analytics at 1\,fps with an 80\,KB JPEG crop (DESIGN TARGET). Naive centralisation is $45{,}000 \times 80\,\mathrm{KB/s} \approx 3.6\,\mathrm{GB/s}$. Five regional GPU sites (Ahmedabad, Surat, Rajkot, Vadodara, Bhuj) cut that to about 720\,MB/s per site. Low-connectivity outposts send events only.
 
@@ -262,10 +364,10 @@ Order-of-magnitude yearly cost of the intelligence plane, not of replacing 26 VM
 
 Hot / warm / cold recording of every frame is Model 4 and Phase-2, selected cameras only.
 
-\section{Test cases and experiments}
-The suite on 04 September 2026: 74 passed, 1 skipped (Tesseract binary). \code{scripts/audit\_gate.py} prints PASS. \code{scripts/run\_experiments.py --suite smoke} writes \code{05\_Output/experiments/EXPERIMENT\_LOG.md}.
+\section{Test cases}
+The suite on 04 September 2026 with default engines and no torch: 88 passed, 4 skipped. Skips are Tesseract binary, FaceNet extras, YOLO weights, ByteTrack. \code{scripts/audit\_gate.py} prints PASS.
 
-\begin{langbox}[What each family proves]
+\begin{langbox}[C-suite families]
 \begin{tabular}{@{}llp{0.46\textwidth}@{}}
 \toprule
 Family & Files & Claim \\
@@ -283,16 +385,121 @@ Security & \code{test\_security}, path jail, no RTSP leak & Viewer 403 on enroll
 \end{tabular}
 \end{langbox}
 
-Experiment labels: E-A1 ANPR fixture (skipped without Tesseract), E-O1 person blob MEASURED, E-F1 gallery hit MEASURED, E-I1 intrusion MEASURED, E-W1 track count $\ge 6$ MEASURED, E-S1 fifth session rejected MEASURED, E-S6 GPU 0 MEASURED. Government live grab (E-G*) SKIPPED when that process sees an empty \code{SENTINEL\_HOST}.
+\begin{langbox}[Vision pack T-V]
+\begin{tabular}{@{}llp{0.50\textwidth}@{}}
+\toprule
+ID & File & Claim \\
+\midrule
+T-V01 & \code{test\_engine\_fallback} & FaceNet without torch falls back to histogram \\
+T-V02 & \code{test\_engine\_fallback} & YOLO without ultralytics falls back to blob / Tesseract \\
+T-V03 & \code{test\_facenet\_optional} & Skip unless torch. Same gallery cosine beats other. \\
+T-V04 & \code{test\_privacy\_frs} & FaceAnalyzer not constructed on \code{cam04} \\
+T-V05 & \code{test\_yolo\_optional} & Skip without weights \\
+T-V06 & \code{test\_bytetrack\_optional} & Skip without ultralytics. Reset clears state. \\
+T-V07 & \code{test\_crops\_honesty} & Original uri set. Reconstructed is \code{pending\_review}. \\
+T-V08 & \code{test\_predict} & Predict returns a list. Never 500. Auth required. \\
+T-V09 & \code{test\_query\_rules} & \code{engine=keyword\_rules}. Not nlp, not llm. \\
+T-V10 & \code{test\_enroll\_ui} & Index contains Enroll. Viewer 403. \\
+T-V11 & \code{test\_no\_forbidden\_model\_names} & Zero branded reconstructor names in \code{app/} \\
+\bottomrule
+\end{tabular}
+\end{langbox}
+
+\section{Experiments}
+\code{scripts/run\_experiments.py --suite smoke} appends \code{05\_Output/experiments/EXPERIMENT\_LOG.md}. Each row is MEASURED or DESIGN TARGET or SKIPPED with a reason.
+
+E-A1 ANPR fixture SKIPPED without Tesseract. E-O1 person blob MEASURED. E-F1 histogram gallery hit MEASURED. E-I1 intrusion MEASURED. E-W1 track count $\ge 6$ MEASURED. E-S1 fifth session rejected MEASURED. E-S6 GPU 0 MEASURED. E-G1 government live grab SKIPPED when \code{SENTINEL\_HOST} is empty.
+
+E-V1 histogram FRS still matches WL-004. E-V2 FaceNet SKIPPED without torch. E-V3 YOLO SKIPPED without ultralytics. E-V4 \code{cam04} plus \code{FACE\_ENGINE=facenet} still refuses faces, MEASURED. E-V5 predict returns a list, MEASURED.
+
+\section{Capture internals}
+\code{StreamSession} is the only object that holds an OpenCV capture. The TCP transport flag is set in the environment before OpenCV is imported. Open counts against \code{MAX\_OPEN\_CAPTURES} (default 4). The fifth \code{open()} raises. That is a laptop limit, not a statewide SLO.
+
+\code{read()} returns \code{(ok, frame, pts\_ms)}. \code{pts\_ms} comes from \code{CAP\_PROP\_POS\_MSEC}. Wall clock is used only inside \code{backoff\_sleep}. A decoder warning at join is logged. It does not abort the session. HLS origin is pinned to the configured Sentinel host. File protocol is for \code{own\_feed.mp4} on \code{CAM-OWN-001}.
+
+\section{Catalogue client}
+\code{app/services/catalogue.py} logs into the Sentinel host with a session cookie, then \code{GET /cameras.json}. Ids come from JSON \code{id} fields. The live host has no coordinates and no \code{/api/ingest}. A missing \code{SENTINEL\_HOST} is valid: the PoC boots on sample cameras. Tests assert 400 when a sync is requested without a host.
+
+\section{Matcher worked example}
+Boot loads \code{WL-001} plate \code{GJ01AB1234}, STOLEN, CRITICAL. A detection on \code{CAM-VAL-001} at 06:12 inserts alert $A$ with \code{counter=1}. A second detection on the same camera 10\,s later increments $A$ to 2. A detection 3 minutes later inserts alert $B$. A detection of \code{XX99YY9999} inserts nothing.
+
+A person detection with \code{face\_id=WL-004} and empty plate inserts a HIGH person alert. A reconstructed face with \code{is\_ai\_reconstructed=1} inserts \code{pending\_review} and does not notify CRITICAL.
+
+\section{RBAC}
+Four users ship in \code{.env.example}.
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+User & Role & Department & Write? \\
+\midrule
+\code{judge} & \code{soc\_operator} & all & yes \\
+\code{admin} & \code{superadmin} & all & yes \\
+\code{home.viewer} & \code{dept\_viewer} & Home & no (403) \\
+\code{auditor} & \code{auditor} & all & no (403) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\code{home.viewer} never sees \code{CAM-MALL-001}. Enroll and confirm-face are write routes. Tests cover 401 without auth and 403 for viewer/auditor.
+
+\section{Path jail and stream tokens}
+\code{app/paths.py} resolves crop and HLS files against allowed media roots. A \code{..} path is rejected. Stream tiles use \code{issue\_stream\_token} / \code{verify\_stream\_token}: HMAC over camera id, actor, expiry. TTL default 60\,s. A sliced hex digest is forbidden; \code{audit\_gate} S4 checks that. The browser never receives \code{rtsp://}. \code{hls.min.js} is vendored. jsDelivr is forbidden in \code{index.html}.
+
+\section{HTTP surface}
+Write routes require \code{assert\_write}. \code{GET /api/health} is public.
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Path & Fact \\
+\midrule
+\code{POST /api/ingest/frame} & ANPR only \\
+\code{POST /api/ingest/analyse} & multi-engine door \\
+\code{POST /api/ingest/confirm} & \code{source=operator\_confirm} \\
+\code{POST /api/ingest/confirm-face} & Own cameras only \\
+\code{GET /api/track/GJ01AB1234} & six seed points, append-safe \\
+\code{GET /api/predict/\{plate\}} & frequency then GIS \\
+\code{POST /api/query} & \code{engine=keyword\_rules} \\
+\code{POST /api/faces/enroll} & viewer 403 \\
+\code{GET /api/faces/gallery} & no embeddings \\
+\code{GET /api/objects/report.csv} & evaluator artefact \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Repository map}
+\code{02\_Code/prahari/app/services/analyse.py} is the only worker. \code{anpr.py}, \code{objects.py}, \code{faces.py}, \code{intrusion.py} sit behind it. \code{app/engines/} holds lazy FaceNet, YOLO, ByteTrack. \code{app/routers/} is HTTP. \code{app/static/} is seven tabs plus vendored HLS. \code{tests/} is the C-suite plus T-V. \code{scripts/audit\_gate.py} is the claims lock. \code{scripts/run\_experiments.py} writes MEASURED rows. \code{04\_Documents/} holds this note, the deck, and the HLD.
+
+Workshop clone, if present, lives under \code{08\_Misc/23\_Arnav\_Integration/\_upstream/} and is gitignored. It is not the production tree.
+
+\section{What we took from Arnav, and what we refused}
+Take: FaceNet backend, YOLO with person class added, ByteTrack for object ids, person enroll form, original-crop flags, next-camera frequency, keyword filter.
+
+Refuse: FaceAnalyzer on every ingest, footer 80k without DESIGN TARGET, catalogue path \code{/api/ingest}, torch in default \code{requirements.txt}, branded reconstructor names, Wikipedia face tests, switching \code{origin} to ArAv-1.
+
+\section{Failure modes the tests already cover}
+Missing Tesseract: empty plate, no crash. Missing torch: histogram FRS. Missing ultralytics: blob objects and Tesseract ANPR. Fifth live session: 429. Scene cut: track ids reset. Gov camera plus faces in the form: zero person events. Viewer enroll: 403. Tampered password: lookup fails. Path jail: \code{..} rejected. Confirm: \code{source} is never \code{anpr}.
 
 \section{How to run the PoC}
-Clone \code{https://github.com/amitduabits/PRAHARI}. From \code{02\_Code/prahari} copy \code{.env.example} to \code{.env}. Set the judge password before any hosted demo. Set the Sentinel host, password, and RTSP IP after the live portal login. Run \code{run.ps1} (Windows) or \code{run.sh} (Unix). Open \code{http://127.0.0.1:8080} and sign in as \code{judge}.
+Clone amitduabits/PRAHARI. From \code{02\_Code/prahari} copy \code{.env.example} to \code{.env}. Set the judge password before any hosted demo. Set the Sentinel host, password, and RTSP IP after the live portal login. Run \code{run.ps1} (Windows) or \code{run.sh} (Unix). Open \code{http://127.0.0.1:8080} and sign in as \code{judge}.
+
+Pytest from that folder: \code{python -m pytest -q}. Gate: \code{python scripts/audit\_gate.py}. Experiments: \code{python scripts/run\_experiments.py --suite smoke}. Logs land in \code{05\_Output/experiments/}.
+
+TeX: from \code{04\_Documents/bits-tex} run \code{pdflatex slides.tex} twice and \code{pdflatex notes.tex} twice. Copy PDFs to \code{04\_Documents/} and \code{docs/}.
+
+Optional vision: install \code{requirements-vision.txt} on the demo laptop only. Then set \code{FACE\_ENGINE=facenet} or \code{OBJECT\_ENGINE=yolo}. Defaults need no GPU.
 
 Three-minute walk: Operations map (seeded pins, Dahod offline), Cameras table Open tile on \code{cam04}, Vehicle Track reconstruct \code{GJ01AB1234} and download CSV, Alerts CRITICAL and Ack, Onboard Analyse this still or confirm if OCR misses, Analytics \& Gaps for short-retention Food and Civil Supplies cameras.
 
+\section{Official evaluation map}
+Area 1, test case on government feed: 30 catalogue cameras, RTSP-TCP frame, confirm plus CSV on \code{cam04}. Area 2, solution presentation: this note and the Beamer deck. Area 3, architecture: HLD, open adapters, Model 4 not faked. Area 4, working platform: FastAPI on :8080. Area 5, analytics: ANPR/confirm, objects CSV, godown intrusion, Own-only gallery FRS. Area 6, scale: 1\,fps regional DESIGN TARGET in \S\ref{sec:scale}. Area 7, completeness: GitHub live. YouTube and Drive still human. Bonus on camera: hybrid, track, objects, intrusion, lawful FRS, RBAC, gaps, WebSocket.
+
 \section{What is done, what is still human}
-Done in code and notes: hybrid plane, catalogue sync, RTSP-TCP frame, confirm CSV, objects, intrusion, lawful FRS with gov refuse, RBAC, experiment harness, this deck.
+Done in code and notes: hybrid plane, catalogue sync, RTSP-TCP frame, confirm CSV, objects, intrusion, lawful FRS with gov refuse, optional FaceNet/YOLO/ByteTrack behind env doors, predict, keyword query, RBAC, experiment harness, this deck.
 
 Still human before 12:00 IST on 07 September 2026: Tesseract on PATH if OCR should appear on camera; two consented adult photos for a live face demo; own-feed Unlisted YouTube $\le 3$ minutes; gov-feed Unlisted YouTube $\le 3$ minutes with no FRS; Drive Anyone+Viewer for the plate CSV; portal receipt.
+
+FaceNet own-feed still is SKIPPED on the laptop that has no torch. Do not delay the government YouTube for a FaceNet reshoot. The government-feed script still forbids FRS.
 
 \end{document}

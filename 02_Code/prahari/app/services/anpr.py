@@ -60,13 +60,42 @@ def _tesseract_recognize(frame_bgr: np.ndarray) -> dict[str, Any]:
     return {"plate": plate, "plate_raw": plate_raw.strip(), "confidence": mean, "crop_bgr": crop, "box": box}
 
 
+def _crop_xyxy(frame_bgr: np.ndarray, box: list[float]) -> tuple[np.ndarray, list[int]]:
+    x1, y1, x2, y2 = [int(v) for v in box[:4]]
+    x1, y1 = max(0, x1), max(0, y1)
+    x2, y2 = min(frame_bgr.shape[1], x2), min(frame_bgr.shape[0], y2)
+    if x2 <= x1 or y2 <= y1:
+        return frame_bgr, [0, 0, int(frame_bgr.shape[1]), int(frame_bgr.shape[0])]
+    return frame_bgr[y1:y2, x1:x2], [x1, y1, x2 - x1, y2 - y1]
+
+
 class YoloEngine:
     def recognize(self, frame_bgr: np.ndarray) -> dict[str, Any]:
-        raise RuntimeError("ANPR_ENGINE=yolo is not loaded in this PoC")
+        from app.engines.yolo_backend import detect_plate, detect_vehicles
+
+        vehicles = detect_vehicles(frame_bgr)
+        if not vehicles:
+            return _tesseract_recognize(frame_bgr)
+        vehicle_crop, vehicle_box = _crop_xyxy(frame_bgr, vehicles[0].box)
+        plate = detect_plate(vehicle_crop)
+        crop = vehicle_crop
+        box = vehicle_box
+        if plate is not None and plate.box:
+            crop, local = _crop_xyxy(vehicle_crop, plate.box)
+            box = [vehicle_box[0] + local[0], vehicle_box[1] + local[1], local[2], local[3]]
+        result = _tesseract_recognize(crop)
+        if result.get("plate"):
+            result["box"] = box
+            result["crop_bgr"] = crop
+            return result
+        return _tesseract_recognize(frame_bgr)
 
 
 def recognize(frame_bgr: np.ndarray) -> dict[str, Any]:
     engine = config.getenv("ANPR_ENGINE", "tesseract").lower()
     if engine == "yolo":
-        return YoloEngine().recognize(frame_bgr)
+        try:
+            return YoloEngine().recognize(frame_bgr)
+        except Exception as exc:
+            log.warning("ANPR_ENGINE=yolo unavailable (%s); tesseract fallback", exc)
     return _tesseract_recognize(frame_bgr)

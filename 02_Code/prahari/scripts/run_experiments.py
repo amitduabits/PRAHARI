@@ -170,6 +170,50 @@ def run_smoke() -> list[dict]:
     rec = _base("E-A-normalise")
     rec["ok"] = normalise("GJ 01 AB 1234") == "GJ01AB1234"
     records.append(rec)
+
+    rec = _base("E-V1", command="histogram FRS WL-004")
+    rec["ok"] = bool(hits and hits[0]["face_id"] == "WL-004")
+    rec["metrics"] = {"face_id": (hits[0]["face_id"] if hits else "")}
+    records.append(rec)
+
+    rec = _base("E-V2", command="FaceNet Own still")
+    try:
+        import torch  # noqa: F401
+        from facenet_pytorch import InceptionResnetV1  # noqa: F401
+
+        rec.update(ok=True, skipped=True, skip_reason="FaceNet installed; cosine not MEASURED on consented still this run")
+    except Exception:
+        rec.update(ok=True, skipped=True, skip_reason="torch/facenet-pytorch not installed")
+    records.append(rec)
+
+    rec = _base("E-V3", command="YOLO own_feed")
+    try:
+        import ultralytics  # noqa: F401
+        from app.engines.yolo_backend import weights_path
+
+        if not weights_path().is_file():
+            rec.update(ok=True, skipped=True, skip_reason="yolov8n.pt missing")
+        else:
+            rec.update(ok=True, skipped=True, skip_reason="weights present; class MEASURED deferred")
+    except Exception:
+        rec.update(ok=True, skipped=True, skip_reason="ultralytics not installed")
+    records.append(rec)
+
+    rec = _base("E-V4", command="cam04 FACE_ENGINE=facenet refuse")
+    os.environ["FACE_ENGINE"] = "facenet"
+    rec["ok"] = "faces" not in engines_for({"camera_id": "cam04", "ownership": "Gov"})
+    rec["metrics"] = {"person_events": 0}
+    records.append(rec)
+
+    rec = _base("E-V5", command="GET /api/predict/GJ01AB1234")
+    try:
+        client = _client()
+        body = client.get("/api/predict/GJ01AB1234", auth=_auth()).json()
+        rec["metrics"] = {"n": len(body.get("predictions") or [])}
+        rec["ok"] = isinstance(body.get("predictions"), list)
+    except Exception as exc:
+        rec.update(ok=False, notes=str(exc))
+    records.append(rec)
     return records
 
 

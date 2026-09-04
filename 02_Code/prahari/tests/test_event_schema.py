@@ -12,6 +12,8 @@ def test_detections_have_additive_columns():
     assert "face_id" in cols
     assert "object_class" in cols
     assert "source" in cols
+    assert "crop_uri_original" in cols
+    assert "is_ai_reconstructed" in cols
 
 
 def test_old_insert_keys_still_work(client, auth):

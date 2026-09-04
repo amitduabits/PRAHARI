@@ -56,8 +56,11 @@ STREAM_TOKEN_TTL_S = int(getenv("STREAM_TOKEN_TTL_S", "60") or "60")
 ANALYTICS_ENGINES = getenv("ANALYTICS_ENGINES", "anpr,objects")
 OBJECT_ENGINE = getenv("OBJECT_ENGINE", "opencv")
 OBJECT_MIN_CONFIDENCE = float(getenv("OBJECT_MIN_CONFIDENCE", "0.45") or "0.45")
-FACE_ENGINE = getenv("FACE_ENGINE", "lbph")
+FACE_ENGINE = getenv("FACE_ENGINE", "histogram")
 FACE_MATCH_MIN_CONFIDENCE = float(getenv("FACE_MATCH_MIN_CONFIDENCE", "0.55") or "0.55")
+TRACK_ENGINE = getenv("TRACK_ENGINE", "iou")
+YOLO_VEHICLE_WEIGHTS = getenv("YOLO_VEHICLE_WEIGHTS", "app/models_data/yolov8n.pt")
+YOLO_PLATE_WEIGHTS = getenv("YOLO_PLATE_WEIGHTS", "")
 
 
 def users() -> list[dict]:

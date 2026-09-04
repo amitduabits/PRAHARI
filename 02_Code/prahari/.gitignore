@@ -7,3 +7,5 @@ data/crops/
 data/hls/
 catalogue.last.json
 *.log
+*.pt
+app/models_data/*.pt

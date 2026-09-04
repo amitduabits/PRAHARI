@@ -61,9 +61,11 @@
         <form id="track-form">
           <input id="plate-search" value="GJ01AB1234" aria-label="plate">
           <button type="submit">Reconstruct</button>
+          <button type="button" id="predict-btn">Next cameras</button>
           <a id="csv-link" href="/api/track/GJ01AB1234/report.csv">Download CSV</a>
         </form>
         <p id="track-meta"></p>
+        <pre id="predict-out"></pre>
         <div id="track-map" class="map"></div>
         <div class="table-wrap"><table id="track-table"></table></div>
       </section>
@@ -86,6 +88,15 @@
           <input name="priority" placeholder="priority" value="HIGH">
           <button type="submit">Save</button>
         </form>
+        <h3>Enroll Missing/Wanted Person</h3>
+        <p class="hint">Posts /api/faces/enroll. Consented adult photos only. Own-camera gallery, not Paldi Circle.</p>
+        <form id="enroll-person-form" class="form-grid">
+          <input name="gallery_id" value="WL-004" required>
+          <input name="name" placeholder="name">
+          <input type="file" name="file" accept="image/*" required>
+          <button type="submit">Enroll</button>
+        </form>
+        <pre id="enroll-out"></pre>
       </section>
       <section id="panel-onboard" class="panel">
         <h2>Onboard</h2>

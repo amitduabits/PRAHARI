@@ -120,7 +120,37 @@ Phase-1 implemented (CPU, no GPU required):
 
 Cross-camera vehicle tracking in the PoC is plate sightings (`GET /api/track/{plate}`). Optional object `track_id` is per camera and resets on a scene cut.
 
-Production swap (same functions): YOLO plate + PaddleOCR behind `recognize()`; YOLO11 on regional GPUs at 1 fps; dedicated FRS cameras with human confirm; AFIS/NAFIS as Phase-2 APIs, not pixels.
+Optional vision engines (Arnav pack): FaceNet when `FACE_ENGINE=facenet`; YOLO when `OBJECT_ENGINE` or `ANPR_ENGINE=yolo`; ByteTrack when `TRACK_ENGINE=bytetrack`. Default remains histogram + blob + Tesseract + IoU. GPU count MEASURED 0 unless a later bench says otherwise. Next-camera `GET /api/predict/{plate}` is frequency plus distance, not Kalman. `POST /api/query` is a keyword filter (`engine=keyword_rules`), not a language model. Branded reconstruction models are not in this PoC.
+
+Production swap (same functions): YOLO plate + PaddleOCR behind `recognize()`; YOLO11 on regional GPUs at 1 fps; dedicated FRS cameras with human confirm; AFIS/NAFIS as Phase-2 APIs, not pixels. Workshop FaceNet/YOLO/ByteTrack lives at ArAv-1/PRAHARI-3.0; the production tree remains https://github.com/amitduabits/PRAHARI.
+
+### 6.1 Engine contract
+
+Env defaults (judge laptop, no GPU):
+
+| Env | Default | Optional |
+|---|---|---|
+| `ANPR_ENGINE` | `tesseract` | `yolo` (vehicle crop then Tesseract, then full-frame fallback) |
+| `OBJECT_ENGINE` | `opencv` | `yolo` (COCO person+vehicle; blob fallback) |
+| `FACE_ENGINE` | `histogram` | `facenet` (MTCNN + 512-d, Own cameras only) |
+| `TRACK_ENGINE` | `iou` | `bytetrack` (per-camera `track_id`; scene cut still resets) |
+| `ANALYTICS_ENGINES` | `anpr,objects` | add `faces` only for `ownership=Own` |
+
+`requirements.txt` stays FastAPI / OpenCV / Tesseract / pytest. Torch extras live in `requirements-vision.txt`. Importing `app.engines` must not import torch. FaceAnalyzer is constructed only after `engines_for()` has allowed faces.
+
+### 6.2 FRS law
+
+`engines_for()` drops `faces` when `ownership != Own` or `camera_id` matches `cam` plus digits. Log line `frs_refused`. Tests post a face-like still to `cam04` and assert zero `entity_type=person` events and zero FaceAnalyzer constructions. `POST /api/ingest/frame` remains ANPR-only. `POST /api/ingest/analyse` is the multi-engine door.
+
+Gallery JSON (`GET /api/faces/gallery`) returns ids and counts, never embeddings. Not AFIS, not NAFIS, not a live ministry biometric pipe.
+
+### 6.3 Crop honesty
+
+Detections always write `crop_uri` and `crop_uri_original`. Optional `crop_uri_enhanced` is cubic upscale of a low-FFT crop, labelled `enhancement_method=none|cubic_upscale`. Matcher uses original pixels. `is_ai_reconstructed=1` on a face inserts alert `status=pending_review` and does not auto-notify CRITICAL. Branded reconstructor names are not in `app/`.
+
+### 6.4 Predict and query
+
+`GET /api/predict/{plate}` ranks next cameras by historical transition frequency, else GIS neighbours. Method is frequency plus distance, not Kalman, not Re-ID. `POST /api/query` is a regex keyword filter. Response includes `engine: keyword_rules`. It is not a language model.
 
 ## 7. Watchlist correlation and alerts
 
@@ -143,7 +173,7 @@ plate, camera_id, lat, lon, ts, crop_uri, category, priority, source_case_id
 
 Priority: CRITICAL (stolen / wanted) → audible + red queue; HIGH → amber; LOW → log only.
 
-Operator ack is audited. Duplicate suppression: same plate + same camera within 120 seconds collapses to one alert with a counter.
+Operator ack is audited. Duplicate suppression: same plate + same camera within 120 seconds collapses to one alert with a counter. Face hits match on `face_id` / `gallery_id` (`WL-004`) without a plate. Reconstructed face crops insert `pending_review` instead of an open CRITICAL card.
 
 ## 8. Multi-camera vehicle track (evaluation test)
 
@@ -230,3 +260,39 @@ Consume only. No publish, no gateway control API, no file download of `/stream/<
 | Watchlist + realtime alert | `GET/POST /api/watchlist`, `GET /api/alerts`, `POST /api/alerts/{id}/ack`, `WS /ws/alerts` |
 | 80k readiness | §5 (DESIGN TARGET) and §10 of this HLD |
 | Bonus GIS / gaps / private feeds | Registry + `GET /api/gap-report` |
+| Next-camera (bonus) | `GET /api/predict/{plate}` |
+| Keyword filter (bonus) | `POST /api/query` (`engine=keyword_rules`) |
+
+## 14. HTTP surface (PoC)
+
+Auth: HTTP Basic (judge / admin / home.viewer / auditor). Write routes 403 for viewer and auditor.
+
+| Method | Path | Role |
+|---|---|---|
+| GET | `/api/health` | public |
+| POST | `/api/login` | public |
+| GET | `/api/cameras` | any role; viewer filtered by department |
+| POST | `/api/cameras`, `/import`, `/sync-catalogue` | write |
+| POST | `/api/sessions` | write; fifth live session 429 |
+| GET | `/api/stream/{id}` | HMAC token |
+| POST | `/api/ingest/frame` | write, ANPR-only |
+| POST | `/api/ingest/analyse` | write, multi-engine |
+| POST | `/api/ingest/confirm` | write, `source=operator_confirm` |
+| POST | `/api/ingest/confirm-face` | write, Own cameras only |
+| GET | `/api/detections` | any role |
+| GET | `/api/objects/report.csv` | any role |
+| GET/POST | `/api/watchlist` | GET any; POST write; WL-001 cannot be deleted |
+| POST | `/api/faces/enroll` | write |
+| GET | `/api/faces/gallery` | any; no embeddings |
+| GET | `/api/track/{plate}` + `/report.csv` | any |
+| GET | `/api/predict/{plate}` | any |
+| POST | `/api/query` | any |
+| GET | `/api/alerts` | any |
+| POST | `/api/alerts/{id}/ack` | write |
+| WS | `/ws/alerts` | cookie |
+
+## 15. Tests and honesty gate
+
+Default pytest (04 Sep 2026, no torch): 88 passed, 4 skipped (Tesseract binary, FaceNet extras, YOLO weights, ByteTrack). `scripts/audit_gate.py` must print PASS: path jail, HLS origin pin, full HMAC, vendored `hls.min.js`, no live-ministry needles, 80k labelled DESIGN TARGET.
+
+Vision pack T-V01–T-V11 lives under `02_Code/prahari/tests/`. Optional engines skip with an explicit reason. They must not fail a judge laptop that skipped `requirements-vision.txt`.

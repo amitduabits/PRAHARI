@@ -19,6 +19,7 @@ log = logging.getLogger("prahari.faces")
 
 _tracks: dict[str, list[str]] = {}
 _gallery_cache: dict[str, list[np.ndarray]] = {}
+_facenet_gallery: dict[str, list[np.ndarray]] = {}
 
 
 def reset(camera_id: str | None = None) -> None:
@@ -115,10 +116,53 @@ def load_gallery(force: bool = False) -> dict[str, list[np.ndarray]]:
     return cache
 
 
+def _engine() -> str:
+    raw = config.getenv("FACE_ENGINE", "histogram").strip().lower()
+    if raw in {"lbph", "hist", ""}:
+        return "histogram"
+    return raw
+
+
+def _load_facenet_gallery(force: bool = False) -> dict[str, list[np.ndarray]]:
+    global _facenet_gallery
+    if _facenet_gallery and not force:
+        return _facenet_gallery
+    cache: dict[str, list[np.ndarray]] = {}
+    root = config.face_dir()
+    if root.is_dir():
+        for folder in root.iterdir():
+            if not folder.is_dir():
+                continue
+            embs: list[np.ndarray] = []
+            for npy_path in sorted(folder.glob("*.npy")):
+                try:
+                    embs.append(np.load(npy_path).astype(np.float32).flatten())
+                except Exception:
+                    continue
+            if embs:
+                cache[folder.name] = embs
+    _facenet_gallery = cache
+    return cache
+
+
+def _try_write_embedding(path: Path, crop_bgr: np.ndarray) -> None:
+    try:
+        from app.engines.facenet_backend import get_analyzer
+
+        analyzer = get_analyzer()
+        faces = analyzer.extract_faces(crop_bgr)
+        if not faces:
+            return
+        np.save(str(path.with_suffix(".npy")), np.asarray(faces[0]["embedding"], dtype=np.float32))
+    except Exception as exc:
+        log.warning("facenet enroll embedding skipped: %s", exc)
+
+
 def enroll(gallery_id: str, images_bgr: list[np.ndarray]) -> dict[str, Any]:
     dest = config.face_dir() / gallery_id
     dest.mkdir(parents=True, exist_ok=True)
     n = 0
+    want_facenet = _engine() == "facenet"
     for img in images_bgr:
         if img is None:
             continue
@@ -129,14 +173,17 @@ def enroll(gallery_id: str, images_bgr: list[np.ndarray]) -> dict[str, Any]:
             crop = img[y : y + h, x : x + w]
         path = dest / f"{len(list(dest.glob('*'))) + 1}.jpg"
         cv2.imwrite(str(path), crop)
+        if want_facenet:
+            _try_write_embedding(path, crop)
         n += 1
     load_gallery(force=True)
+    _load_facenet_gallery(force=True)
     return {"gallery_id": gallery_id, "n_images": n}
 
 
-def match(frame_bgr: np.ndarray, gallery: dict[str, list[np.ndarray]] | None = None) -> list[dict[str, Any]]:
-    if frame_bgr is None or getattr(frame_bgr, "size", 0) == 0:
-        return []
+def _histogram_match(
+    frame_bgr: np.ndarray, gallery: dict[str, list[np.ndarray]] | None = None
+) -> list[dict[str, Any]]:
     gal = gallery if gallery is not None else load_gallery()
     if not gal:
         ensure_synthetic_gallery()
@@ -160,3 +207,44 @@ def match(frame_bgr: np.ndarray, gallery: dict[str, list[np.ndarray]] | None = N
         }
         out.append(hit)
     return out
+
+
+def _facenet_match(frame_bgr: np.ndarray) -> list[dict[str, Any]]:
+    from app.engines.facenet_backend import cosine, get_analyzer
+
+    analyzer = get_analyzer()
+    gal = _load_facenet_gallery()
+    if not gal:
+        ensure_synthetic_gallery()
+        # embeddings may still be missing; histogram enroll images exist
+        gal = _load_facenet_gallery(force=True)
+    threshold = float(config.getenv("FACE_MATCH_MIN_CONFIDENCE", "0.5") or "0.5")
+    out: list[dict[str, Any]] = []
+    for face in analyzer.extract_faces(frame_bgr):
+        emb = np.asarray(face["embedding"], dtype=np.float32).flatten()
+        best_id, best = "", -1.0
+        for gid, embs in gal.items():
+            for other in embs:
+                s = cosine(emb, other)
+                if s > best:
+                    best, best_id = s, gid
+        out.append(
+            {
+                "face_id": best_id if best >= threshold else "",
+                "confidence": max(0.0, float(best)),
+                "bbox": face.get("bbox") or [0, 0, 0, 0],
+                "crop_bgr": face.get("crop"),
+            }
+        )
+    return out
+
+
+def match(frame_bgr: np.ndarray, gallery: dict[str, list[np.ndarray]] | None = None) -> list[dict[str, Any]]:
+    if frame_bgr is None or getattr(frame_bgr, "size", 0) == 0:
+        return []
+    if _engine() == "facenet":
+        try:
+            return _facenet_match(frame_bgr)
+        except Exception as exc:
+            log.warning("FACE_ENGINE=facenet unavailable (%s); histogram fallback", exc)
+    return _histogram_match(frame_bgr, gallery=gallery)

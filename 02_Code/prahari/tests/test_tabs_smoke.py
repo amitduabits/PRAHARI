@@ -12,6 +12,7 @@ def test_index_and_core_apis(client, auth):
         "/api/alerts?status=open",
         "/api/watchlist",
         "/api/track/GJ01AB1234",
+        "/api/predict/GJ01AB1234",
         "/api/gap-report",
         "/api/detections",
     ):

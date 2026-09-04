@@ -23,3 +23,16 @@ E-S3|2026-09-04T08:22:48Z|DESIGN TARGET|true|false|{"mean_crop_bytes_MEASURED": 
 E-S4|2026-09-04T08:22:48Z|DESIGN TARGET|true|false|{"bytes": 1123694208000000, "tb_approx": 1123.69}
 E-S5|2026-09-04T08:22:48Z|MEASURED|true|false|{"p50_ms": 3.02, "p99_ms": 8.38}
 E-S6|2026-09-04T08:22:48Z|MEASURED|true|false|{"gpu_count_MEASURED": 0, "note": "regional GPU remains DESIGN TARGET"}
+E-A1|2026-09-04T09:06:01Z|MEASURED|true|true|{}
+E-O1|2026-09-04T09:06:01Z|MEASURED|true|false|{"n": 1, "classes": ["person"]}
+E-F1|2026-09-04T09:06:01Z|MEASURED|true|false|{"face_id": "WL-004"}
+E-I1|2026-09-04T09:06:01Z|MEASURED|true|false|{"fired": true}
+E-W1|2026-09-04T09:06:01Z|MEASURED|true|false|{"count": 10}
+E-health|2026-09-04T09:06:02Z|MEASURED|true|false|{"status": "ok", "cameras": 41, "detections": 10, "watchlist": 5, "sentinel_host_configured": true}
+E-F3-static|2026-09-04T09:06:02Z|MEASURED|true|false|{}
+E-A-normalise|2026-09-04T09:06:02Z|MEASURED|true|false|{}
+E-V1|2026-09-04T09:06:02Z|MEASURED|true|false|{"face_id": "WL-004"}
+E-V2|2026-09-04T09:06:02Z|MEASURED|true|true|{}
+E-V3|2026-09-04T09:06:02Z|MEASURED|true|true|{}
+E-V4|2026-09-04T09:06:02Z|MEASURED|true|false|{"person_events": 0}
+E-V5|2026-09-04T09:06:02Z|MEASURED|true|false|{"n": 1}

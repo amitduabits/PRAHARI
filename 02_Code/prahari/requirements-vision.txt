@@ -1,0 +1,7 @@
+# Optional. Default pytest and the laptop demo do not need these.
+# pip install -r requirements-vision.txt
+torch
+torchvision
+facenet-pytorch
+ultralytics>=8.0.0
+lapx>=0.5.5

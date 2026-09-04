@@ -1,0 +1,13 @@
+{
+  "id": "E-V5",
+  "utc": "2026-09-04T09:06:02Z",
+  "label": "MEASURED",
+  "ok": true,
+  "skipped": false,
+  "skip_reason": "",
+  "metrics": {
+    "n": 1
+  },
+  "notes": "",
+  "command": "GET /api/predict/GJ01AB1234"
+}

@@ -39,6 +39,8 @@ C14  HUMAN: incognito, portal, freeze
 
 C13 videos are **submission blockers**. C02–C07 may run in parallel with C13 rehearsal, but a video of a mock UI is a disqualification. Record against a running backend with rows in `prahari.db`.
 
+After C12, optional next layer: `08_Misc/23_Arnav_Integration/START_HERE.md` (FaceNet, YOLO, ByteTrack behind existing engines). Do not delay C13 videos for that pack.
+
 ## What this book is not
 
 - Not a rebuild of FastAPI, Leaflet, catalogue, HLS proxy, RBAC, or the seeded GJ01AB1234 track.

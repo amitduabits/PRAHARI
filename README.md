@@ -18,6 +18,7 @@ Team site (slides, notes, run instructions): https://amitduabits.github.io/PRAHA
 | TeX sources | [04_Documents/bits-tex/](04_Documents/bits-tex/) |
 | Official problems page (verbatim) | [SENTINEL_Problems_Page.md](06_References/SENTINEL_Problems_Page.md) |
 | Closeout prompt book (audit, FRS, objects, tests, videos) | [START_HERE.md](08_Misc/22_Closeout_Prompt_Book/START_HERE.md) |
+| Arnav engine pack (FaceNet / YOLO / ByteTrack, Own-only FRS) | [START_HERE.md](08_Misc/23_Arnav_Integration/START_HERE.md) |
 | Audit remediation prompt book | [START_HERE.md](08_Misc/21_Audit_Remediation/START_HERE.md) |
 | HLD | [PRAHARI_HLD.md](04_Documents/PRAHARI_HLD.md) |
 

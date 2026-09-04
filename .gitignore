@@ -27,6 +27,16 @@ __pycache__/
 # Internal working notes (not part of the submission tree)
 08_Misc/20_Prompts/
 08_Misc/30_Project_Management/
+08_Misc/23_Arnav_Integration/_upstream/
+
+# Nested copies and local reference dumps (not the submission tree)
+/PRAHARI/
+/Reference ppt and notes/
+/Reference slides and notes/
+
+# Optional vision weights (download via scripts/fetch_yolo_weights.py)
+*.pt
+02_Code/prahari/app/models_data/*.pt
 02_Code/prahari/AGENTS.md
 05_Output/deliverables/PPT_PUNCH_LIST.md
 05_Output/deliverables/SUBMISSION_LINKS.md

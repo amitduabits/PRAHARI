@@ -48,6 +48,10 @@ DETECTION_COLUMNS = (
     "bbox_json",
     "track_id",
     "source",
+    "crop_uri_original",
+    "crop_uri_enhanced",
+    "enhancement_method",
+    "is_ai_reconstructed",
 )
 
 

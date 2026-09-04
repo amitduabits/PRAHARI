@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app import config
 from app.db import init_db
-from app.routers import alerts, cameras, faces, health, ingest, login, stream, track, watchlist
+from app.routers import alerts, cameras, faces, health, ingest, login, predict, query, stream, track, watchlist
 from app.services import matcher
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -34,6 +34,8 @@ app.include_router(faces.router)
 app.include_router(watchlist.router)
 app.include_router(alerts.router)
 app.include_router(track.router)
+app.include_router(predict.router)
+app.include_router(query.router)
 config.crop_dir().mkdir(parents=True, exist_ok=True)
 app.mount("/crops", StaticFiles(directory=str(config.crop_dir())), name="crops")
 app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")

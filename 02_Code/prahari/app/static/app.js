@@ -172,16 +172,19 @@ async function loadTrack(plate) {
 }
 
 async function loadAlerts() {
-  const res = await api("/api/alerts?status=open");
-  if (!res.ok) return;
-  const rows = await res.json();
+  const openRes = await api("/api/alerts?status=open");
+  const pendingRes = await api("/api/alerts?status=pending_review");
+  if (!openRes.ok) return;
+  const rows = await openRes.json();
+  if (pendingRes.ok) rows.push(...await pendingRes.json());
   $("alert-empty").style.display = rows.length ? "none" : "block";
   $("alert-list").innerHTML = rows.map((a) => {
     let title = a.plate;
     if (a.entity_type === "person") title = a.entity_id || a.plate || "person";
     if (a.entity_type === "intrusion" || a.category === "INTRUSION") title = "INTRUSION @ " + a.camera_id;
+    const review = a.status === "pending_review" ? " pending_review" : "";
     return "<div class='alert " + a.priority + "'><strong>" + a.priority + "</strong> " + title +
-      " @ " + a.camera_id + " ×" + a.counter +
+      " @ " + a.camera_id + " ×" + a.counter + review +
       " <button data-ack='" + a.alert_id + "'>Ack</button></div>";
   }).join("");
   $("alert-list").onclick = async (e) => {
@@ -242,6 +245,13 @@ document.querySelectorAll(".tab").forEach((btn) => {
 
 $("login-btn").onclick = login;
 $("track-form").onsubmit = (e) => { e.preventDefault(); loadTrack($("plate-search").value); };
+if ($("predict-btn")) {
+  $("predict-btn").onclick = async () => {
+    const plate = $("plate-search").value || "GJ01AB1234";
+    const res = await api("/api/predict/" + encodeURIComponent(plate));
+    $("predict-out").textContent = JSON.stringify(await res.json(), null, 2);
+  };
+}
 $("onboard-form").onsubmit = async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
@@ -300,6 +310,15 @@ $("wl-form").onsubmit = async (e) => {
   await api("/api/watchlist", { method: "POST", json: Object.fromEntries(fd.entries()) });
   loadWatchlist();
 };
+if ($("enroll-person-form")) {
+  $("enroll-person-form").onsubmit = async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const res = await api("/api/faces/enroll", { method: "POST", body: fd });
+    $("enroll-out").textContent = JSON.stringify(await res.json(), null, 2);
+    loadWatchlist();
+  };
+}
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "/" && document.activeElement.tagName !== "INPUT") {

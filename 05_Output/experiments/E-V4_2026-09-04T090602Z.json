@@ -1,0 +1,13 @@
+{
+  "id": "E-V4",
+  "utc": "2026-09-04T09:06:02Z",
+  "label": "MEASURED",
+  "ok": true,
+  "skipped": false,
+  "skip_reason": "",
+  "metrics": {
+    "person_events": 0
+  },
+  "notes": "",
+  "command": "cam04 FACE_ENGINE=facenet refuse"
+}

@@ -154,11 +154,13 @@ def insert_detection(event: dict[str, Any]) -> dict[str, Any]:
         INSERT INTO detections (
             event_id, plate, plate_raw, confidence, camera_id, lat, lon, ts,
             pts_ms, crop_uri, category, priority, source_case_id,
-            entity_type, entity_id, face_id, object_class, bbox_json, track_id, source
+            entity_type, entity_id, face_id, object_class, bbox_json, track_id, source,
+            crop_uri_original, crop_uri_enhanced, enhancement_method, is_ai_reconstructed
         ) VALUES (
             :event_id, :plate, :plate_raw, :confidence, :camera_id, :lat, :lon, :ts,
             :pts_ms, :crop_uri, :category, :priority, :source_case_id,
-            :entity_type, :entity_id, :face_id, :object_class, :bbox_json, :track_id, :source
+            :entity_type, :entity_id, :face_id, :object_class, :bbox_json, :track_id, :source,
+            :crop_uri_original, :crop_uri_enhanced, :enhancement_method, :is_ai_reconstructed
         )
         """,
         {
@@ -182,11 +184,18 @@ def insert_detection(event: dict[str, Any]) -> dict[str, Any]:
             "bbox_json": bbox or "",
             "track_id": event.get("track_id") or "",
             "source": event.get("source") or "",
+            "crop_uri_original": event.get("crop_uri_original") or event.get("crop_uri") or "",
+            "crop_uri_enhanced": event.get("crop_uri_enhanced") or "",
+            "enhancement_method": event.get("enhancement_method") or "none",
+            "is_ai_reconstructed": int(event.get("is_ai_reconstructed") or 0),
         },
     )
     event["entity_type"] = entity_type
     event["entity_id"] = entity_id
     event["source"] = event.get("source") or ""
+    event["crop_uri_original"] = event.get("crop_uri_original") or event.get("crop_uri") or ""
+    event["enhancement_method"] = event.get("enhancement_method") or "none"
+    event["is_ai_reconstructed"] = int(event.get("is_ai_reconstructed") or 0)
     return event
 
 

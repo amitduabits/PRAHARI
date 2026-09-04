@@ -35,9 +35,15 @@ def reset(camera_id: str | None = None) -> None:
     if camera_id:
         _tracks.pop(camera_id, None)
         _next_id.pop(camera_id, None)
-        return
-    _tracks.clear()
-    _next_id.clear()
+    else:
+        _tracks.clear()
+        _next_id.clear()
+    try:
+        from app.engines import bytetrack_backend
+
+        bytetrack_backend.reset(camera_id)
+    except Exception:
+        pass
 
 
 def _iou(a: list[int], b: list[int]) -> float:
@@ -113,31 +119,50 @@ def _dnn_detect(frame_bgr: np.ndarray) -> list[dict[str, Any]] | None:
 
 
 def _yolo_detect(frame_bgr: np.ndarray) -> list[dict[str, Any]]:
-    from ultralytics import YOLO  # type: ignore
+    from app.engines.yolo_backend import detect_objects
 
-    model = YOLO("yolov8n.pt")
-    results = model.predict(frame_bgr, verbose=False)
-    out: list[dict[str, Any]] = []
-    names = results[0].names if results else {}
-    for box in results[0].boxes:
-        cls_id = int(box.cls[0])
-        name = _COCO_TO_OURS.get(str(names.get(cls_id, "")).lower())
-        if not name:
-            continue
-        conf = float(box.conf[0])
-        if conf < config.OBJECT_MIN_CONFIDENCE:
-            continue
-        x1, y1, x2, y2 = [int(v) for v in box.xyxy[0].tolist()]
-        crop = frame_bgr[y1:y2, x1:x2]
-        out.append(
+    return detect_objects(frame_bgr)
+
+
+def _center(bbox: list[int]) -> tuple[float, float]:
+    x, y, w, h = bbox
+    return x + w / 2.0, y + h / 2.0
+
+
+def _assign_bytetrack(camera_id: str, hits: list[dict[str, Any]]) -> bool:
+    from app.engines.bytetrack_backend import update as bt_update
+
+    dets = []
+    for hit in hits:
+        x, y, w, h = [int(v) for v in hit["bbox"]]
+        dets.append(
             {
-                "object_class": name,
-                "confidence": conf,
-                "bbox": [x1, y1, x2 - x1, y2 - y1],
-                "crop_bgr": crop,
+                "box": [x, y, x + w, y + h],
+                "conf": float(hit.get("confidence") or 0),
+                "cls_id": int(hit.get("cls_id") or 0),
             }
         )
-    return out
+    tracks = bt_update(camera_id, dets)
+    if not tracks:
+        return False
+    used: set[int] = set()
+    for hit in hits:
+        cx, cy = _center(hit["bbox"])
+        best_i, best = -1, 1e18
+        for i, tr in enumerate(tracks):
+            if i in used:
+                continue
+            x1, y1, x2, y2 = tr["box"]
+            tcx, tcy = (x1 + x2) / 2.0, (y1 + y2) / 2.0
+            dist = (cx - tcx) ** 2 + (cy - tcy) ** 2
+            if dist < best:
+                best, best_i = dist, i
+        if best_i >= 0:
+            used.add(best_i)
+            hit["track_id"] = f"{camera_id or '_'}-bt-{tracks[best_i]['track_id']}"
+        else:
+            hit["track_id"] = _assign_track(camera_id, hit["bbox"], hit["object_class"])
+    return True
 
 
 def detect(frame_bgr: np.ndarray, camera_id: str = "") -> list[dict[str, Any]]:
@@ -154,6 +179,15 @@ def detect(frame_bgr: np.ndarray, camera_id: str = "") -> list[dict[str, Any]]:
     if not hits:
         dnn = _dnn_detect(frame_bgr)
         hits = dnn if dnn else _blob_fallback(frame_bgr)
-    for hit in hits:
-        hit["track_id"] = _assign_track(camera_id, hit["bbox"], hit["object_class"])
+    track_engine = config.getenv("TRACK_ENGINE", "iou").lower()
+    assigned = False
+    if track_engine == "bytetrack" and hits:
+        try:
+            assigned = _assign_bytetrack(camera_id, hits)
+        except Exception as exc:
+            log.warning("TRACK_ENGINE=bytetrack unavailable (%s); IoU fallback", exc)
+            assigned = False
+    if not assigned:
+        for hit in hits:
+            hit["track_id"] = _assign_track(camera_id, hit["bbox"], hit["object_class"])
     return hits

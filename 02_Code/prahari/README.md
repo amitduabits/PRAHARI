@@ -28,6 +28,8 @@ Copy `.env.example` to `.env` and set `JUDGE_PASSWORD`. Set `SENTINEL_HOST`, `SE
 
 Tesseract OCR (optional; confirm path covers the demo): `choco install tesseract` or the UB Mannheim installer, then ensure `tesseract` is on PATH.
 
+Optional vision engines (torch). Default path needs no GPU. Histogram FRS, blob objects, Tesseract ANPR, and IoU `track_id` are the no-GPU PoC. FaceNet, YOLO, and ByteTrack sit behind `FACE_ENGINE` / `OBJECT_ENGINE` / `ANPR_ENGINE` / `TRACK_ENGINE` when `requirements-vision.txt` is installed. Faces still run only on Own cameras. Workshop code: https://github.com/ArAv-1/PRAHARI-3.0 — the submission tree remains https://github.com/amitduabits/PRAHARI.
+
 ## Sentinel ingest
 
 Force TCP when you open a sandbox camera yourself:

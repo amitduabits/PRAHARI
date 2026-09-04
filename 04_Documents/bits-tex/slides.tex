@@ -219,6 +219,16 @@ Time & Camera & Location \\
 \end{itemize}
 \end{frame}
 
+\begin{frame}{\code{engines\_for()}: who may run faces}
+\begin{center}\resizebox{0.92\textwidth}{!}{\input{figures/engines}}\end{center}
+\medskip
+\begin{itemize}\itemsep0.45em
+\item Log line \code{frs\_refused} is the control, not a post-filter
+\item FaceAnalyzer is not constructed on Paldi Circle
+\item \code{POST /api/ingest/frame} stays ANPR-only
+\end{itemize}
+\end{frame}
+
 \begin{frame}{ANPR: options}
 \begin{itemize}\itemsep0.55em
 \item Train a detector from scratch: no labelled Gujarat set in seven days
@@ -236,7 +246,7 @@ Time & Camera & Location \\
 \item Interface: \code{recognize(frame) -> \{plate, plate\_raw, confidence, crop\}}
 \item Missing Tesseract binary: empty plate, no crash
 \item MEASURED 03 Sep: confirm on \code{cam04}, confidence 1.0
-\item Production swap (same function): YOLO plate detector + PaddleOCR
+\item Optional: \code{ANPR\_ENGINE=yolo} vehicle-crop then Tesseract, then fallback
 \end{itemize}
 \end{frame}
 
@@ -247,6 +257,17 @@ Time & Camera & Location \\
 \item Skin-tone blob fallback: a rectangle $\ge 8\%$ of the frame is a person
 \item Skipping objects: eval area 05 names person and vehicle detection
 \item Classes kept: person, car, motorcycle, bus, truck, bicycle
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Objects: mechanism}
+\begin{itemize}\itemsep0.55em
+\item Default \code{OBJECT\_ENGINE=opencv}: blob, then optional DNN
+\item Optional \code{OBJECT\_ENGINE=yolo}: COCO subset including person (class 0)
+\item Missing ultralytics or weights: blob fallback, no crash
+\item Each box gets per-camera \code{track\_id} (IoU default)
+\item Scene cut calls \code{objects.reset}
+\item Evaluator artefact: \code{GET /api/objects/report.csv}
 \end{itemize}
 \end{frame}
 
@@ -281,6 +302,62 @@ Time & Camera & Location \\
 \end{itemize}
 \end{frame}
 
+\begin{frame}{FRS: default histogram mechanism}
+\begin{itemize}\itemsep0.55em
+\item Crops live under \code{data/faces/\{gallery\_id\}/}
+\item Match: colour histogram of a 64$\times$64 crop, correlation score
+\item Threshold: \code{FACE\_MATCH\_MIN\_CONFIDENCE} (default 0.55)
+\item \code{WL-004} fires on \code{face\_id}, not on an empty plate
+\item Synthetic fixtures are ellipses with unique noise
+\item Never a minor. Never a crop from \code{cctv.corp8.cloud}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Optional vision engines}
+\begin{itemize}\itemsep0.5em
+\item FaceNet when \code{FACE\_ENGINE=facenet}, Own cameras only
+\item YOLO when \code{OBJECT\_ENGINE} or \code{ANPR\_ENGINE=yolo} (person class included)
+\item ByteTrack when \code{TRACK\_ENGINE=bytetrack}; scene cut still resets
+\item Next-camera predict: frequency + distance, not Kalman
+\item Never Paldi FRS. No CodeFormer in this PoC
+\item Default remains histogram + blob + Tesseract + IoU
+\item Workshop: ArAv-1/PRAHARI-3.0. Submission repo remains amitduabits/PRAHARI
+\end{itemize}
+\end{frame}
+
+\begin{frame}{FaceNet door (optional)}
+\begin{itemize}\itemsep0.55em
+\item Lazy \code{FaceAnalyzer}: MTCNN boxes + 512-d InceptionResnetV1
+\item Cosine against \code{.npy} files next to gallery JPEGs
+\item Torch is imported inside \code{\_\_init\_\_}, never at package import
+\item Missing torch: histogram fallback, no crash (T-V01)
+\item Constructed only after \code{engines\_for} allows faces (T-V04)
+\item \code{requirements-vision.txt} is optional. Pytest does not need it
+\end{itemize}
+\end{frame}
+
+\begin{frame}{YOLO and ByteTrack doors (optional)}
+\begin{itemize}\itemsep0.55em
+\item Object YOLO includes person. Vehicle YOLO for ANPR does not
+\item Weights: \code{app/models\_data/yolov8n.pt}, gitignored
+\item Fetch script exists. Pytest does not download
+\item ByteTrack writes object \code{track\_id}. IoU remains default
+\item \code{GET /api/track/\{plate\}} stays the designated-vehicle test
+\item GPU count MEASURED 0 on this laptop
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Crop honesty}
+\begin{itemize}\itemsep0.55em
+\item Always write \code{crop\_uri\_original}
+\item Matcher sees original pixels only
+\item Optional enhanced copy: \code{enhancement\_method=cubic\_upscale} or \code{none}
+\item Face crop with \code{is\_ai\_reconstructed=1} $\to$ \code{pending\_review}
+\item Reconstructed faces do not auto-fire CRITICAL
+\item Zero branded reconstructor names in \code{app/} (T-V11)
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Watchlist and alerts}
 \begin{itemize}\itemsep0.55em
 \item Representative sources. No live ministry API in the PoC
@@ -293,6 +370,48 @@ Time & Camera & Location \\
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Person enroll and pending review}
+\begin{itemize}\itemsep0.55em
+\item Watchlist form: Enroll Missing/Wanted Person
+\item Posts \code{/api/faces/enroll}. Viewer still 403 (T-V10)
+\item Seven tabs. No eighth top-level tab
+\item Alerts renderer shows the word \code{pending\_review}
+\item Ack still works
+\item Do not enroll from a Sentinel still
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Vehicle track is plate GIS, not Re-ID}
+\begin{itemize}\itemsep0.55em
+\item \code{GET /api/track/GJ01AB1234}: six seed cameras in order
+\item Live confirm appends. Seed ids stay
+\item Teleport flag if implied speed $>$ 180\,km/h (information, not a fail)
+\item CSV is the evaluator artefact
+\item ByteTrack does not replace this API
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Next-camera predict (bonus)}
+\begin{itemize}\itemsep0.55em
+\item \code{GET /api/predict/\{plate\}}, auth required
+\item Rank historical transitions out of the last camera
+\item If none: GIS neighbours by haversine
+\item Method field: \code{frequency+distance}
+\item Not Kalman. Not Re-ID
+\item Track tab button: Next cameras
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Keyword query (optional)}
+\begin{itemize}\itemsep0.55em
+\item \code{POST /api/query} extracts plate, camera id, object class
+\item Response includes \code{engine: keyword\_rules}
+\item Regular expressions, not a language model
+\item T-V09 forbids \code{nlp} and \code{llm} in the body
+\item Do not put ``natural language AI'' on a slide
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Registry, GIS, gaps}
 \begin{itemize}\itemsep0.55em
 \item CSV, form, REST, catalogue sync
@@ -301,6 +420,18 @@ Time & Camera & Location \\
 \item Private-permitted mall requires \code{consent=true}
 \item \code{home.viewer} never sees that mall
 \item Live catalogue has no coordinates. Open \code{cam04} from the table
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Seven tabs a judge will click}
+\begin{itemize}\itemsep0.45em
+\item Operations: map, health pins, wall of at most four tiles
+\item Cameras: table Open tile (catalogue has no GIS)
+\item Vehicle Track: reconstruct, CSV, Next cameras
+\item Alerts: CRITICAL queue, \code{pending\_review}, Ack
+\item Watchlist: representative rows, person enroll
+\item Onboard: ANPR this still, Analyse this still, confirm
+\item Analytics \& Gaps: object CSV, short retention, Dahod
 \end{itemize}
 \end{frame}
 
@@ -336,13 +467,37 @@ Bonus (on camera) & Hybrid, track, objects, intrusion, lawful FRS, RBAC, gaps, W
 
 \begin{frame}{Test families (04 Sep 2026)}
 \begin{itemize}\itemsep0.45em
-\item 74 passed, 1 skipped (Tesseract binary). \code{audit\_gate.py} PASS
+\item Default engines: 88 passed, 4 skipped. \code{audit\_gate.py} PASS
 \item Integrator: TCP, no \code{CAP\_PROP\_FPS}, scene-cut resets track ids
 \item ANPR: normaliser, junk drop, confirm $\neq$ \code{source=anpr}
 \item Objects: person blob inserts. YOLO without weights does not crash
 \item FRS: same gallery matches. \code{cam04} emits zero person events
 \item Matcher: stolen, blacklist, \code{WL-004} without a plate, 120\,s dedupe
 \item Security: viewer 403 on enroll. Auditor 403 on confirm-face. No RTSP in JSON
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Vision tests T-V01 to T-V11}
+\begin{itemize}\itemsep0.4em
+\item T-V01 / T-V02: missing torch or ultralytics $\to$ histogram / blob, no crash
+\item T-V03 / T-V05 / T-V06: skip unless extras and weights exist
+\item T-V04: FaceAnalyzer not constructed on \code{cam04}
+\item T-V07: original crop uri. Reconstructed $\to$ \code{pending\_review}
+\item T-V08: predict returns a list. T-V09: \code{keyword\_rules}
+\item T-V10: Enroll in index. Viewer 403
+\item T-V11: zero forbidden model names in \code{app/}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Experiments: MEASURED versus SKIPPED}
+\begin{itemize}\itemsep0.45em
+\item E-O1 person blob, E-F1 gallery, E-I1 intrusion, E-W1 track $\ge 6$: MEASURED
+\item E-S1 fifth capture rejected. E-S6 GPU 0. MEASURED
+\item E-A1 Tesseract fixture: SKIPPED if binary absent (confirm covers demo)
+\item E-G1 live catalogue: SKIPPED if \code{SENTINEL\_HOST} empty
+\item E-V2 / E-V3 FaceNet and YOLO: SKIPPED without extras
+\item E-V4 \code{cam04} + FaceNet still 0 person events: MEASURED
+\item Log: \code{05\_Output/experiments/EXPERIMENT\_LOG.md}
 \end{itemize}
 \end{frame}
 
@@ -387,6 +542,59 @@ Total intelligence plane & $\sim$5--6 Cr \\
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Capture internals}
+\begin{itemize}\itemsep0.55em
+\item \code{StreamSession} is the only OpenCV capture holder
+\item TCP flag is set before \code{import cv2}
+\item Event time is PTS. Wall clock is only for reconnect backoff
+\item \code{MAX\_OPEN\_CAPTURES} default 4. Fifth open raises
+\item Scene cut: PTS rewind or gap $>$ 5\,s. Object and face tracks reset
+\item File protocol is \code{own\_feed.mp4} on \code{CAM-OWN-001}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{RBAC matrix}
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+User & Role & Sees & Write \\
+\midrule
+\code{judge} & soc\_operator & all & yes \\
+\code{admin} & superadmin & all & yes \\
+\code{home.viewer} & dept\_viewer & Home only & 403 \\
+\code{auditor} & auditor & all & 403 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\medskip
+\begin{itemize}\itemsep0.5em
+\item Mall camera is hidden from Home viewer
+\item Enroll and confirm-face are write routes
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Path jail and HMAC tiles}
+\begin{itemize}\itemsep0.55em
+\item Crops resolve inside media roots. \code{..} is rejected
+\item Stream token: HMAC over camera, actor, expiry. TTL 60\,s
+\item Full digest, \code{compare\_digest}. Not a sliced hash
+\item Browser never receives \code{rtsp://}
+\item \code{hls.min.js} is vendored. No jsDelivr
+\item Sentinel cookie stays on the server
+\end{itemize}
+\end{frame}
+
+\begin{frame}{What we took, what we refused}
+\begin{itemize}\itemsep0.45em
+\item Take: FaceNet, YOLO with person, ByteTrack, enroll form, original crops, predict
+\item Refuse: FaceAnalyzer on every camera
+\item Refuse: 80k footer without DESIGN TARGET
+\item Refuse: catalogue \code{/api/ingest} (live 404)
+\item Refuse: torch in default requirements
+\item Refuse: branded reconstructor names, Wikipedia tests, changing origin
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Security in the PoC}
 \begin{itemize}\itemsep0.55em
 \item Roles: \code{superadmin}, \code{soc\_operator}, \code{dept\_viewer}, \code{auditor}
@@ -418,7 +626,7 @@ Alerts & in-process WebSocket & Redis / Kafka \\
 \begin{frame}{What is done, what is still human}
 \begin{itemize}\itemsep0.5em
 \item Done: platform, HLD, this deck, live catalogue sync, RTSP frame, confirm CSV
-\item Done: objects, intrusion, lawful FRS with gov refuse, 74 tests
+\item Done: objects, intrusion, lawful FRS with gov refuse, optional engine pack
 \item Done: GitHub \code{github.com/amitduabits/PRAHARI}
 \item Human: own-feed YouTube $\le$ 3 min. Gov-feed YouTube $\le$ 3 min, no FRS
 \item Human: Drive Anyone+Viewer for \code{gov\_feed\_plates.csv}

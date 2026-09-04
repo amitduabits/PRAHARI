@@ -89,10 +89,15 @@ def on_detection(event: dict[str, Any], notify: bool = True) -> dict[str, Any] |
         row = _faces.get(face_id)
     if not row:
         return None
+    reconstructed = bool(int(event.get("is_ai_reconstructed") or 0))
     camera_id = event.get("camera_id") or ""
     ts = event.get("ts") or store.now_iso()
     t = _parse_ts(ts)
-    open_alerts = [a for a in store.list_alerts(status="open") if a.get("camera_id") == camera_id]
+    open_alerts = [
+        a
+        for a in store.list_alerts()
+        if a.get("camera_id") == camera_id and (a.get("status") or "") in {"open", "pending_review"}
+    ]
     for existing in open_alerts:
         if not _same_entity(existing, plate, face_id, entity_type, entity_id):
             continue
@@ -102,7 +107,7 @@ def on_detection(event: dict[str, Any], notify: bool = True) -> dict[str, Any] |
             counter = int(existing.get("counter") or 1) + 1
             store.update_alert_counter(existing["alert_id"], counter, event.get("event_id") or "")
             existing["counter"] = counter
-            if notify and existing.get("priority") == "CRITICAL":
+            if notify and not reconstructed and existing.get("priority") == "CRITICAL":
                 from app.services import bus
 
                 bus.notify(existing)
@@ -115,13 +120,13 @@ def on_detection(event: dict[str, Any], notify: bool = True) -> dict[str, Any] |
             "ts": ts,
             "category": row.get("category") or event.get("category") or "",
             "priority": row.get("priority") or event.get("priority") or "LOW",
-            "status": "open",
+            "status": "pending_review" if reconstructed else "open",
             "counter": 1,
             "entity_type": entity_type or ("person" if face_id else "vehicle"),
             "entity_id": entity_id,
         }
     )
-    if notify:
+    if notify and not reconstructed:
         from app.services import bus
 
         bus.notify(alert)

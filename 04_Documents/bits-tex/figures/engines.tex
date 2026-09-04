@@ -1,0 +1,18 @@
+\begin{tikzpicture}[
+  font=\sffamily\footnotesize,
+  node distance=6mm and 9mm,
+  box/.style={draw=bitsblue, rounded corners=2pt, align=center,
+              inner sep=4pt, minimum height=9mm, minimum width=26mm, fill=white},
+  arr/.style={-{Stealth[length=2.2mm]}, bitsblue, thick}]
+\node[box, fill=codebg] (cam) {camera row\\id + ownership};
+\node[box, right=of cam] (ef) {engines\_for()};
+\node[box, above right=8mm and 14mm of ef] (gov) {drop faces\\frs\_refused};
+\node[box, below right=8mm and 14mm of ef] (own) {anpr + objects\\(+ faces if Own)};
+\node[box, right=28mm of ef] (an) {analyse()};
+\node[box, right=of an] (ins) {insert + match};
+\draw[arr] (cam) -- (ef);
+\draw[arr] (ef) -- (gov);
+\draw[arr] (ef) -- (own);
+\draw[arr] (own) -- (an);
+\draw[arr] (an) -- (ins);
+\end{tikzpicture}

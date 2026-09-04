@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from app import config, store
+from app import store
 from app.auth import User, assert_write, require_user
 from app.services import matcher
 from app.services.analyse import analyse
@@ -33,14 +33,10 @@ class ConfirmFaceIn(BaseModel):
     ts: str | None = None
 
 
-def _write_crop(camera_id: str, event_id: str, crop_bgr) -> str:
-    folder = config.crop_dir() / camera_id
-    folder.mkdir(parents=True, exist_ok=True)
-    dest = folder / f"{event_id}.jpg"
-    if crop_bgr is not None:
-        cv2.imwrite(str(dest), crop_bgr)
-    rel = f"/crops/{camera_id}/{event_id}.jpg"
-    return rel
+def _write_crop(camera_id: str, event_id: str, crop_bgr, entity_type: str = "vehicle") -> dict:
+    from app.services.crops import persist
+
+    return persist(camera_id, event_id, crop_bgr, entity_type=entity_type)
 
 
 def _camera_or_404(camera_id: str) -> dict:
@@ -70,7 +66,7 @@ def _event_from_anpr(cam: dict, result: dict, pts_ms: int = 0) -> dict:
         "source_case_id": (wl or {}).get("source_case_id") or "",
         "source": "anpr",
     }
-    event["crop_uri"] = _write_crop(cam["camera_id"], event["event_id"], result.get("crop_bgr"))
+    event.update(_write_crop(cam["camera_id"], event["event_id"], result.get("crop_bgr"), "vehicle"))
     return event
 
 
@@ -81,7 +77,14 @@ def _persist_analyse_event(cam: dict, event: dict) -> dict:
     if not event.get("event_id"):
         event["event_id"] = str(uuid.uuid4())
     if crop is not None:
-        event["crop_uri"] = _write_crop(cam["camera_id"], event["event_id"], crop)
+        event.update(
+            _write_crop(
+                cam["camera_id"],
+                event["event_id"],
+                crop,
+                entity_type=str(event.get("entity_type") or "vehicle"),
+            )
+        )
     if event.get("bbox") is not None and not event.get("bbox_json"):
         event["bbox_json"] = json.dumps(event.get("bbox"))
     store.insert_detection(event)
