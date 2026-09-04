@@ -17,7 +17,7 @@ Open **`REMAINING_TO_WIN.md`**. That is the only list that can still lose the co
 2. `02_POINT_BY_POINT_AUDIT.md` (re-audited 04 Sep after engines)
 3. `REMAINING_TO_WIN.md` (HUMAN actions H1–H11)
 4. Do **not** start new engines. Do **not** delay C13 videos for FaceNet.
-5. Optional if asked: refresh the 13-slide PPTX to match Beamer; merge `engine-pack` to `main`; write `DEMO_ACCEPTANCE.md` after mp4s exist.
+5. Optional if asked: refresh the 13-slide PPTX to match Beamer; merge `engine-pack` to `main`; write `DEMO_ACCEPTANCE.md` after mp4s exist; execute `08_Misc/24_UI_UX_Prompt_Book` (duty-desk restyle) **without delaying C13 videos**.
 
 ## Hard remaining order
 

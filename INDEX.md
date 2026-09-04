@@ -14,6 +14,7 @@ PRAHARI is a hybrid statewide CCTV intelligence plane: Model 1 registry and GIS,
 | Investment audit (DGP, security, Palantir seats) | `04_Documents/PRAHARI_Investment_Audit.md` |
 | Closeout prompt book | `08_Misc/22_Closeout_Prompt_Book/START_HERE.md` |
 | Remaining HUMAN work (videos, Drive, portal) | `08_Misc/22_Closeout_Prompt_Book/REMAINING_TO_WIN.md` |
+| Duty-desk UI/UX (anti-slop, quantified bar) | `08_Misc/24_UI_UX_Prompt_Book/START_HERE.md` |
 | Arnav engine-pack integration (FaceNet, YOLO, ByteTrack) | `08_Misc/23_Arnav_Integration/START_HERE.md` |
 | Point-by-point submission audit (re-audited after engines) | `08_Misc/22_Closeout_Prompt_Book/02_POINT_BY_POINT_AUDIT.md` |
 | Audit remediation prompt book | `08_Misc/21_Audit_Remediation/START_HERE.md` |
