@@ -1,5 +1,7 @@
 # Closeout prompt book (04–07 Sep 2026)
 
-Open `START_HERE.md`. Tick `csv/closeout_actions.csv`.
+Open `START_HERE.md`. Humans then open `REMAINING_TO_WIN.md`.
 
-This book audits every official submission sentence against the running PRAHARI tree and gives paste-ready agent phases to close the gaps: lawful FRS, object detection, intrusion, experiments, videos, portal.
+C00–C12 and I00–I12 are done in code and PDFs. Remaining work is HUMAN: two Unlisted YouTube videos, Drive CSV, incognito, portal.
+
+Re-audit: `02_POINT_BY_POINT_AUDIT.md`. Tick `csv/closeout_actions.csv` C13–C14.

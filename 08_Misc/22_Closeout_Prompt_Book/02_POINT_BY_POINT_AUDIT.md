@@ -1,266 +1,240 @@
 # Point-by-point audit — official submission vs PRAHARI now
 
-**Audited.** 04 September 2026.  
-**Sources.** `06_References/SENTINEL_Problems_Page.md` (verbatim official page), live code under `02_Code/prahari/`, HLD, slides, deliverables, pytest tree, `08_Misc/20_Prompts/csv/execution_status.csv`, `08_Misc/21_Audit_Remediation/csv/audit_actions.csv`.
+**Re-audited.** 04 September 2026 after C00–C12 and I00–I12.  
+**Code.** `02_Code/prahari/` · GitHub default branch `engine-pack` · https://github.com/amitduabits/PRAHARI  
+**Sources.** Official text in this conversation (presentation, HLD, two demos, submit methods, scale bullets, eval 01–07 + bonus), live tree, HLD, Beamer slides/notes, deliverables, pytest.
 
 **Status key**
 
 | Status | Meaning |
 |---|---|
-| DONE | Implemented, evidenced, tests exist or artefact exists |
-| PARTIAL | Code or doc exists but missing a required piece, a test, or a human artefact |
-| MISSING | Not in the running platform |
-| BLOCKED | Waiting on a human or an external host |
-| N/A | Official item is a Model 4 full-VMS deliverable; hybrid PoC answers it as DESIGN TARGET text, not as a fake product |
+| DONE | In the running platform or in the submitted-quality PDF/HLD, with tests or an artefact |
+| PARTIAL | Exists but a required human artefact or a spoken honesty line is still missing |
+| MISSING | Not in the packet the jury will see |
+| N/A | Model 4 full-VMS item; answered as DESIGN TARGET text, not faked |
 
-Every pending item has closeout IDs (`Cxx-nnn`) in `csv/closeout_actions.csv`.
+Remaining HUMAN rows: `REMAINING_TO_WIN.md` and `csv/closeout_actions.csv` C13–C14.
 
 ---
 
 ## 0. Verdict in one page
 
-The platform is a **working hybrid intelligence plane for plates**: registry, GIS (seeded cameras), tokenised HLS viewer, ANPR interface, operator confirm, watchlist, WebSocket alerts, six-point track, RBAC, integrator laws, GitHub, HLD, slides.
+The platform **is** a working hybrid intelligence plane: registry, GIS (seeded), tokenised HLS, ANPR + operator confirm, CPU objects, godown intrusion, lawful enrolled-gallery FRS on Own cameras only, plate track `GJ01AB1234`, RBAC, integrator laws, GitHub, HLD, 54-frame slides, 15-page notes.
 
-It is **not yet a complete submission**. Two screen-recorded demonstrations, the Drive CSV link, incognito check, and portal receipt are absent. Official evaluation area 05 and the HLD bullet on AI analytics also name **FRS, object detection, person/vehicle detection, and intrusion**. Those engines are not in `app/services/`. Watchlist row `WL-004` is a person with no plate; the matcher ignores it.
+The packet **is not** a complete submission. Two Unlisted YouTube demonstrations, the Drive CSV, incognito checks, and the portal receipt are absent. Those four items eliminate you under eval 01, 04, and 07 regardless of code quality.
 
-If we submit as-is after only recording videos, we can pass the **mandatory ANPR test case** (with operator confirm, which must be labelled as such). We will score weakly on analytics quality and leave bonus “additional reliable analytics” on the table. This book exists to close both the submission blockers and the analytics gap without breaking honesty or the FRS law.
+Tesseract is often not on PATH. Confirm on `cam04` is honest if you say so. Do not label it ANPR.
+
+Do not upload the old 13-slide `PRAHARI_Solution.pptx` as the presentation. Upload `PRAHARI-Slides.pdf`.
 
 ---
 
 ## 1. Solution Presentation (PPT/PDF)
 
-Official: “Proposed solution model … with justification. Overview, objectives, key innovations. High-level architecture and end-to-end workflow. AI-powered video analytics (detection, recognition, event analytics). Watchlist correlation and automated real-time alerts. Stack. Scalability, interoperability, security, deployment. Operational benefits.”
+Official: model with justification; overview, objectives, innovations; architecture and E2E workflow; AI analytics (detection, recognition, events); watchlist correlation and real-time alerts; stack; scale/interop/security/deployment; operational benefits.
 
-| # | Official sentence | Needed | Done | Pending | Close |
-|---|---|---|---|---|---|
-| 1.1 | Model (1–5, Hybrid, or Customised) with justification | Hybrid 1+2+thin 3, why not Model 4 statewide | DONE. BRIEF, HLD §2, slides, README | Keep. Do not switch models. | — |
-| 1.2 | Overview, objectives, key innovations | One-page story: census + viewing + event bus | DONE. Slides + notes + BRIEF | Confirm names + institute on slide 1 (W05-001 marked DONE) | C12-001 |
-| 1.3 | High-level architecture and E2E workflow | Diagram + ingest → analyse → match → alert → track | PARTIAL. TikZ arch in `04_Documents/bits-tex/figures/arch.tex`. Pipeline is plate-only | Redraw worker box as ANPR + objects + lawful FRS after C02/C03 | C12-002 |
-| 1.4 | AI analytics: detection, recognition, event analytics | Detection (objects/persons/vehicles), recognition (plates + faces), events (alerts/intrusion) | PARTIAL. Recognition = ANPR + confirm. No detection engine. No FRS | Implement C02–C04 then patch slides. Do not screenshot FRS on Paldi Circle | C02, C03, C12-003 |
-| 1.5 | Watchlist correlation + automated alerts | Stolen/wanted/missing/blacklist; real-time | PARTIAL. Plate matcher + WS alerts. Person row never matches. Missing-person path absent | C05 matcher for face_id / entity_id | C05-001 |
-| 1.6 | Technologies, frameworks, tools | Open source stack named | DONE. FastAPI, SQLite, Leaflet, OpenCV, Tesseract, FFmpeg | Add OpenCV DNN / LBPH after they exist. Do not list Kafka as running | C12-004 |
-| 1.7 | Scale, interoperability, security, deployment | 80k, adapters, RBAC, regional GPU | PARTIAL. HLD §5/§9/§10. PPT cost slide matches ~₹5–6 Cr DESIGN TARGET | Spoken 80k line already in footer. Keep DESIGN TARGET label | C12-005 |
-| 1.8 | Operational benefits / public safety | Command-centre value without ripping VMS | DONE in notes/slides | One sentence on godown intrusion after C04 | C12-006 |
-| 1.9 | PPT/PDF files exist and export | Official format | DONE. `04_Documents/PRAHARI_Solution.pptx`, `05_Output/deliverables/PRAHARI_Solution.pdf`, Beamer `PRAHARI-Slides.pdf` | Punch list: working-tree paths on old PPT slide 13 | C12-007 |
-| 1.10 | No lorem, no forbidden claims | Honesty lock | DONE for A08 greps | After FRS lands, replace “face recognition / not in this PoC” with the FRS law sentence, not a NAFIS claim | C12-008 |
+| # | Official sentence | Needed | Now | Pending |
+|---|---|---|---|---|
+| 1.1 | Model 1–5 / Hybrid / Customised with justification | Hybrid 1+2+thin 3; why not Model 4 statewide | DONE. HLD §2, slides “Chosen model”, README | Keep |
+| 1.2 | Overview, objectives, key innovations | Census + viewing + event bus | DONE. Notes §1–§5, slides outcomes | Keep names on title frame |
+| 1.3 | High-level architecture and E2E workflow | Diagram + ingest → analyse → match → alert → track | DONE. TikZ `pipeline.tex`, `arch.tex`, `engines.tex` | — |
+| 1.4 | AI: detection, recognition, event analytics | Objects/persons/vehicles; plates + faces; alerts/intrusion | DONE in Beamer/notes/HLD §6. Code: blob objects, histogram FRS Own-only, ANPR/confirm, intrusion | Show Analyse still on **own-feed video**. Never FRS on Paldi |
+| 1.5 | Watchlist correlation + automated alerts | Stolen/wanted/missing/blacklist; real-time | DONE. Plate + `face_id` + intrusion; WS + poll | Show Alerts tab on camera |
+| 1.6 | Technologies, frameworks, tools | Open-source stack | DONE. Stack slide. Optional torch in `requirements-vision.txt`, not default | Do not list Kafka as running |
+| 1.7 | Scale, interoperability, security, deployment | 80k DESIGN TARGET, adapters, RBAC, regional GPU | DONE. Slides 80k + MEASURED laptop + cost. Footer DESIGN TARGET | Speak it on video |
+| 1.8 | Operational benefits / public safety | Command centre without ripping VMS | DONE. Notes + slides | One spoken line in own-feed |
+| 1.9 | PPT/PDF files exist | Official format | DONE for PDF: `04_Documents/PRAHARI-Slides.pdf` (54 frames), `PRAHARI-Notes.pdf` (15 pages). PARTIAL for PPTX: 13-slide file is stale | HUMAN: attach Beamer PDF. Optional: ask Grok to refresh PPTX if the form rejects PDF |
+| 1.10 | No lorem, no forbidden claims | Honesty lock | DONE. `audit_gate.py` PASS (K1, K3) | Keep confirm ≠ ANPR on camera |
 
 ---
 
 ## 2. Technical Proposal — High-Level Design
 
-| # | Official sentence | Needed | Done | Pending | Close |
-|---|---|---|---|---|---|
-| 2.1 | Overall architecture + diagrams + component interactions | Hybrid diagram, adapters, bus, SOC | DONE. HLD §3. PoC = SQLite + in-process WS, contract = future Kafka | After analytics, name `analyse()` as the worker | C12-009 |
-| 2.2 | Heterogeneous cameras, NVRs, VMS into one platform | CSV, form, REST, catalogue, RTSP/HLS/WHEP/ONVIF | PARTIAL. CSV, form, REST, catalogue, RTSP, HLS. WHEP is a documented link-out. ONVIF not implemented | Document ONVIF as adapter stub (one connector), do not fake a device manager | C12-010 |
-| 2.3 | Ingest, process, manage live streams from dispersed sites | TCP capture, PTS, backoff, HLS fallback, session cap | DONE. `capture.py`, `sampler.py`, `sessions.py`, integrator tests | Live soak experiment C09 still required | C09-001 |
-| 2.4 | Watchlist integration (stolen vehicles, wanted persons, missing persons, blacklisted vehicles, suspects) + continuous correlation + real-time alerts | Multi-entity watchlist, match on every detection | PARTIAL. Vehicles: STOLEN, BLACKLIST, OBSERVE. Person row `WL-004` Ramesh K has empty plate so matcher skips it. No missing-person gallery | C05 + C03. Representative data only. No live VAHAN | C05-002 |
-| 2.5 | AI: ANPR, FRS, object detection, person and vehicle tracking, other analytics | Working approach in HLD **and** in code | PARTIAL. HLD §6: Phase-1 ANPR, Phase-1.5 count/intrusion if GPU, Phase-2 FRS. Code: ANPR + confirm only. YOLO class raises RuntimeError. Vehicle “tracking” is plate sightings, not a multi-object tracker | Implement CPU engines. Rewrite HLD §6 to match. Person/vehicle **track ids** on own-feed; plate track remains the evaluation test | C02, C03, C04, C12-011 |
-| 2.6 | Alert workflow: prioritisation, visualisation, user interaction | CRITICAL/HIGH/LOW, UI queue, ack, WS | DONE for plates | Person/intrusion cards must not render a blank plate | C07-001 |
-| 2.7 | Scale, interoperability, security, performance to ~80,000 cameras | Regional 1 fps math, HA, DR, RBAC | PARTIAL. HLD §5/§10 DESIGN TARGET. No MEASURED load test beyond 4 tiles | C10 bench. Label every number | C10-001 |
-| 2.8 | Prerequisites, assumptions, info from departments | Inventory, protocol, ONVIF, AMC, consent, watchlist sample | DONE. HLD §11 | Unchanged | — |
-
-HLD extra (not in the eight bullets but required by Step 6 scale and Step 3 cover list):
-
-| # | Topic | Status | Close |
-|---|---|---|---|
-| 2.9 | Cybersecurity architecture | PARTIAL. RBAC, tokens, path jail, HMAC, no RTSP in browser. TLS/mTLS/VLAN are DESIGN TARGET text | C11 |
-| 2.10 | Deployment architecture | PARTIAL. Laptop PoC. Regional GPU described | C10, C12 |
-| 2.11 | Infrastructure sizing | DESIGN TARGET in §5/§12 | C10 |
-| 2.12 | Cost-benefit | DONE. ~₹5–6 Cr intelligence plane, not VMS replacement | — |
-| 2.13 | Future roadmap | PARTIAL. Model 4 selected cameras, FRS Phase-2 | Move FRS lawful-gallery into Phase-1.5 implemented; keep AFIS/NAFIS Phase-2 | C12-011 |
+| # | Official sentence | Needed | Now | Pending |
+|---|---|---|---|---|
+| 2.1 | Overall architecture + diagrams + interactions | Hybrid diagram, adapters, bus, SOC | DONE. HLD §3 ASCII + TeX figures. PoC = SQLite + in-process WS | — |
+| 2.2 | Heterogeneous cameras, NVRs, VMS | CSV, form, REST, catalogue, RTSP/HLS/WHEP/ONVIF | DONE for CSV/form/REST/catalogue/RTSP/HLS. WHEP documented link-out. ONVIF named as later adapter | Do not fake a device manager |
+| 2.3 | Ingest, process, manage live streams from dispersed sites | TCP, PTS, backoff, HLS fallback, session cap | DONE. `capture.py`, `sampler.py`, `sessions.py`, integrator tests | Re-probe cam04 on recording day |
+| 2.4 | Watchlist (stolen, wanted, missing, blacklist, suspects) + continuous correlation + real-time alerts | Multi-entity match on every detection | DONE. Vehicles STOLEN/BLACKLIST/OBSERVE. Person `WL-004` matches `face_id`. Representative only | No live VAHAN. Say so |
+| 2.5 | AI: ANPR, FRS, object detection, person/vehicle tracking, other | Approach in HLD **and** in code | DONE. HLD §6 + 6.1–6.4. Code: Tesseract/confirm, blob objects, Own-only histogram FRS, IoU `track_id`, plate GIS track. Optional FaceNet/YOLO/ByteTrack | GPU count MEASURED 0. Plate track is the eval test, not ByteTrack |
+| 2.6 | Alert workflow: priority, visualisation, interaction | CRITICAL/HIGH/LOW, queue, ack, WS | DONE. Person cards show name/gallery. `pending_review` shown | Show Ack on video |
+| 2.7 | Scale/interop/security/performance to ~80,000 cameras | Regional 1 fps, HA, DR, RBAC | DONE as DESIGN TARGET HLD §5/§10/§12. MEASURED: 4 captures, 41 KB crop, GPU 0 | Speak DESIGN TARGET |
+| 2.8 | Prerequisites from departments | Inventory, protocol, ONVIF, AMC, consent, watchlist sample | DONE. HLD §11 | — |
+| 2.9 | Cybersecurity | RBAC, tokens, path jail, HMAC, no RTSP in browser | DONE in PoC tests. TLS/mTLS/VLAN DESIGN TARGET | — |
+| 2.10 | Deployment / sizing / cost | Regional GPU, ~₹5–6 Cr intelligence plane | DONE. HLD §10/§12 | Not a vendor quote |
+| 2.11 | Central/regional/edge, GPU, bandwidth, hot/warm/cold, LB, HA/DR, cost | Official “participants should explain” list | DONE in HLD §5, §10, §12, notes scale section, slides | Must be in the PDF the jury opens (it is) |
 
 ---
 
 ## 3. Demonstration on participant's own feed
 
-Official: max 2–3 minutes, screen-recorded, fully functional backend (no mock-ups). Must show onboard/process, AI detection/analytics (ANPR, FRS, **or** other), watchlist correlation, automatic real-time alerts.
+Official: max 2–3 minutes, screen-recorded, fully functional backend. Onboard/process; AI (ANPR, FRS, **or** other); watchlist correlation; automatic alerts.
 
-| # | Official sentence | Needed | Done | Pending | Close |
-|---|---|---|---|---|---|
-| 3.1 | Own CCTV or footage of our choice | File camera `CAM-OWN-001` | DONE. `03_Data/recordings/own_feed.mp4` exists (W02-001 DONE) | If clip has no readable plate, use confirm **and** say so. Prefer a still that Tesseract can read | C06-003, C13-001 |
-| 3.2 | Onboarding and processing live or recorded feeds | File protocol tile + ingest | PARTIAL. Tile path implemented. Screen record missing | Record it | C13-002 |
-| 3.3 | AI detection and analytics (ANPR, FRS, or other) | At least one working engine on the clip | PARTIAL. ANPR interface + confirm. Tesseract often absent. No FRS, no objects | C06 Tesseract. C02 objects on the clip. C03 FRS on enrolled stills in the same video if time | C06, C02, C03, C13-003 |
-| 3.4 | Correlation with representative watchlist | Stolen/wanted/missing/blacklist | PARTIAL. `GJ01AB1234` STOLEN works. Person watchlist does not | C05 | C05, C13-004 |
-| 3.5 | Automatic real-time alerts and visualisation | WS + Alerts tab, no refresh | DONE in product | Must appear in the video | C13-005 |
-| 3.6 | Fully functional, not a mock | Detection **row in SQLite** | DONE for confirm path | Video must show the Alerts card after a real POST | C13-006 |
-| 3.7 | ≤ 3 minutes, Unlisted YouTube | Artefact | MISSING. `own_feed_demo.mp4` and YouTube URL pending | HUMAN | C13-007 |
-| 3.8 | Spoken honesty | Confirm vs OCR, DESIGN TARGET 80k, representative watchlist | Script exists (`own_feed_demo_script.md`) | Update script after C07 so objects/FRS appear without claiming NAFIS | C12-012 |
+| # | Official sentence | Needed | Now | Pending |
+|---|---|---|---|---|
+| 3.1 | Own CCTV or footage of choice | File camera `CAM-OWN-001` | DONE. `03_Data/recordings/own_feed.mp4` | If no readable plate, confirm and say so |
+| 3.2 | Onboarding and processing | File tile + ingest | PARTIAL. Product can. **No screen record** | HUMAN H5 |
+| 3.3 | AI detection/analytics | At least one engine on the clip | PARTIAL. Analyse still + objects + optional Own FRS in product | Must appear in the video |
+| 3.4 | Correlation with representative watchlist | Stolen/wanted/missing/blacklist | DONE in product (`GJ01AB1234`, `WL-004`) | Must appear in the video |
+| 3.5 | Automatic real-time alerts | WS + Alerts tab | DONE in product | Must appear in the video |
+| 3.6 | Fully functional, not a mock | SQLite row after POST | DONE | Video must show Alerts after a real POST |
+| 3.7 | ≤ 3 min Unlisted YouTube | Artefact | **MISSING** | HUMAN H5 |
+| 3.8 | Spoken honesty | Confirm vs OCR, DESIGN TARGET 80k, representative watchlist | Script ready | Read MUST lines |
 
 ---
 
 ## 4. Live demonstration on government-provided CCTV feed
 
-Official: onboard government feed(s); live or recorded viewing; analytics output; screen-recorded video **plus** output report of detected vehicles or number plates with timestamps.
+Official: onboard gov feed(s); live or recorded viewing; analytics output; screen-recorded video **plus** output report of detected vehicles or plates with timestamps.
 
-| # | Official sentence | Needed | Done | Pending | Close |
-|---|---|---|---|---|---|
-| 4.1 | Onboard government-provided feeds | Catalogue sync of sandbox cameras | DONE. 30 cameras from `/cameras.json`. `onboard_failures.md` exists. cam01 and cam04 RTSP-TCP live (pack notes) | Re-probe on recording day; ids change | C09-002 |
-| 4.2 | Successful onboarding and live or recorded viewing | HLS tile via tokenised proxy | PARTIAL. Product can. Video missing. GIS pins cannot be used: live catalogue has no coordinates | Open `cam04` from Cameras table, not the map | C13-008 |
-| 4.3 | Available video-analytics output on the provided feed | ANPR and/or objects on Paldi Circle (cam04) | PARTIAL. Two **operator confirm** rows, confidence 1.0. Tesseract was not on PATH. No object detections | Install Tesseract. Run analyse on a grabbed frame. If OCR fails, confirm **and** still run object detector on the same frame | C06-004, C09-003 |
-| 4.4 | Screen-recorded video | ≤3 min, Unlisted YouTube | MISSING | HUMAN. FRS **off** on this feed | C13-009 |
-| 4.5 | Output report: detected vehicles or plates + timestamps | CSV | PARTIAL. `gov_feed_plates.csv` has 2 confirm rows on cam04 | After C06/C09, regenerate. If still confirm, keep the NOTE.txt honesty line. Add `gov_feed_objects.csv` if objects fire | C09-004, C13-010 |
-| 4.6 | Drive/OneDrive Anyone+Viewer | Official submit method | MISSING | HUMAN | C13-011 |
-| 4.7 | Do not wget `/stream/<id>` | Integrator law | DONE in code/docs | Spoken script already forbids it | — |
+| # | Official sentence | Needed | Now | Pending |
+|---|---|---|---|---|
+| 4.1 | Onboard government feeds | Catalogue sync | DONE. 30 cameras from `/cameras.json` | Re-sync on record day |
+| 4.2 | Onboarding and live/recorded viewing | HLS tile via tokenised proxy | PARTIAL. Product can. **No video**. Live catalogue has no coordinates | Open cam04 from the **table** |
+| 4.3 | Analytics output on the provided feed | ANPR and/or objects on Paldi | PARTIAL. Two operator-confirm rows, confidence 1.0. Tesseract often absent. Objects available via Analyse | Confirm honesty. **No FRS** |
+| 4.4 | Screen-recorded video Unlisted | ≤3 min | **MISSING** | HUMAN H6 |
+| 4.5 | Output report: vehicles or plates + timestamps | CSV | PARTIAL. `gov_feed_plates.csv` + NOTE.txt | Upload Drive. Optional objects CSV |
+| 4.6 | Drive/OneDrive Anyone+Viewer | Official method | **MISSING** | HUMAN H7 |
+| 4.7 | Do not wget `/stream/<id>` | Integrator law | DONE in code/docs | Spoken forbid |
 
 ---
 
 ## 5. How to submit
 
-| # | Official method | Status | Close |
+| # | Official method | Status | Who |
 |---|---|---|---|
-| 5.1 | Unlisted YouTube | MISSING both videos | C13-007, C13-009 |
-| 5.2 | Drive/OneDrive Anyone+Viewer | MISSING | C13-011 |
-| 5.3 | Optional hosted URL + test login | SKIPPED for public tunnel (A13). Local `:8080` only. A02–A05 are PASS so a tunnel is allowed **after** password rotate | C14-001 optional |
-| 5.4 | Optional GitHub/GitLab | DONE. https://github.com/amitduabits/PRAHARI | C14-002 push after analytics |
-| 5.5 | Portal form before 07 Sep 12:00 IST | MISSING | C14-003 |
-| 5.6 | Incognito of every submitted link | BLOCKED on videos | C14-004 |
+| 5.1 | Unlisted YouTube | MISSING both | Lead H5 H6 |
+| 5.2 | Drive/OneDrive Anyone+Viewer | MISSING | Lead H7 |
+| 5.3 | Optional hosted URL + test login | SKIPPED (local `:8080`). Tunnel only after password rotate | Lead H10 optional |
+| 5.4 | GitHub/GitLab | DONE. https://github.com/amitduabits/PRAHARI default `engine-pack` | Paste that URL |
+| 5.5 | Portal before 07 Sep 12:00 IST | MISSING | Lead H9 |
+| 5.6 | Incognito of every submitted link | BLOCKED on videos | Lead H8 |
 
 ---
 
 ## 6. Plan for scale (participants should explain)
 
-| # | Official item | Needed | Done | Pending | Close |
-|---|---|---|---|---|---|
-| 6.1 | Central, regional, and edge-compute | 2 central API + 5 regional GPU + edge 1 fps | DONE as DESIGN TARGET in HLD §10 | C10 MEASURED: this laptop, 4 captures, 1 fps sampler | C10-002 |
-| 6.2 | GPU or accelerator for video analytics | L40S-class regional; PoC is CPU | PARTIAL. HLD names 8×L40S. PoC YOLO raises RuntimeError | C02 CPU DNN. HLD: GPU is statewide, CPU is PoC. Never claim a GPU we do not have | C10-003, C12-013 |
-| 6.3 | Network bandwidth and low-bandwidth strategies | 3.6 GB/s naive vs 720 MB/s per region; crops not 25 fps; HLS if 8554 blocked | DONE as DESIGN TARGET in HLD §5 | C10 MEASURED bytes of one 1 fps crop stream | C10-004 |
-| 6.4 | Hot / warm / cold storage vs retention | 7 / 8–30 / 31–90 days, Phase-2 selected cameras | DONE as DESIGN TARGET. PoC stores crops + metadata | Experiment: crop file size × 45k × 7 days labelled DESIGN TARGET | C10-005 |
-| 6.5 | Load balancing, horizontal scaling, monitoring, logging, health checks | Regional worker = scale unit; Prometheus statewide | PARTIAL. `/api/health`, gap report, MAX_OPEN_CAPTURES. No Prometheus in PoC | C10 health-check soak. Do not install K8s | C10-006 |
-| 6.6 | HA, backup, DR, cybersecurity | active-active, RPO 15 min, RTO 1 h, RBAC, audit | PARTIAL. Security controls MEASURED in tests. HA/DR DESIGN TARGET | C11 tests stay green. HLD already states PoC HA = none | C11 |
-| 6.7 | Estimated implementation and operational costs | ~₹5–6 Cr / yr intelligence plane | DONE. HLD §12 | Do not present as a quote | — |
+All of these are **written** in HLD + slides + notes. The jury also needs to **hear** 80k as DESIGN TARGET on video.
+
+| # | Official item | In docs | MEASURED vs DESIGN TARGET |
+|---|---|---|---|
+| 6.1 | Central, regional, edge | HLD §10: 2 API + 5 GPU regions + edge 1 fps | Laptop PoC. 4 captures MEASURED |
+| 6.2 | GPU / accelerators | Regional L40S-class DESIGN TARGET. PoC CPU | GPU count MEASURED 0 |
+| 6.3 | Bandwidth + low-bandwidth | HLD §5: 3.6 GB/s naive, 720 MB/s/region; HLS if 8554 blocked | Mean crop 41 KB MEASURED; 80 KB DESIGN TARGET |
+| 6.4 | Hot / warm / cold | Phase-2 selected cameras. PoC = crops + metadata | Arithmetic in SCALE_BENCH |
+| 6.5 | LB, scale-out, monitoring, health | Regional worker = scale unit. `/api/health`, gap report, session cap | Health p99 ~9 ms MEASURED. No K8s in PoC |
+| 6.6 | HA, backup, DR, cyber | HLD: PoC HA = none. RBAC/audit/HMAC MEASURED | Do not claim active-active on a laptop |
+| 6.7 | Implementation + ops cost | ~₹5–6 Cr / yr intelligence plane DESIGN TARGET | Not a VMS-replacement quote |
 
 ---
 
-## 7. Evaluation framework A — common areas
+## 7. Evaluation framework A
 
 | Area | Official bar | PRAHARI now | Risk | Close |
 |---|---|---|---|---|
-| 01 Successful test case | Onboard gov feed, live/recorded viewing, required analytics output | 30 cameras onboarded. HLS viewing works. Analytics output is confirm-not-OCR. Videos missing | Eliminates if video or viewing fails | C09, C13 |
-| 02 Solution presentation | Clarity and completeness of PPT/PDF | Beamer + PPT + PDF exist. Hybrid justified. AI slide is ANPR-only | Medium: incomplete AI story | C12 |
-| 03 Solution architecture | Sound, feasible, secure, interoperable HLD + diagrams | HLD matches live APIs. FRS/object described as later | Medium until §6 rewritten to match new engines | C12 |
-| 04 Working platform and demonstration | Maturity on own feed **and** gov feed | Platform mature for plates. Both videos missing | Eliminates | C13 |
-| 05 Video analytics output | ANPR, vehicle or person detection, intrusion, object detection, timestamps, reports | ANPR weak (Tesseract often absent). No person/vehicle/object/intrusion engines. Timestamps exist on confirm CSV | High for scoring; not an instant DQ if ANPR/confirm + timestamps exist | C02–C07, C09 |
-| 06 Scalability and PoC readiness | 80k story + on-site PoC preparedness | HLD math + finale runcard. No MEASURED bench. Finale bag not packed | Tie-break | C10, C14-005 |
-| 07 Submission completeness | Docs, videos, reports, links, credentials consistent and reachable | GitHub live. Videos, Drive, portal, incognito missing | Eliminates if a link 403s | C14 |
+| 01 Successful test case | Gov feed onboard, viewing, analytics output | 30 cameras, HLS works, confirm CSV. **No video** | Eliminates | H6 H7 |
+| 02 Solution presentation | Clarity of PPT/PDF | Beamer 54 frames + notes 15 pages. Old PPT stale | Medium if wrong file attached | Attach Beamer PDF |
+| 03 Solution architecture | Sound HLD + diagrams | HLD matches APIs. FRS law explicit | Low | — |
+| 04 Working platform | Own **and** gov demos | Platform mature. **Both videos missing** | Eliminates | H5 H6 |
+| 05 Video analytics | ANPR, person/vehicle, intrusion, objects, timestamps, reports | Engines in code. Confirm CSV exists. Objects/FRS not on camera yet | Score, not instant DQ if ANPR/confirm + timestamps exist | Show Analyse + object CSV on own-feed |
+| 06 Scalability / PoC ready | 80k story + on-site PoC | HLD math + runcard. Finale bag empty | Tie-break | Speak DESIGN TARGET. Pack bag after shortlist |
+| 07 Completeness | Docs, videos, reports, links reachable | GitHub live. Videos, Drive, portal missing | Eliminates | H8 H9 |
 
 ---
 
 ## 8. Evaluation framework B — bonus (does not rescue a failed mandatory)
 
-| Bonus | Official | PRAHARI now | After this book |
+| Bonus | Official | In product | On camera yet |
 |---|---|---|---|
-| Hybrid architecture with operational value | Must be visible | Built and in PPT | Keep. Show in both videos |
-| Advanced cross-camera vehicle tracking | Multi-camera correlation | `GET /api/track/GJ01AB1234` six seeds + live append + teleport flag | Keep. Show Reconstruct + CSV |
-| Additional reliable analytics beyond ANPR | Must be **demonstrated**, not described | MISSING | C02 objects, C03 FRS (own-feed only), C04 intrusion |
-| Edge / bandwidth / low-connectivity | 1 fps, HLS fallback | Designed. HLS fallback coded | Show HLS on gov video. Speak 1 fps |
-| Cybersecurity, privacy, audit, RBAC | Enhanced | RBAC, audit, consent, tokenised HLS, path jail, HMAC | C11. FRS privacy is a bonus if we refuse gov-camera faces |
-| Dashboards, automated alerts, health, APIs | Operational | Map, alerts WS, gap report, REST | Show footer health + WS toast |
+| Hybrid with operational value | Visible | Yes | Own-feed map line |
+| Cross-camera vehicle tracking | Multi-camera correlation | `GET /api/track/GJ01AB1234` six seeds + live append | Reconstruct + CSV |
+| Additional analytics beyond ANPR | Demonstrated | Objects, intrusion, Own-only FRS | Analyse still + godown line. No Paldi FRS |
+| Edge / bandwidth / low-connectivity | 1 fps, HLS | HLS fallback coded | HLS on gov video. Speak 1 fps |
+| Cybersecurity, privacy, audit, RBAC | Enhanced | RBAC, audit, consent, HMAC, path jail, FRS refuse | Optional: mention no FRS on public CCTV |
+| Dashboards, alerts, health, APIs | Operational | Map, WS alerts, gap report, REST | Footer health + Alerts |
 
 ---
 
-## 9. Technical evaluation / test case (Step 4)
+## 9. Official test case (designated vehicle)
 
-| # | Official | Status | Close |
-|---|---|---|---|
-| 9.1 | Onboard ~50 heterogeneous cameras | 30 from live catalogue (count is MEASURED, catalogue can change) | Re-sync on demo day |
-| 9.2 | Centralised monitoring + AI analytics | Viewer + ANPR/confirm. AI incomplete | C02–C06 |
-| 9.3 | Designated vehicle registration number, identify, trace, present movement | Seeded GJ01AB1234 Valsad→GNR. Live confirm on cam04 appended | At finale, designated plate may differ: confirm path must accept any Indian plate |
-| 9.4 | Complete route: timestamped, location-wise | JSON + CSV. Live catalogue cameras have no lat/lon so cam04 will not sit on the Gujarat map | Honesty in script. Seeded path is the GIS story |
-| 9.5 | Working watchlist + continuous cross-reference + automated alerts | Plate path yes. Person path no | C05 |
-| 9.6 | Evidence of integration, analytics, interoperability, scalability, E2E | Code + HLD. Videos are the evidence the jury actually watches | C13 |
+| # | Official | Status |
+|---|---|---|
+| 9.1 | Onboard ~50 heterogeneous cameras | 30 from live catalogue (MEASURED; count can change) |
+| 9.2 | Centralised monitoring + AI analytics | Viewer + ANPR/confirm + objects + Own FRS + intrusion |
+| 9.3 | Identify designated registration across grid | Seeded `GJ01AB1234` Valsad→GNR. Live confirm on cam04 appended |
+| 9.4 | Complete route timestamped, location-wise | JSON + CSV. Live catalogue has no lat/lon so cam04 is not a map pin |
+| 9.5 | Watchlist + continuous cross-reference + alerts | Plate and person paths in code |
+| 9.6 | Evidence | Code + HLD. **Videos are what the jury watches** |
 
----
-
-## 10. Integrator pre-submission checklist (official §4)
-
-Encoded in `tests/test_integrator_laws.py`. Status: **DONE as static tests**. Pending: **live soak**.
-
-| Law | Code | Test | Live experiment |
-|---|---|---|---|
-| RTSP over TCP | `capture.py` sets env before `import cv2` | DONE | C09 grab cam04 |
-| No CAP_PROP_FPS / arrival-time | services grepped | DONE | C09 log pts_ms |
-| Inter-frame gaps not fatal | StreamSession continues | PARTIAL unit | C09 |
-| Backoff 2..30 | constants | DONE | C09 optional restart |
-| Decoder warnings non-fatal | logged | PARTIAL | C09 |
-| Catalogue `/cameras.json` | `catalogue.py` | DONE `test_catalogue.py` | C09 sync |
-| Mixed codec/resolution | per-camera fields | PARTIAL | C09 two cameras |
-| Scene discontinuity resets tracker | `test_scene_cut.py` | DONE for callback | C02/C03 must hook the same callback for object/face track ids |
+Finale designated plate may differ: confirm path accepts any Indian plate.
 
 ---
 
-## 11. Working platform inventory (code)
+## 10. Integrator laws
+
+Static tests DONE (`test_integrator_laws.py`, `test_scene_cut.py`). Live soak: re-open cam04 on record day.
+
+| Law | Code | Tests |
+|---|---|---|
+| RTSP over TCP | env before `import cv2` | DONE |
+| No CAP_PROP_FPS timing | PTS only | DONE |
+| Gaps not disconnects | StreamSession continues | DONE |
+| Backoff 2–30 s | constants | DONE |
+| Decoder warnings non-fatal | logged | DONE |
+| Catalogue `/cameras.json` | `catalogue.py` | DONE |
+| Scene cut resets trackers | objects + faces reset | DONE |
+| Consume only | no publish / no wget dataset | DONE |
+
+---
+
+## 11. Working platform inventory
 
 ### Present (do not rebuild)
 
-- FastAPI `:8080`, SQLite seed, seven UI tabs
-- Camera CRUD, CSV import/export, catalogue sync, gap report
-- Tokenised HLS/file proxy, 2×2 wall, max 4 sessions
-- ANPR `recognize()`, Indian normaliser, still upload, operator confirm
-- Plate matcher, 120 s dedupe, WS alerts, ack audit
-- Track API + CSV for GJ01AB1234
-- RBAC: superadmin, soc_operator, dept_viewer, auditor
-- Tests: health, cameras, catalogue, integrator laws, matcher, no RTSP leak, path jail, plate normaliser, scene cut, security, tabs smoke, track, ANPR synthetic (skip without Tesseract)
+FastAPI `:8080`, seven tabs, catalogue sync, tokenised HLS, ANPR `recognize()`, operator confirm, `analyse()`, objects, intrusion, Own-only faces, matcher plate/face/intrusion, track CSV, predict, keyword query, RBAC, experiment harness, 88 pytest, audit_gate PASS.
 
-### Absent (this book)
+### Absent (HUMAN only)
 
-- `app/services/objects.py`
-- `app/services/faces.py`
-- `app/services/intrusion.py`
-- `app/services/analyse.py`
-- Person matcher for `WL-004`
-- Object/face CSV reports
-- Experiment harness and MEASURED logs
-- UI for objects/faces/intrusion
-- Tesseract on PATH (HUMAN)
-- Demo videos and Drive link (HUMAN)
-- Docker Compose (P00-007 P1, skip unless time)
+- Unlisted own-feed YouTube
+- Unlisted gov-feed YouTube
+- Drive Anyone+Viewer
+- Portal receipt
+- Tesseract on PATH (optional if confirm is spoken)
+- Two consented adult photos (optional if synthetic gallery is spoken)
+- Finale bag
 
-### Present but inert
+### Do not submit as the presentation
 
-- `YoloEngine.recognize` raises `RuntimeError`
-- Watchlist `WL-004` person with empty plate
-- HLD sentence “Phase-2: FRS” which this book upgrades to a lawful gallery in the PoC
+- Stale 13-slide `04_Documents/PRAHARI_Solution.pptx` (paths and FRS story outdated)
+- Nested `PRAHARI/` copy
+- Arnav workshop `ArAv-1/PRAHARI-3.0` as the submission repo
 
 ---
 
-## 12. Documents vs code drift
+## 12. Documents vs code (drift closed)
 
-| Claim | Reality | Action |
-|---|---|---|
-| HLD §6 Phase-1 is ANPR only | True today | Rewrite after C02–C04 |
-| Slides: “Face recognition is not the demo” | Policy, not a capability | Replace with FRS law: enrolled gallery on own-feed; never on gov CCTV |
-| PPT punch list: do not add FRS screenshots | Still correct for **gov** video | Own-feed may show enrolled-gallery match |
-| `gov_feed_plates.csv` looks like ANPR | It is operator confirm | Keep NOTE.txt. Do not retitle as OCR |
-| Footer 80k DESIGN TARGET | Correct | Keep |
-| Nested `PRAHARI/PRAHARI/` tree | Duplicate copy | Do not edit it. Do not submit it as the repo root |
+| Claim | Reality |
+|---|---|
+| HLD §6 | Histogram FRS + blob objects + Tesseract/confirm + optional FaceNet/YOLO |
+| Slides FRS | Law: Own gallery only; never Paldi |
+| `gov_feed_plates.csv` | Operator confirm, confidence 1.0. NOTE.txt says so |
+| Footer 80k | DESIGN TARGET. MEASURED four tiles |
+| GitHub | `engine-pack` is default. `main` is older closeout |
 
 ---
 
-## 13. Human / external blockers
+## 13. Human blockers (the contest)
+
+See `REMAINING_TO_WIN.md` H1–H11.
 
 | Item | Who | Status |
 |---|---|---|
-| Tesseract on PATH | Aria / Lead | NOT_STARTED (W02-002) |
-| Consented adult face photos (2) | Lead + Arnav | NOT_STARTED |
-| Own-feed screen record + Unlisted YT | Lead | NOT_STARTED |
-| Gov-feed screen record + Unlisted YT | Lead | NOT_STARTED |
+| Tesseract on PATH | Aria / Lead | NOT_STARTED |
+| Two consented adult photos | Lead + Arnav | NOT_STARTED |
+| Own-feed Unlisted YT | Lead | NOT_STARTED |
+| Gov-feed Unlisted YT | Lead | NOT_STARTED |
 | Drive Anyone+Viewer | Lead | NOT_STARTED |
-| JUDGE_PASSWORD rotate if hosting | Lead | A01 marked DONE; re-check before tunnel |
+| Incognito | Lead | NOT_STARTED |
 | Portal receipt | Lead | NOT_STARTED |
-| Finale bag | All | NOT_STARTED |
-
----
-
-## 14. What “best researcher, thorough testing” means here
-
-Every engine gets:
-
-1. **Synthetic fixture unit tests** that do not need the sandbox or a GPU.
-2. **API integration tests** that insert a real SQLite row.
-3. **Negative tests** (unknown plate, unknown face, gov-camera FRS refuse, private camera without consent, fifth session rejected).
-4. **A MEASURED experiment log** with command, input hash, output, timestamp.
-5. **An honesty label** if the path was operator-confirm rather than a model.
-
-If a test needs weights that are not in the tree, it skips with an explicit reason **and** a fallback fixture test still passes.
-
-Deadline discipline: videos and links outrank a third object class. A green object+face suite with no YouTube is a losing submission. A YouTube of a running backend with only ANPR/confirm is a complete mandatory packet and a weaker eval-05 score. This book aims for both.
+| Optional tunnel | Lead | SKIP unless asked |
+| Finale bag | All | After shortlist |

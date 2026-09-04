@@ -2,9 +2,9 @@
 
 **Challenge.** Gujarat Police Innovation Challenge 2026  
 **Lock.** 07 September 2026 12:00 IST  
-**Version.** 1.0 · 2026-09-04
+**Version.** 1.1 · 2026-09-04 (re-audit after C12 + engine pack)
 
-This book is the remaining work. P00–P12 and A00–A08 are finished. Do not rebuild them.
+C00–C12 and I00–I12 are finished in code and PDFs. Remaining work is HUMAN: `REMAINING_TO_WIN.md`. P00–P12 and A00–A08 stay frozen. Do not rebuild them.
 
 ## How a session is started
 

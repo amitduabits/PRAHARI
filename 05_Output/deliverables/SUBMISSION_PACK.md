@@ -6,9 +6,10 @@ Category: Academic, Research and DPIIT Recognised Startup / Individual Participa
 
 | Item | Path or URL | Notes |
 |---|---|---|
-| GitHub | https://github.com/amitduabits/PRAHARI | live |
-| Solution PPT | `04_Documents/PRAHARI_Solution.pptx` | slide 1: student, BITS Pilani, Lead + Arnav + Aria |
-| Solution PDF | `05_Output/deliverables/PRAHARI_Solution.pdf` | exported |
+| GitHub | https://github.com/amitduabits/PRAHARI | default branch `engine-pack` |
+| Solution slides (submit) | `04_Documents/PRAHARI-Slides.pdf` | 54-frame Beamer. Do not attach the stale 13-slide PPTX |
+| Solution notes | `04_Documents/PRAHARI-Notes.pdf` | 15-page teaching note |
+| Stale PPT (do not attach) | `04_Documents/PRAHARI_Solution.pptx` | paths/FRS outdated unless Grok refreshes it |
 | HLD | `04_Documents/PRAHARI_HLD.md` | |
 | Investment audit | `04_Documents/PRAHARI_Investment_Audit.md` | DGP / security / Palantir seats; internal |
 | Track CSV | `05_Output/deliverables/track_GJ01AB1234.csv` | seeded path; live hits append |
