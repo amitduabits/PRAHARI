@@ -77,10 +77,10 @@ async function refreshHealth() {
 }
 
 function color(health) {
-  if (health === "live") return "#3f8f5b";
-  if (health === "degraded") return "#c4a35a";
+  if (health === "live") return "#1b7f4e";
+  if (health === "degraded") return "#d4a017";
   if (health === "offline") return "#8a4038";
-  return "#c5c2a8";
+  return "#5c5848";
 }
 
 function initMap() {
@@ -187,7 +187,7 @@ async function loadTrack(plate) {
   const latlngs = data.points.filter((p) => p.lat && p.lon).map((p) => [p.lat, p.lon]);
   trackLayer = L.layerGroup();
   if (latlngs.length) {
-    L.polyline(latlngs, { color: "#a38b4d" }).addTo(trackLayer);
+    L.polyline(latlngs, { color: "#6b5420" }).addTo(trackLayer);
     latlngs.forEach((ll, i) => L.marker(ll).bindPopup((i + 1) + ". " + data.points[i].location).addTo(trackLayer));
     trackMap.fitBounds(latlngs);
   }

@@ -42,4 +42,4 @@ def test_text_contrast_aa():
     assert contrast(t["muted"], t["field"]) >= 4.5
     assert contrast(t["critical"], t["panel"]) >= 3.0
     assert contrast(t["khaki"], t["field"]) >= 3.0
-    assert contrast(t["ink"], t["navy"]) >= 4.5
+    assert contrast(t["paper"], t["navy"]) >= 4.5
