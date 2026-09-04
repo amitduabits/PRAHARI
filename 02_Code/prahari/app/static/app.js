@@ -3,6 +3,11 @@ let me = null;
 let map, trackMap, trackLayer;
 const tiles = new Map();
 let ws;
+let camFilter = "";
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
 
 async function api(path, opts = {}) {
   const headers = Object.assign({}, opts.headers || {});
@@ -17,6 +22,7 @@ async function api(path, opts = {}) {
 function showApp() {
   $("login-card").classList.add("hidden");
   $("app").classList.remove("hidden");
+  tickClock();
 }
 
 async function login() {
@@ -42,27 +48,39 @@ async function boot() {
   connectWs();
   setInterval(refreshHealth, 8000);
   setInterval(loadAlerts, 5000);
+  setInterval(tickClock, 1000);
+}
+
+function tickClock() {
+  if (!$("clock")) return;
+  $("clock").textContent = new Date().toLocaleTimeString("en-IN", { hour12: false, timeZone: "Asia/Kolkata" }) + " IST";
 }
 
 async function refreshHealth() {
   const res = await fetch("/api/health");
   const data = await res.json();
-  const host = data.sentinel_host_configured ? "Sentinel host set" : "SENTINEL_HOST not configured; showing sample cameras";
-  $("health-line").innerHTML = "<strong>" + data.status + "</strong><br>" +
-    data.cameras + " cameras · " + data.detections + " detections · " + data.watchlist + " watchlist<br>" + host;
+  const host = data.sentinel_host_configured ? "Sentinel host set" : "sample cameras";
+  if ($("health-line")) {
+    $("health-line").innerHTML =
+      "<span>" + esc(data.status) + "</span>" +
+      "<span>" + data.cameras + " cameras</span>" +
+      "<span>" + data.detections + " detections</span>" +
+      "<span>WS " + (ws && ws.readyState === 1 ? "connected" : "polling") + "</span>" +
+      "<span>" + esc(host) + "</span>";
+  }
   if ($("footer-health")) {
     $("footer-health").textContent = data.cameras + " cameras · " + data.detections + " detections · WS " + (ws && ws.readyState === 1 ? "connected" : "polling");
   }
   if ($("banner") && data.sentinel_host_configured) {
-    $("banner").textContent = data.cameras + " cameras · Sentinel host set · sync from cameras.json. Live catalogue cameras have no coordinates.";
+    $("banner").textContent = "sync from cameras.json. Live catalogue cameras have no coordinates.";
   }
 }
 
 function color(health) {
-  if (health === "live") return "#3dd68c";
-  if (health === "degraded") return "#e0b44a";
-  if (health === "offline") return "#e85d5d";
-  return "#9aa8bd";
+  if (health === "live") return "#3f8f5b";
+  if (health === "degraded") return "#c4a35a";
+  if (health === "offline") return "#8a4038";
+  return "#c5c2a8";
 }
 
 function initMap() {
@@ -74,7 +92,8 @@ function initMap() {
 }
 
 async function loadCameras(department) {
-  const q = department ? "?department=" + encodeURIComponent(department) : "";
+  if (department !== undefined) camFilter = department;
+  const q = camFilter ? "?department=" + encodeURIComponent(camFilter) : "";
   const res = await api("/api/cameras" + q);
   if (!res.ok) return;
   const rows = await res.json();
@@ -84,9 +103,9 @@ async function loadCameras(department) {
     if (c.lat === 0 && c.lon === 0) return;
     const m = L.circleMarker([c.lat, c.lon], { radius: 8, color: color(c.health), fillColor: color(c.health), fillOpacity: 0.85 });
     m.bindPopup(
-      "<strong>" + c.camera_id + "</strong><br>" + c.department + " · " + c.location +
-      "<br>" + c.ownership + " · " + c.codec +
-      "<br><button data-open='" + c.camera_id + "'>Open tile</button>"
+      "<strong class='id'>" + esc(c.camera_id) + "</strong><br>" + esc(c.department) + " · " + esc(c.location) +
+      "<br>" + esc(c.ownership) + " · " + esc(c.codec) +
+      "<br><button data-open='" + esc(c.camera_id) + "'>Open</button>"
     );
     m.addTo(map);
     map._markers.push(m);
@@ -97,14 +116,20 @@ async function loadCameras(department) {
   });
   const table = $("cam-table");
   table.innerHTML = "<caption>Live catalogue cameras have no coordinates. Open them from this table.</caption>" +
-    "<tr><th>id</th><th>dept</th><th>location</th><th>health</th><th>codec</th><th></th></tr>" +
-    rows.map((c) => "<tr><td>" + c.camera_id + "</td><td>" + c.department + "</td><td>" + c.location + "</td><td>" + c.health + "</td><td>" + c.codec + "</td><td><button data-open='" + c.camera_id + "'>Open tile</button></td></tr>").join("");
+    "<thead><tr><th>id</th><th>dept</th><th>location</th><th>health</th><th>codec</th><th></th></tr></thead><tbody>" +
+    rows.map((c) => "<tr><td class='id'>" + esc(c.camera_id) + "</td><td>" + esc(c.department) + "</td><td>" + esc(c.location) +
+      "</td><td><span class='dot " + esc(c.health) + "'></span>" + esc(c.health) + "</td><td>" + esc(c.codec) +
+      "</td><td><button data-open='" + esc(c.camera_id) + "'>Open</button></td></tr>").join("") +
+    "</tbody>";
   table.onclick = (e) => {
     const btn = e.target.getAttribute && e.target.getAttribute("data-open");
     if (btn) openTile(btn);
   };
   const depts = [...new Set(rows.map((c) => c.department))];
-  $("filters").innerHTML = ["All"].concat(depts).map((d) => "<span class='chip' data-d='" + d + "'>" + d + "</span>").join("");
+  $("filters").innerHTML = ["All"].concat(depts).map((d) => {
+    const on = (d === "All" && !camFilter) || d === camFilter ? " on" : "";
+    return "<span class='chip" + on + "' data-d='" + esc(d) + "'>" + esc(d) + "</span>";
+  }).join("");
   $("filters").onclick = (e) => {
     const d = e.target.getAttribute("data-d");
     if (d) loadCameras(d === "All" ? "" : d);
@@ -129,7 +154,7 @@ async function openTile(cameraId) {
   if (tiles.has(cameraId)) return;
   const wrap = document.createElement("div");
   wrap.className = "tile";
-  wrap.innerHTML = "<p>" + cameraId + " <button data-x>close</button></p><video controls playsinline></video>";
+  wrap.innerHTML = "<p>" + esc(cameraId) + " <button data-x>Close</button></p><video controls playsinline></video>";
   const video = wrap.querySelector("video");
   if (cam.playback && cam.playback.kind === "hls" && window.Hls && window.Hls.isSupported()) {
     const hls = new window.Hls({ enableWorker: true, startPosition: -1 });
@@ -162,13 +187,24 @@ async function loadTrack(plate) {
   const latlngs = data.points.filter((p) => p.lat && p.lon).map((p) => [p.lat, p.lon]);
   trackLayer = L.layerGroup();
   if (latlngs.length) {
-    L.polyline(latlngs, { color: "#d4a017" }).addTo(trackLayer);
+    L.polyline(latlngs, { color: "#a38b4d" }).addTo(trackLayer);
     latlngs.forEach((ll, i) => L.marker(ll).bindPopup((i + 1) + ". " + data.points[i].location).addTo(trackLayer));
     trackMap.fitBounds(latlngs);
   }
   trackLayer.addTo(trackMap);
-  $("track-table").innerHTML = "<tr><th>#</th><th>ts</th><th>camera</th><th>location</th></tr>" +
-    data.points.map((p, i) => "<tr><td>" + (i + 1) + "</td><td>" + p.ts + "</td><td>" + p.camera_id + "</td><td>" + p.location + "</td></tr>").join("");
+  $("track-table").innerHTML = "<thead><tr><th>#</th><th>ts</th><th>camera</th><th>location</th></tr></thead><tbody>" +
+    data.points.map((p, i) => "<tr><td>" + (i + 1) + "</td><td>" + esc(p.ts) + "</td><td class='id'>" + esc(p.camera_id) + "</td><td>" + esc(p.location) + "</td></tr>").join("") +
+    "</tbody>";
+}
+
+function ageLabel(ts) {
+  if (!ts) return "";
+  const t = Date.parse(ts);
+  if (!t) return "";
+  const s = Math.max(0, (Date.now() - t) / 1000);
+  if (s < 60) return Math.round(s) + "s";
+  if (s < 3600) return Math.round(s / 60) + "m";
+  return Math.round(s / 3600) + "h";
 }
 
 async function loadAlerts() {
@@ -177,16 +213,19 @@ async function loadAlerts() {
   if (!openRes.ok) return;
   const rows = await openRes.json();
   if (pendingRes.ok) rows.push(...await pendingRes.json());
+  const rank = { CRITICAL: 0, HIGH: 1, LOW: 2 };
+  rows.sort((a, b) => (rank[a.priority] || 9) - (rank[b.priority] || 9));
   $("alert-empty").style.display = rows.length ? "none" : "block";
-  $("alert-list").innerHTML = rows.map((a) => {
-    let title = a.plate;
-    if (a.entity_type === "person") title = a.entity_id || a.plate || "person";
-    if (a.entity_type === "intrusion" || a.category === "INTRUSION") title = "INTRUSION @ " + a.camera_id;
-    const review = a.status === "pending_review" ? " pending_review" : "";
-    return "<div class='alert " + a.priority + "'><strong>" + a.priority + "</strong> " + title +
-      " @ " + a.camera_id + " ×" + a.counter + review +
-      " <button data-ack='" + a.alert_id + "'>Ack</button></div>";
-  }).join("");
+  $("alert-list").innerHTML = "<table class='alert-table'><thead><tr><th>PRI</th><th>entity</th><th>camera</th><th>age</th><th>count</th><th></th></tr></thead><tbody>" +
+    rows.map((a) => {
+      let title = a.plate;
+      if (a.entity_type === "person") title = a.entity_id || a.plate || "person";
+      if (a.entity_type === "intrusion" || a.category === "INTRUSION") title = "INTRUSION @ " + a.camera_id;
+      const review = a.status === "pending_review" ? " pending_review" : "";
+      return "<tr class='alert-row " + esc(a.priority) + "'><td class='pri'>" + esc(a.priority) + review +
+        "</td><td>" + esc(title) + "</td><td class='id'>" + esc(a.camera_id) + "</td><td>" + ageLabel(a.ts) +
+        "</td><td>×" + esc(a.counter) + "</td><td><button data-ack='" + esc(a.alert_id) + "'>Ack</button></td></tr>";
+    }).join("") + "</tbody></table>";
   $("alert-list").onclick = async (e) => {
     const id = e.target.getAttribute("data-ack");
     if (!id) return;
@@ -211,9 +250,10 @@ async function loadWatchlist() {
   const res = await api("/api/watchlist");
   if (!res.ok) return;
   const rows = await res.json();
-  $("wl-table").innerHTML = "<tr><th>id</th><th>type</th><th>plate</th><th>name</th><th>gallery</th><th>category</th><th>priority</th></tr>" +
-    rows.map((w) => "<tr><td>" + w.source_case_id + "</td><td>" + (w.entity_type || "") + "</td><td>" + (w.plate || "") +
-      "</td><td>" + (w.name || "") + "</td><td>" + (w.gallery_id || "") + "</td><td>" + w.category + "</td><td>" + w.priority + "</td></tr>").join("");
+  $("wl-table").innerHTML = "<thead><tr><th>id</th><th>type</th><th>plate</th><th>name</th><th>gallery</th><th>category</th><th>priority</th></tr></thead><tbody>" +
+    rows.map((w) => "<tr><td class='id'>" + esc(w.source_case_id) + "</td><td>" + esc(w.entity_type || "") + "</td><td class='id'>" + esc(w.plate || "") +
+      "</td><td>" + esc(w.name || "") + "</td><td class='id'>" + esc(w.gallery_id || "") + "</td><td>" + esc(w.category) + "</td><td>" + esc(w.priority) + "</td></tr>").join("") +
+    "</tbody>";
 }
 
 async function loadGaps() {
@@ -228,15 +268,37 @@ async function loadGaps() {
       const k = r.entity_type || "vehicle";
       counts[k] = (counts[k] || 0) + 1;
     });
-    $("entity-counts").textContent = "Detections by entity_type: " + JSON.stringify(counts);
+    const body = Object.keys(counts).map((k) => "<tr><td>" + esc(k) + "</td><td>" + counts[k] + "</td></tr>").join("");
+    $("entity-counts").innerHTML = "<table><thead><tr><th>entity_type</th><th>n</th></tr></thead><tbody>" + body + "</tbody></table>";
   }
+}
+
+function renderResult(el, payload) {
+  if (!el) return;
+  const events = payload.events || (payload.event ? [payload.event] : []);
+  if (!events.length) {
+    const note = payload.inserted === false ? "No plate. Use Confirm plate if the still is readable." : "No events.";
+    el.innerHTML = "<p>" + note + "</p><details><summary>raw</summary><pre>" + esc(JSON.stringify(payload, null, 2)) + "</pre></details>";
+    return;
+  }
+  const rows = events.map((e) => {
+    const src = e.source === "operator_confirm" ? "Operator confirm" : (e.source || "");
+    const ident = e.plate || e.face_id || e.object_class || e.entity_id || "";
+    return "<tr><td>" + esc(e.entity_type || "") + "</td><td class='id'>" + esc(ident) + "</td><td>" + esc(src) + "</td><td>" + esc(e.confidence ?? "") + "</td></tr>";
+  }).join("");
+  el.innerHTML = "<table><thead><tr><th>type</th><th>id</th><th>source</th><th>conf</th></tr></thead><tbody>" +
+    rows + "</tbody></table><details><summary>raw</summary><pre>" + esc(JSON.stringify(payload, null, 2)) + "</pre></details>";
 }
 
 document.querySelectorAll(".tab").forEach((btn) => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((b) => b.classList.remove("on"));
+    document.querySelectorAll(".tab").forEach((b) => {
+      b.classList.remove("on");
+      b.setAttribute("aria-selected", "false");
+    });
     document.querySelectorAll(".panel").forEach((p) => p.classList.remove("on"));
     btn.classList.add("on");
+    btn.setAttribute("aria-selected", "true");
     $("panel-" + btn.dataset.tab).classList.add("on");
     if (btn.dataset.tab === "operations" && map) setTimeout(() => map.invalidateSize(), 100);
     if (btn.dataset.tab === "track" && trackMap) setTimeout(() => trackMap.invalidateSize(), 100);
@@ -276,7 +338,7 @@ $("anpr-file").onchange = async (e) => {
   fd.append("file", file);
   fd.append("camera_id", $("anpr-cam").value);
   const res = await api("/api/ingest/frame", { method: "POST", body: fd });
-  $("anpr-out").textContent = JSON.stringify(await res.json(), null, 2);
+  renderResult($("anpr-out"), await res.json());
   loadAlerts();
 };
 $("analyse-file").onchange = async (e) => {
@@ -287,7 +349,7 @@ $("analyse-file").onchange = async (e) => {
   fd.append("camera_id", $("analyse-cam").value);
   fd.append("engines", $("analyse-cam").value.indexOf("cam") === 0 ? "anpr,objects" : "anpr,objects,faces");
   const res = await api("/api/ingest/analyse", { method: "POST", body: fd });
-  $("analyse-out").textContent = JSON.stringify(await res.json(), null, 2);
+  renderResult($("analyse-out"), await res.json());
   loadAlerts();
   loadGaps();
 };
@@ -315,7 +377,7 @@ if ($("enroll-person-form")) {
     e.preventDefault();
     const fd = new FormData(e.target);
     const res = await api("/api/faces/enroll", { method: "POST", body: fd });
-    $("enroll-out").textContent = JSON.stringify(await res.json(), null, 2);
+    renderResult($("enroll-out"), await res.json());
     loadWatchlist();
   };
 }

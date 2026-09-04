@@ -4,142 +4,210 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PRAHARI · Gujarat Police Innovation Challenge 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <div id="login-card" class="login">
     <h1>PRAHARI</h1>
-    <p>Gujarat Police Innovation Challenge 2026</p>
-    <label>User <input id="user" value="judge" autocomplete="username"></label>
-    <label>Password <input id="pass" type="password" autocomplete="current-password"></label>
-    <button type="button" id="login-btn">Sign in</button>
-    <p id="login-err" class="err"></p>
-    <p class="hint">Default judge password is in .env (JUDGE_PASSWORD). Change before submit.</p>
+    <p class="dept">Home Department · SOC</p>
+    <label class="field" for="user">User
+      <input id="user" value="judge" autocomplete="username">
+    </label>
+    <label class="field" for="pass">Password
+      <input id="pass" type="password" autocomplete="current-password">
+    </label>
+    <button type="button" id="login-btn">Log in</button>
+    <p id="login-err" class="err" role="alert"></p>
+    <p class="hint">Judge password is JUDGE_PASSWORD in the local environment. Change before submit.</p>
   </div>
 
   <div id="app" class="hidden">
     <header class="top">
-      <div>
-        <p class="kicker">PRAHARI · Gujarat Police Innovation Challenge 2026</p>
+      <div class="wordmark">
         <h1>PRAHARI</h1>
-        <p class="sub">Hybrid Models 1 + 2 + thin 3 · intelligence plane, not a VMS replacement</p>
+        <p class="dept">Home Department · SOC</p>
       </div>
-      <div>
-        <div id="health-line" class="health">Loading health…</div>
-        <div id="banner" class="banner"></div>
-      </div>
+      <span class="chip" id="hybrid-chip">Hybrid 1+2+thin 3</span>
+      <div id="health-line" class="health-chips">Loading health…</div>
+      <div id="banner" class="hint"></div>
+      <span id="clock"></span>
     </header>
     <nav class="tabs" role="tablist">
-      <button class="tab on" data-tab="operations" type="button">Operations</button>
-      <button class="tab" data-tab="cameras" type="button">Cameras</button>
-      <button class="tab" data-tab="track" type="button">Vehicle Track</button>
-      <button class="tab" data-tab="alerts" type="button">Alerts</button>
-      <button class="tab" data-tab="watchlist" type="button">Watchlist</button>
-      <button class="tab" data-tab="onboard" type="button">Onboard</button>
-      <button class="tab" data-tab="gaps" type="button">Analytics &amp; Gaps</button>
+      <button class="tab on" id="tab-operations" data-tab="operations" type="button" role="tab" aria-selected="true" aria-controls="panel-operations">Operations</button>
+      <button class="tab" id="tab-cameras" data-tab="cameras" type="button" role="tab" aria-selected="false" aria-controls="panel-cameras">Cameras</button>
+      <button class="tab" id="tab-track" data-tab="track" type="button" role="tab" aria-selected="false" aria-controls="panel-track">Vehicle Track</button>
+      <button class="tab" id="tab-alerts" data-tab="alerts" type="button" role="tab" aria-selected="false" aria-controls="panel-alerts">Alerts</button>
+      <button class="tab" id="tab-watchlist" data-tab="watchlist" type="button" role="tab" aria-selected="false" aria-controls="panel-watchlist">Watchlist</button>
+      <button class="tab" id="tab-onboard" data-tab="onboard" type="button" role="tab" aria-selected="false" aria-controls="panel-onboard">Onboard</button>
+      <button class="tab" id="tab-gaps" data-tab="gaps" type="button" role="tab" aria-selected="false" aria-controls="panel-gaps">Analytics &amp; Gaps</button>
     </nav>
     <main>
-      <section id="panel-operations" class="panel on">
+      <section id="panel-operations" class="panel on" role="tabpanel" aria-labelledby="tab-operations">
         <div class="split">
-          <div id="map" class="map"></div>
+          <div id="map" class="map" aria-label="Gujarat camera map"></div>
           <div>
             <h2>Video wall (max 4)</h2>
             <p id="tile-empty" class="empty">Click a map pin, then Open tile. Drop own_feed.mp4 into 03_Data/recordings for CAM-OWN-001.</p>
-            <p id="tile-err" class="err"></p>
+            <p id="tile-err" class="err" role="alert"></p>
             <div id="wall" class="wall"></div>
           </div>
         </div>
       </section>
-      <section id="panel-cameras" class="panel">
+      <section id="panel-cameras" class="panel" role="tabpanel" aria-labelledby="tab-cameras">
         <h2>Cameras</h2>
         <div id="filters" class="chips"></div>
         <div class="table-wrap"><table id="cam-table"></table></div>
       </section>
-      <section id="panel-track" class="panel">
+      <section id="panel-track" class="panel" role="tabpanel" aria-labelledby="tab-track">
         <h2>Vehicle Track</h2>
-        <form id="track-form">
-          <input id="plate-search" value="GJ01AB1234" aria-label="plate">
+        <form id="track-form" class="toolbar">
+          <label class="field" for="plate-search">Plate
+            <input id="plate-search" value="GJ01AB1234" placeholder="GJ01AB1234">
+          </label>
           <button type="submit">Reconstruct</button>
           <button type="button" id="predict-btn">Next cameras</button>
           <a id="csv-link" href="/api/track/GJ01AB1234/report.csv">Download CSV</a>
         </form>
         <p id="track-meta"></p>
-        <pre id="predict-out"></pre>
-        <div id="track-map" class="map"></div>
+        <details>
+          <summary>Next cameras</summary>
+          <pre id="predict-out"></pre>
+        </details>
+        <div id="track-map" class="map" aria-label="Vehicle track map"></div>
         <div class="table-wrap"><table id="track-table"></table></div>
       </section>
-      <section id="panel-alerts" class="panel">
+      <section id="panel-alerts" class="panel" role="tabpanel" aria-labelledby="tab-alerts">
         <h2>Alerts</h2>
         <p id="alert-empty" class="empty">No open alerts</p>
-        <div id="alert-list"></div>
+        <div class="table-wrap" id="alert-list"></div>
       </section>
-      <section id="panel-watchlist" class="panel">
+      <section id="panel-watchlist" class="panel" role="tabpanel" aria-labelledby="tab-watchlist">
         <h2>Watchlist</h2>
         <p>Representative VAHAN / eGujCop-style rows. WL-001 cannot be deleted. Person rows use an enrolled gallery, not a live ministry pipe.</p>
         <div class="table-wrap"><table id="wl-table"></table></div>
         <form id="wl-form" class="form-grid">
-          <input name="source_case_id" placeholder="source_case_id" required>
-          <input name="entity_type" placeholder="entity_type" value="vehicle">
-          <input name="plate" placeholder="plate">
-          <input name="name" placeholder="name">
-          <input name="gallery_id" placeholder="gallery_id">
-          <input name="category" placeholder="category">
-          <input name="priority" placeholder="priority" value="HIGH">
+          <label class="field" for="wl-id">Case ID
+            <input id="wl-id" name="source_case_id" placeholder="WL-006" required>
+          </label>
+          <label class="field" for="wl-type">Entity type
+            <input id="wl-type" name="entity_type" placeholder="vehicle" value="vehicle">
+          </label>
+          <label class="field" for="wl-plate">Plate
+            <input id="wl-plate" name="plate" placeholder="GJ01AB1234">
+          </label>
+          <label class="field" for="wl-name">Name
+            <input id="wl-name" name="name" placeholder="name">
+          </label>
+          <label class="field" for="wl-gallery">Gallery ID
+            <input id="wl-gallery" name="gallery_id" placeholder="WL-004">
+          </label>
+          <label class="field" for="wl-cat">Category
+            <input id="wl-cat" name="category" placeholder="STOLEN">
+          </label>
+          <label class="field" for="wl-pri">Priority
+            <input id="wl-pri" name="priority" placeholder="HIGH" value="HIGH">
+          </label>
           <button type="submit">Save</button>
         </form>
         <h3>Enroll Missing/Wanted Person</h3>
         <p class="hint">Posts /api/faces/enroll. Consented adult photos only. Own-camera gallery, not Paldi Circle.</p>
         <form id="enroll-person-form" class="form-grid">
-          <input name="gallery_id" value="WL-004" required>
-          <input name="name" placeholder="name">
-          <input type="file" name="file" accept="image/*" required>
+          <label class="field" for="enroll-gallery">Gallery ID
+            <input id="enroll-gallery" name="gallery_id" value="WL-004" required>
+          </label>
+          <label class="field" for="enroll-name">Name
+            <input id="enroll-name" name="name" placeholder="name">
+          </label>
+          <label class="field wide" for="enroll-file">Photo
+            <input id="enroll-file" type="file" name="file" accept="image/*" required>
+          </label>
           <button type="submit">Enroll</button>
         </form>
-        <pre id="enroll-out"></pre>
+        <div id="enroll-out" class="result-card"></div>
       </section>
-      <section id="panel-onboard" class="panel">
+      <section id="panel-onboard" class="panel" role="tabpanel" aria-labelledby="tab-onboard">
         <h2>Onboard</h2>
         <form id="onboard-form" class="form-grid">
-          <input name="camera_id" placeholder="camera_id" required>
-          <input name="department" placeholder="department" value="Home">
-          <input name="ownership" placeholder="ownership" value="Gov">
-          <input name="location" placeholder="location">
-          <input name="lat" placeholder="lat" value="23.02">
-          <input name="lon" placeholder="lon" value="72.57">
-          <input name="protocol" placeholder="protocol" value="file">
-          <input name="url" placeholder="url">
-          <label class="wide"><input type="checkbox" name="consent" checked> consent</label>
+          <label class="field" for="ob-id">Camera ID
+            <input id="ob-id" name="camera_id" placeholder="CAM-OWN-002" required>
+          </label>
+          <label class="field" for="ob-dept">Department
+            <input id="ob-dept" name="department" placeholder="Home" value="Home">
+          </label>
+          <label class="field" for="ob-own">Ownership
+            <input id="ob-own" name="ownership" placeholder="Gov" value="Gov">
+          </label>
+          <label class="field" for="ob-loc">Location
+            <input id="ob-loc" name="location" placeholder="location">
+          </label>
+          <label class="field" for="ob-lat">Latitude
+            <input id="ob-lat" name="lat" placeholder="23.02" value="23.02">
+          </label>
+          <label class="field" for="ob-lon">Longitude
+            <input id="ob-lon" name="lon" placeholder="72.57" value="72.57">
+          </label>
+          <label class="field" for="ob-proto">Protocol
+            <input id="ob-proto" name="protocol" placeholder="file" value="file">
+          </label>
+          <label class="field" for="ob-url">URL
+            <input id="ob-url" name="url" placeholder="url">
+          </label>
+          <label class="wide" for="ob-consent"><input id="ob-consent" type="checkbox" name="consent" checked> consent</label>
           <button type="submit">Add camera</button>
         </form>
         <h3>CSV import</h3>
-        <input type="file" id="csv-file" accept=".csv">
+        <label class="field" for="csv-file">Camera CSV
+          <input type="file" id="csv-file" accept=".csv">
+        </label>
         <h3>ANPR this still</h3>
-        <input type="file" id="anpr-file" accept="image/*">
-        <input id="anpr-cam" value="CAM-OWN-001">
-        <pre id="anpr-out"></pre>
+        <label class="field" for="anpr-file">Still
+          <input type="file" id="anpr-file" accept="image/*">
+        </label>
+        <label class="field" for="anpr-cam">Camera ID
+          <input id="anpr-cam" value="CAM-OWN-001">
+        </label>
+        <div id="anpr-out" class="result-card"></div>
         <h3>Analyse this still</h3>
         <p class="hint">Plates, objects, and (Own cameras only) enrolled-gallery faces. Government cameras never run FRS.</p>
-        <input type="file" id="analyse-file" accept="image/*">
-        <input id="analyse-cam" value="CAM-OWN-001">
-        <pre id="analyse-out"></pre>
+        <label class="field" for="analyse-file">Still
+          <input type="file" id="analyse-file" accept="image/*">
+        </label>
+        <label class="field" for="analyse-cam">Camera ID
+          <input id="analyse-cam" value="CAM-OWN-001">
+        </label>
+        <div id="analyse-out" class="result-card"></div>
         <h3>Operator confirm</h3>
-        <form id="confirm-form">
-          <input name="camera_id" value="CAM-OWN-001">
-          <input name="plate" value="GJ01AB1234">
+        <form id="confirm-form" class="toolbar">
+          <label class="field" for="confirm-cam">Camera ID
+            <input id="confirm-cam" name="camera_id" value="CAM-OWN-001">
+          </label>
+          <label class="field" for="confirm-plate">Plate
+            <input id="confirm-plate" name="plate" value="GJ01AB1234" placeholder="GJ01AB1234">
+          </label>
           <button type="submit">Confirm plate</button>
         </form>
-        <form id="confirm-face-form">
-          <input name="camera_id" value="CAM-OWN-001">
-          <input name="gallery_id" value="WL-004">
+        <form id="confirm-face-form" class="toolbar">
+          <label class="field" for="confirm-face-cam">Camera ID
+            <input id="confirm-face-cam" name="camera_id" value="CAM-OWN-001">
+          </label>
+          <label class="field" for="confirm-gallery">Gallery ID
+            <input id="confirm-gallery" name="gallery_id" value="WL-004">
+          </label>
           <button type="submit">Confirm face</button>
         </form>
       </section>
-      <section id="panel-gaps" class="panel">
+      <section id="panel-gaps" class="panel" role="tabpanel" aria-labelledby="tab-gaps">
         <h2>Analytics &amp; Gaps</h2>
         <p><a id="object-csv-link" href="/api/objects/report.csv">Download object CSV</a></p>
-        <pre id="entity-counts"></pre>
-        <pre id="gap-out"></pre>
+        <div id="entity-counts" class="result-card"></div>
+        <details>
+          <summary>Gap report</summary>
+          <pre id="gap-out"></pre>
+        </details>
       </section>
     </main>
     <footer>

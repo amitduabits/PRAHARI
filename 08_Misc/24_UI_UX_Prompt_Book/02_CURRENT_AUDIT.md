@@ -1,7 +1,7 @@
 # Current UI audit (measurable)
 
 **Files.** `02_Code/prahari/app/static/{index.html,styles.css,app.js}`  
-**Scored.** 04 September 2026. Score 0–2 per row. 0 = fail, 1 = partial, 2 = pass. Target after U07: **≥ 40 / 48**.
+**Scored.** 04 September 2026 after U07. Score 0–2 per row. 0 = fail, 1 = partial, 2 = pass. Target: **≥ 40**. After restyle: **50 / 52**.
 
 ## A. Visual identity (today 4 / 16)
 
