@@ -21,7 +21,8 @@ Later pages are behind Next. Expect fields matching the problem statement:
 - Government-feed demonstration (Unlisted YouTube)
 - Output report (Drive/OneDrive, Anyone with the link, Viewer)
 - Hosted URL + test login (optional)
-- GitHub/GitLab (optional): https://github.com/amitduabits/PRAHARI
+- GitHub/GitLab (optional): https://github.com/amitduabits/PRAHARI/tree/gpic-2026-submission
+- Packet: `SUBMISSION.md` at repo root. Portal paste: `05_Output/deliverables/PORTAL_FILL.md`.
 
 Do not paste `.env` passwords into the form. Give the committee `judge` and the changed `JUDGE_PASSWORD` only in the hosted-URL field.
 

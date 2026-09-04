@@ -8,6 +8,7 @@ PRAHARI is a hybrid statewide CCTV intelligence plane: Model 1 registry and GIS,
 
 | Need | Open |
 |---|---|
+| **Committee submission packet** | `SUBMISSION.md` |
 | GitHub README (clone and run) | `README.md` |
 | One-page brief | `01_Overview/BRIEF.md` |
 | Architecture | `04_Documents/PRAHARI_HLD.md` |

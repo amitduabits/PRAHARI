@@ -6,7 +6,9 @@ Category: Academic, Research and DPIIT Recognised Startup / Individual Participa
 
 | Item | Path or URL | Notes |
 |---|---|---|
-| GitHub | https://github.com/amitduabits/PRAHARI | default branch `engine-pack` |
+| GitHub | https://github.com/amitduabits/PRAHARI/tree/gpic-2026-submission | submission branch |
+| Portal fill sheet | `PORTAL_FILL.md` | paste values |
+| Committee one-pager | `../../SUBMISSION.md` | official items vs files |
 | Solution slides (submit) | `04_Documents/PRAHARI-Slides.pdf` | 54-frame Beamer. Do not attach the stale 13-slide PPTX |
 | Solution notes | `04_Documents/PRAHARI-Notes.pdf` | 15-page teaching note |
 | Stale PPT (do not attach) | `04_Documents/PRAHARI_Solution.pptx` | paths/FRS outdated unless Grok refreshes it |

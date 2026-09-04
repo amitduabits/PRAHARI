@@ -7,6 +7,7 @@ Student-category entry for the [Gujarat Police Innovation Challenge 2026](https:
 Challenge portal: https://sentinel.gujarat.gov.in  
 Integrator guide: https://sentinel.gujarat.gov.in/resource  
 This repository: https://github.com/amitduabits/PRAHARI  
+**Submission branch:** [`gpic-2026-submission`](https://github.com/amitduabits/PRAHARI/tree/gpic-2026-submission) — committee packet [`SUBMISSION.md`](SUBMISSION.md)  
 Team site (slides, notes, run instructions): https://amitduabits.github.io/PRAHARI/
 
 ## Documents (BITS format)
