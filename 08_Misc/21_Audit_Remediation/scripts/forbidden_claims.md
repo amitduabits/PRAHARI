@@ -12,7 +12,7 @@ If a file, slide, or spoken line matches the left column, replace with the right
 | ANPR on cam04 (unless Tesseract produced the row) | operator confirm on cam04, confidence 1.0 |
 | government cameras on this map | live catalogue has no coordinates; open cam04 from the Cameras table |
 | we replaced departmental VMS | departments keep their VMS; PRAHARI is an intelligence plane |
-| face recognition | not in this PoC |
+| face recognition on government CCTV | enrolled gallery on own-feed only, never Paldi Circle |
 | downloaded the sandbox mp4 | live consume, RTSP-TCP or HLS |
 
 Grep needles A08 must find zero hits in `04_Documents/bits-tex/*.tex`, `05_Output/deliverables/*demo_script.md`, `05_Output/deliverables/FINALE_RUNCARD.md`, and this book's `scripts/spoken_*.md`:
@@ -21,4 +21,5 @@ Grep needles A08 must find zero hits in `04_Documents/bits-tex/*.tex`, `05_Outpu
 - `live VAHAN`
 - `live eGujCop`
 - `downloaded mp4`
-- `face recognition` as a demo feature (the notes sentence "Face recognition is not the demo" is allowed)
+
+Allowed: the notes sentence that face recognition in this PoC is an enrolled gallery on own cameras, never on government CCTV of unknown people.

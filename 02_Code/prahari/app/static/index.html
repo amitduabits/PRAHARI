@@ -74,11 +74,14 @@
       </section>
       <section id="panel-watchlist" class="panel">
         <h2>Watchlist</h2>
-        <p>Representative VAHAN / eGujCop-style rows. WL-001 cannot be deleted.</p>
+        <p>Representative VAHAN / eGujCop-style rows. WL-001 cannot be deleted. Person rows use an enrolled gallery, not a live ministry pipe.</p>
         <div class="table-wrap"><table id="wl-table"></table></div>
         <form id="wl-form" class="form-grid">
           <input name="source_case_id" placeholder="source_case_id" required>
+          <input name="entity_type" placeholder="entity_type" value="vehicle">
           <input name="plate" placeholder="plate">
+          <input name="name" placeholder="name">
+          <input name="gallery_id" placeholder="gallery_id">
           <input name="category" placeholder="category">
           <input name="priority" placeholder="priority" value="HIGH">
           <button type="submit">Save</button>
@@ -104,15 +107,27 @@
         <input type="file" id="anpr-file" accept="image/*">
         <input id="anpr-cam" value="CAM-OWN-001">
         <pre id="anpr-out"></pre>
+        <h3>Analyse this still</h3>
+        <p class="hint">Plates, objects, and (Own cameras only) enrolled-gallery faces. Government cameras never run FRS.</p>
+        <input type="file" id="analyse-file" accept="image/*">
+        <input id="analyse-cam" value="CAM-OWN-001">
+        <pre id="analyse-out"></pre>
         <h3>Operator confirm</h3>
         <form id="confirm-form">
           <input name="camera_id" value="CAM-OWN-001">
           <input name="plate" value="GJ01AB1234">
           <button type="submit">Confirm plate</button>
         </form>
+        <form id="confirm-face-form">
+          <input name="camera_id" value="CAM-OWN-001">
+          <input name="gallery_id" value="WL-004">
+          <button type="submit">Confirm face</button>
+        </form>
       </section>
       <section id="panel-gaps" class="panel">
         <h2>Analytics &amp; Gaps</h2>
+        <p><a id="object-csv-link" href="/api/objects/report.csv">Download object CSV</a></p>
+        <pre id="entity-counts"></pre>
         <pre id="gap-out"></pre>
       </section>
     </main>

@@ -1,0 +1,17 @@
+{
+  "id": "E-health",
+  "utc": "2026-09-04T08:22:26Z",
+  "label": "MEASURED",
+  "ok": true,
+  "skipped": false,
+  "skip_reason": "",
+  "metrics": {
+    "status": "ok",
+    "cameras": 41,
+    "detections": 10,
+    "watchlist": 5,
+    "sentinel_host_configured": true
+  },
+  "notes": "",
+  "command": "GET /api/health"
+}

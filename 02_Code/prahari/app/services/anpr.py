@@ -17,6 +17,11 @@ def _tesseract_recognize(frame_bgr: np.ndarray) -> dict[str, Any]:
     import cv2
     import pytesseract
 
+    try:
+        pytesseract.get_tesseract_version()
+    except Exception:
+        return {"plate": None, "plate_raw": "", "confidence": 0.0, "crop_bgr": frame_bgr, "box": None}
+
     gray = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2GRAY)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (17, 5))
     blackhat = cv2.morphologyEx(gray, cv2.MORPH_BLACKHAT, kernel)

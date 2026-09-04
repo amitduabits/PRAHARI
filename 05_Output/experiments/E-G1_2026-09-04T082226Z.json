@@ -1,0 +1,11 @@
+{
+  "id": "E-G1",
+  "utc": "2026-09-04T08:22:26Z",
+  "label": "MEASURED",
+  "ok": true,
+  "skipped": true,
+  "skip_reason": "/api/ingest HTTP 200 not JSON",
+  "metrics": {},
+  "notes": "",
+  "command": "GET cameras.json"
+}

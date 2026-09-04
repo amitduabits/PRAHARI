@@ -1,37 +1,92 @@
 \documentclass[listings]{csf301-notes}
 \usepackage{ifthen}
 \input{tikz-library}
-\moduleinfo{01}{PRAHARI}{Hackathon demo}{Amit Dua, Arnav, Aria}
+\moduleinfo{01}{PRAHARI}{Stakeholder briefing}{Amit Dua, Arnav, Aria}
 \renewcommand{\coursecode}{GPIC 2026}
 \renewcommand{\coursetitle}{Gujarat Police Innovation Challenge}
 \renewcommand{\bitssemester}{September 2026}
 \begin{document}
 \notestitle
 
-\section{Official problem}
-The Home Department of Gujarat published the challenge at \url{https://sentinel.gujarat.gov.in/problems}. A word-for-word transcript lives in \code{06\_References/SENTINEL\_Problems\_Page.md}, crawled 03 September 2026. Phase 1 submission closes 07 September 2026 at 12:00 IST. PRAHARI is Category 1 (student). The team is Amit Dua, Arnav, and Aria.
+\section{Who this document is for}
+This is the teaching note for PRAHARI. Readers are Home Department evaluators, departmental operators, and the student team. The voice is a lecturer explaining a machine to a bright ten-year-old, then naming the real parts so an adult can inspect them.
 
-Twenty-six departments run independent CCTV estates. Cameras are analog and IP. Sites run from border districts to Valsad, Dahod, Somnath, Jamnagar, and Dwarka. Some NVRs keep seven days, some fifteen. Watchlists already exist: VAHAN, SARTHI, eGujCop, AFIS, NAFIS. The cameras do not match against those lists. There is no statewide census of which public-domain cameras exist, whether they are alive, or where coverage stops.
+Every number is one of three labels. MEASURED is a fact from this laptop or the Sentinel sandbox. DESIGN TARGET is statewide arithmetic we have not run at 80{,}000 cameras. CONJECTURED is unused in this note.
 
-The official core goal is a secure, scalable, interoperable, technically feasible, and cost-effective approach that uses existing infrastructure to the maximum practical extent. Replacing every departmental VMS in a student PoC is not feasible. A central recorder that ingests 80{,}000 full-HD streams (DESIGN TARGET, not this laptop) for 15 days needs statewide dark fibre, petabytes of hot storage, and a GPU farm that this team cannot claim. PRAHARI therefore adds an intelligence plane on top of what already records video.
+\section{The problem, in one picture}
+Imagine 26 schools in one city. Each school has cameras. Each school bought a different cupboard to store the tapes. Some cupboards keep tapes for 7 days. Some keep them for 15. The head office has a notebook of stolen bicycles and missing children. Nobody in the camera room opens that notebook when a bicycle rolls past.
 
-\section{Hybrid model}
-The official page lists four reference models and permits a hybrid. Model 1 is the registry and GIS foundation and may support Models 2, 3, and 4. Model 2 connects directly to departmental streams through RTSP, ONVIF, or vendor APIs and may run ANPR without storing every frame. Model 3 inserts a federation middleware. Model 4 is a full central VMS with recording, tiered storage, and statewide AI.
+That is Gujarat's CCTV estate. Twenty-six departments. Analog and IP cameras. Sites from border districts to Valsad, Dahod, Somnath, Jamnagar, and Dwarka. Watchlists already exist: VAHAN, SARTHI, eGujCop, AFIS, NAFIS. The cameras do not match against those lists. There is no statewide census of which public-domain cameras exist, whether they are alive, or where coverage stops.
 
-\begin{definition}[PRAHARI hybrid]
-Model 1 supplies camera metadata, GIS, health, and gap reports. Model 2 opens reachable RTSP, HLS, WHEP, or ONVIF streams and runs ANPR on sampled frames. Thin Model 3 is a detection-event JSON bus, an in-memory watchlist matcher, and \code{GET /api/track/\{plate\}}. Model 4 central recording is written as Phase-2 for selected cameras only.
-\end{definition}
+The official page is \code{https://sentinel.gujarat.gov.in/problems}. Phase 1 closes 07 September 2026 at 12:00 IST. PRAHARI is Category 1 (student). The team is Amit Dua, Arnav, and Aria.
 
 \begin{keyidea}
-A new vendor is one adapter. The detection JSON does not change if the bus later becomes Kafka.
+The State does not need a new cupboard for every tape. It needs one notebook that watches the cameras it already paid for.
 \end{keyidea}
 
-The official architecture principles ask for an open, modular, standards-based, vendor-neutral design. PRAHARI keeps departmental VMS in place. Adapters speak RTSP-TCP, HLS, WHEP, and ONVIF. Kafka, Kubernetes, and Ceph are named as later swap points. They are not in this PoC.
+The official core goal is a secure, scalable, interoperable, technically feasible, and cost-effective approach that uses existing infrastructure to the maximum practical extent. A student PoC cannot replace 26 VMS contracts. A central recorder that ingests 80{,}000 full-HD streams (DESIGN TARGET) for 15 days needs statewide dark fibre, petabytes of hot storage, and a GPU farm this team does not have. PRAHARI therefore adds an intelligence plane on top of the systems that already record video.
 
-\section{Architecture}
+\section{The four official models, and the choice}
+The official page lists four reference models and permits a hybrid. Think of them as four ways to organise a school.
+
+\begin{definition}[Model 1: registry and GIS]
+A roll call. Who owns the camera, where it sits, whether it is alive, how many days it keeps tape. No live picture is required.
+\end{definition}
+
+\begin{definition}[Model 2: unified viewing]
+One window that can open many classrooms. The school keeps its own cupboard. The window speaks RTSP, ONVIF, or a vendor API. ANPR may run on a sampled frame without storing every frame.
+\end{definition}
+
+\begin{definition}[Model 3: VMS federation]
+A post office between cupboards. Each vendor gets an adapter. Events travel on a bus. The original cupboard stays.
+\end{definition}
+
+\begin{definition}[Model 4: central VMS]
+One giant cupboard for the whole city. Ingest, store, playback, full AI, hot/warm/cold tape. This is a rip-and-replace.
+\end{definition}
+
+\begin{langbox}[Options we had]
+\begin{tabular}{@{}llp{0.46\textwidth}@{}}
+\toprule
+Option & We take it? & Why \\
+\midrule
+Model 1 only & No & A roll call does not catch a stolen car. \\
+Model 2 only & No & Viewing without a watchlist fails the test case. \\
+Model 3 full SDK zoo & No & Seven days cannot wrap every vendor SDK. \\
+Model 4 statewide & No & We cannot host 80{,}000 recordings (DESIGN TARGET). \\
+Hybrid 1+2+thin 3 & Yes & Census now, viewing now, events now, recording later. \\
+\bottomrule
+\end{tabular}
+\end{langbox}
+
+\begin{definition}[PRAHARI hybrid]
+Model 1 supplies camera metadata, GIS, health, and gap reports. Model 2 opens reachable RTSP, HLS, WHEP, or ONVIF streams and runs analytics on sampled frames. Thin Model 3 is a detection-event JSON bus, an in-memory watchlist matcher, and \code{GET /api/track/\{plate\}}. Model 4 central recording is Phase-2 for selected cameras only.
+\end{definition}
+
+A new vendor is one adapter. The detection JSON does not change if the bus later becomes Kafka. Kafka, Kubernetes, and Ceph are named as later swap points. They are not in this PoC.
+
+\section{How a picture becomes a red card}
+A ten-year-old can follow this path. An adult can grep it.
+
+\begin{center}\resizebox{0.98\textwidth}{!}{\input{figures/pipeline}}\end{center}
+
+\begin{enumerate}
+\item A camera produces a live stream, or a file clip for the own-feed demo.
+\item Capture opens the stream over RTSP-TCP (or HLS, or a file). Time comes from PTS, not the wall clock.
+\item \code{analyse()} looks at about one frame per second.
+\item Each hit becomes a detection JSON row in SQLite.
+\item The matcher checks a notebook (the representative watchlist) in $O(1)$.
+\item A stolen plate raises a CRITICAL alert. The SOC tab turns red. A CSV records timestamps.
+\end{enumerate}
+
+\begin{example}[The stolen-car story]
+The notebook has \code{GJ01AB1234} marked STOLEN (\code{WL-001}). Six seed cameras already saw that plate from Valsad to Gandhinagar. On 03 September 2026 an operator confirm on Paldi Circle (\code{cam04}) appended a seventh live point. The six seed ids stayed. The CSV is the evaluator artefact.
+\end{example}
+
+\section{Architecture of the PoC}
 \begin{center}\resizebox{0.98\textwidth}{!}{\input{figures/arch}}\end{center}
 
-The PoC runs FastAPI and SQLite on one laptop. The UI is Leaflet plus vanilla JS on port 8080. Capture uses OpenCV with FFmpeg. ANPR uses morphology plus Tesseract behind \code{recognize()}. Alerts move on an in-process WebSocket.
+The PoC runs FastAPI and SQLite on one laptop. The UI is Leaflet plus vanilla JS on port 8080. Capture uses OpenCV with FFmpeg.
 
 \begin{langbox}[PoC versus later swap]
 \begin{tabular}{@{}lll@{}}
@@ -43,86 +98,201 @@ UI & Leaflet + vanilla JS & React if a wall needs it \\
 Store & SQLite & PostgreSQL + PostGIS \\
 Capture & OpenCV + FFmpeg, RTSP TCP & DeepStream on regional GPUs \\
 ANPR & morphology + Tesseract & YOLO plate detector + PaddleOCR \\
+Objects & CPU blob / OpenCV DNN & YOLO11 at 1\,fps on regional GPU \\
+FRS & enrolled gallery, Own cameras & dedicated cameras, human confirm \\
 Alerts & in-process WebSocket & Redis / Kafka \\
 Auth & HTTP Basic + signed cookie & department SSO \\
 \bottomrule
 \end{tabular}
 \end{langbox}
 
-\section{Live Sentinel contract}
-The sandbox publishes each camera as a live RTP/RTSP stream. On 01 September 2026 the host \code{live.corp8.cloud} answered HTTP 502 on \code{/api/ingest}. On 03 September 2026 the live portal is \url{https://cctv.corp8.cloud/}. Catalogue \code{GET /cameras.json}, after \code{POST /auth/login}, returns a JSON array of \code{\{id, name\}}. Thirty cameras were listed (\code{cam01} to \code{cam30}). \code{/api/ingest} returns HTTP 404 on this host.
+\section{Registry and GIS (Model 1)}
+A roll call needs a row per camera: id, department, ownership, consent, lat, lon, protocol, retention, health. Three doors put a row in: a CSV, a form, a REST call. A fourth door pulls the Sentinel catalogue.
 
-HLS playlists live at \code{https://cctv.corp8.cloud/<id>/index.m3u8}. The origin requires the access cookie and a browser User-Agent. A plain \code{curl} without those headers returns the text \code{browser required}. RTSP is not on the TLS hostname. The live \code{/resource} page publishes \code{rtsp://103.250.160.189:8554/stream/<id>}. Port 8554 on that address is open from the team network.
+Health is a colour on the Gujarat map. Three failed probes turn a pin red. Dahod GSRTC is seeded offline on purpose so a gap report has something true to say. Food and Civil Supplies cameras with 7-day retention appear in the short-retention list.
 
-The capture client sets \code{OPENCV\_FFMPEG\_CAPTURE\_OPTIONS=rtsp\_transport;tcp} before it imports OpenCV. Event time is presentation timestamp (\code{CAP\_PROP\_POS\_MSEC}). Packet arrival time and declared frame rate are unused. Reconnect backoff starts at 2\,s and caps at 30\,s. Decoder warnings at join (\code{Error constructing the frame RPS}) are logged and ignored until the first IDR. A PTS rewind or a gap above 5\,s is treated as a scene cut because each feed loops.
+Private-permitted mall cameras require \code{consent=true}. A Home department viewer never sees that mall. That is the law of the notebook, not a CSS trick.
+
+The live Sentinel catalogue has no coordinates. Those rows therefore do not sit on the map (the map already skips lat $=$ 0, lon $=$ 0). Operators open \code{cam04} from the Cameras table. The UI states that fact in words.
+
+\section{Live capture and the integrator laws}
+The sandbox publishes each camera as a live RTP/RTSP stream. One second of video takes one second to arrive. There is no rewind and no file download.
+
+On 03 September 2026 the live portal is \code{https://cctv.corp8.cloud/}. Catalogue \code{GET /cameras.json}, after password login, returns a JSON array of \code{\{id, name\}}. Thirty cameras were listed. \code{/api/ingest} returns HTTP 404 on this host.
+
+HLS playlists live at \code{https://cctv.corp8.cloud/<id>/index.m3u8}. The origin wants the access cookie and a browser User-Agent. RTSP is not on the TLS hostname. The live resource page publishes \code{rtsp://103.250.160.189:8554/stream/<id>}.
 
 \begin{warning}
-There is no file download. \code{/stream/<id>} answers range requests for a player. \code{curl} or \code{wget} of that path yields a partial file that looks complete. The client consumes live. It does not publish to the gateway. OpenCV may print \code{SETUP failed: 461 Unsupported Transport} once (UDP). TCP then succeeds. That line is not a down camera.
+\code{/stream/<id>} answers range requests for a player. \code{curl} or \code{wget} of that path yields a partial file that looks complete. A team that ships that file as the government-feed demo has not consumed the grid. PRAHARI consumes live. It does not publish to the gateway.
 \end{warning}
 
+Why TCP, not UDP? UDP dies across NAT and most campus firewalls. Partial UDP looks like a broken model. The capture client sets \code{OPENCV\_FFMPEG\_CAPTURE\_OPTIONS=rtsp\_transport;tcp} before it imports OpenCV. If port 8554 is blocked, the client falls back to HLS.
+
+Why PTS, not the wall clock? After connect, the gateway may replay a group of pictures faster than real time. A tracker that stamps arrival time invents impossible speeds. Event time is \code{CAP\_PROP\_POS\_MSEC}. Declared FPS is unused.
+
+Why backoff 2\,s to 30\,s? Feeds restart. A tight reconnect loop is a denial of service against ourselves.
+
+Why a scene cut? Each sandbox feed loops. At the loop the picture jumps. Object track ids and face tracks reset. A PTS rewind or a gap above 5\,s is that jump.
+
 \begin{implnote}
-\code{app/services/catalogue.py} logs in with \code{SENTINEL\_PASSWORD}, reads \code{/cameras.json}, and fills HLS and RTSP only when the JSON omitted those URLs. Camera ids still come from the JSON. The browser never receives the Sentinel cookie. Stream tiles use a 60-second HMAC token on \code{/api/stream/\{id\}}.
+\code{tests/test\_integrator\_laws.py} greps the capture client for the TCP flag, forbids \code{CAP\_PROP\_FPS} in services, and forbids publish helpers. \code{test\_scene\_cut.py} checks rewind and gap, and checks that object track ids reset.
 \end{implnote}
 
-\section{Measured government-feed result}
-Numbers in this section are MEASURED on 03 September 2026 unless labelled otherwise.
+\section{\code{analyse()}: one door for every engine}
+A child should not have four different ``look at this picture'' buttons that disagree. Adults should not either.
 
-The registry upserted all 30 catalogue cameras with \code{department=Sentinel} and \code{cam\_type=sandbox}. Sequential RTSP-TCP probes of \code{cam04} (Paldi Circle) and \code{cam01} (Chimanbhai Bridge) returned health \code{live}. One frame from \code{cam04} was written to \code{03\_Data/recordings/first\_live\_frame.png}: 1920$\times$1080, PTS 1080\,ms.
-
-The live manifest has no \code{live} flag and no coordinates. The Operations map therefore hides those rows (it already skips lat $=$ 0, lon $=$ 0). The Cameras table lists them and offers Open tile. Gap reports flag missing coordinates honestly.
-
-Tesseract is not on PATH on the build laptop. \code{recognize()} raises \code{TesseractNotFoundError}. Operator confirm (\code{POST /api/ingest/confirm}) wrote plate \code{GJ01AB1234} on camera \code{cam04} with confidence 1.0. The matcher raised a CRITICAL alert. The script \code{gov\_report.py} wrote one catalogue row to \code{gov\_feed\_plates.csv} with the note ``OCR empty, confirm used''.
-
-\section{ANPR and the detection event}
-Analytics samples one frame per second using PTS deltas, not \code{sleep(1)} and not declared FPS. The plate pipeline is: localise a plate-like box, run Tesseract with an alphanumeric whitelist, then normalise.
-
-\begin{definition}[Indian plate normaliser]
-After stripping spaces and hyphens, the string must match \code{\^{}[A-Z]\{2\}[0-9]\{1,2\}[A-Z]\{1,3\}[0-9]\{3,4\}\$}. \code{GJ 01 AB 1234} and \code{GJ-01-AB-1234} both become \code{GJ01AB1234}. Anything else is dropped.
+\begin{definition}[\code{analyse(frame, camera, pts\_ms)}]
+The only worker entry. It returns a list of detection dicts. It does not insert them. The ingest router writes crops, inserts rows, and calls the matcher.
 \end{definition}
 
-\begin{implnote}
-\code{recognize(frame\_bgr)} returns \code{\{plate, plate\_raw, confidence, crop\}}. Callers never import Tesseract. A YOLO engine can replace the body when \code{ANPR\_ENGINE=yolo}. Operator confirm writes confidence 1.0 and still hits the matcher, so a readable plate cannot fail a live demo if OCR misses.
-\end{implnote}
+Default engines are \code{anpr,objects}. Own cameras may also list \code{faces}. Government catalogue ids matching \code{cam} plus digits never receive the faces engine. Ownership \code{Gov} never receives it either. The log line is \code{frs\_refused}.
 
-Frozen event fields: \code{event\_id}, \code{plate}, \code{plate\_raw}, \code{confidence}, \code{camera\_id}, \code{lat}, \code{lon}, \code{ts}, \code{pts\_ms}, \code{crop\_uri}, \code{category}, \code{priority}, \code{source\_case\_id}.
+Godown camera \code{CAM-FCS-001} additionally runs intrusion: a person box that overlaps a stored ROI by at least 30 percent of the person area.
 
-\section{Watchlist, track, security}
-The matcher keeps plates in a Python \code{set}. Lookup is $O(1)$. The set reloads from SQLite every 60\,s. Duplicate suppression: the same plate on the same camera within 120\,s increments \code{counter} on the open alert. Priority CRITICAL is stolen or wanted. \code{WL-001} is \code{GJ01AB1234} / STOLEN and cannot be deleted.
+Plate fields stay frozen so old callers keep working. Additive fields are \code{entity\_type}, \code{entity\_id}, \code{face\_id}, \code{object\_class}, \code{bbox}, \code{track\_id}, \code{source}.
+
+\section{ANPR: options and the choice}
+A number plate is a name tag glued to a car. We need the letters in a standard spelling so \code{GJ 01 AB 1234} and \code{GJ-01-AB-1234} are the same name.
+
+\begin{definition}[Indian plate normaliser]
+After stripping spaces and hyphens, the string must match \code{\^{}[A-Z]\{2\}[0-9]\{1,2\}[A-Z]\{1,3\}[0-9]\{3,4\}\$}. Anything else is dropped.
+\end{definition}
+
+\begin{langbox}[ANPR options]
+\begin{tabular}{@{}llp{0.42\textwidth}@{}}
+\toprule
+Option & Taken? & Constraint \\
+\midrule
+Train a detector from scratch & No & Seven days, no labelled Gujarat set. \\
+Require a GPU YOLO now & No & The laptop has GPU count MEASURED 0. \\
+Tesseract + morphology & Yes & CPU, swap behind \code{recognize()}. \\
+Operator confirm & Yes & A readable plate cannot fail a live demo. \\
+\bottomrule
+\end{tabular}
+\end{langbox}
+
+\code{recognize(frame\_bgr)} returns \code{\{plate, plate\_raw, confidence, crop\}}. Callers never import Tesseract. If the Tesseract binary is missing, the function returns an empty plate. It does not crash. \code{ANPR\_ENGINE=yolo} is import-guarded and unused unless weights exist.
+
+Operator confirm writes confidence 1.0 and \code{source=operator\_confirm}. A confirm row is never labelled \code{source=anpr}. That honesty is a test, not a slogan.
+
+MEASURED 03--04 September 2026: Tesseract was not on PATH. Confirm on \code{cam04} wrote \code{GJ01AB1234}. Eight own-feed stills at PTS 1\,s produced no plate. The log says so.
+
+\section{Object detection: options and the choice}
+A person is a blob that looks like a person. A car is a blob that looks like a car. The official evaluation scores person and vehicle detection, not only plates.
+
+\begin{langbox}[Object-engine options]
+\begin{tabular}{@{}llp{0.42\textwidth}@{}}
+\toprule
+Option & Taken? & Constraint \\
+\midrule
+YOLOv8n as the only path & No & Extra dependency, GPU optional, tests would skip. \\
+OpenCV DNN with vendored weights & Later & Weights are large. Tests must not need a download. \\
+Skin-tone blob fallback & Yes for tests & A drawn rectangle is a person if it occupies $\ge 8\%$ of the frame. \\
+Skip objects entirely & No & Eval area 05 names them. \\
+\bottomrule
+\end{tabular}
+\end{langbox}
+
+Classes kept: person, car, motorcycle, bus, truck, bicycle. Others drop. Each box gets a per-camera \code{track\_id}. A scene cut resets those ids. Object rows do not raise a watchlist card unless they are wrapped as intrusion.
+
+\code{GET /api/objects/report.csv} is the evaluator artefact: timestamp, camera, class, confidence.
+
+\section{Lawful FRS: options and the choice}
+A face is a name tag a person did not pin on. Matching faces of strangers on a public street is a rights problem, not a prize feature.
+
+\begin{langbox}[FRS options]
+\begin{tabular}{@{}llp{0.40\textwidth}@{}}
+\toprule
+Option & Taken? & Constraint \\
+\midrule
+No FRS at all & No & HLD text and eval 05 name recognition. \\
+Wild FRS on Paldi Circle & No & Unknown members of the public. Unlawful in this PoC. \\
+Live AFIS / NAFIS pipe & No & We have no ministry API. Claiming one is a false claim. \\
+Enrolled gallery, Own cameras & Yes & Consented adults or synthetic fixtures. Human confirm. \\
+\bottomrule
+\end{tabular}
+\end{langbox}
+
+\begin{warning}
+The faces engine is refused when \code{ownership} is not \code{Own}, and when \code{camera\_id} matches \code{cam} plus digits. Tests post a face-like still to \code{cam04} and assert zero person events. The government-feed demo never shows FRS.
+\end{warning}
+
+The gallery stores crops under \code{data/faces/\{gallery\_id\}/}. Match uses a colour histogram of a 64$\times$64 crop (LBPH if OpenCV contrib is present). \code{GET /api/faces/gallery} returns ids and counts. It does not return embeddings. \code{WL-004} is a person row. The matcher fires on \code{face\_id}, not on an empty plate.
+
+Synthetic fixtures are geometric ellipses with unique noise. Tests do not need a photograph of a real person. A human demo may add two consented adult photos. Never a minor. Never a crop from \code{cctv.corp8.cloud}.
+
+\section{Intrusion on a godown}
+Food and Civil Supplies cameras watch a warehouse, not a highway. A person standing in a drawn rectangle is an intrusion.
+
+The ROI lives in \code{cameras.extra\_json}. Overlap of at least 30 percent of the person box with the ROI raises \code{entity\_type=intrusion}, category \code{INTRUSION}, priority CRITICAL. Two hits within 120\,s on the same camera increment a counter. There is no fourth neural net. Intrusion wraps object boxes.
+
+\section{Watchlist, alerts, track}
+The notebook is a representative watchlist. It is not a live ministry pipe. Categories include STOLEN, BLACKLIST, OBSERVE, and a person row \code{MISSING\_ASSOCIATE}.
+
+The matcher keeps plates in a dictionary and gallery ids in another. Lookup is $O(1)$. Reload is on demand (and on boot). Duplicate suppression: the same entity on the same camera within 120\,s increments \code{counter}. Priority CRITICAL is stolen, wanted, or intrusion. HIGH is blacklist or the person associate. LOW is log.
+
+\code{WL-001} cannot be deleted. That is the seeded evaluation plate.
 
 \begin{example}[Designated vehicle \code{GJ01AB1234}]
-\code{GET /api/track/GJ01AB1234} returns the six seed points in this order: CAM-VAL-001 Valsad 06:12, CAM-SUR-001 Surat 07:48, CAM-AHD-004 Narol--Naroda 09:05, CAM-AHD-001 SG Highway 09:22, CAM-GNR-003 Koba 09:51, CAM-GNR-001 Gandhinagar Sector 21 10:04. On 03 September 2026 a live confirm on \code{cam04} appended. The detection table then held eight cameras for that plate. The six seed ids remained. CSV columns are plate, camera\_id, ts, confidence, category on the government report, and the longer GIS columns on \code{/api/track/\{plate\}/report.csv}.
+\code{GET /api/track/GJ01AB1234} returns the six seed points in this order: CAM-VAL-001 Valsad 06:12, CAM-SUR-001 Surat 07:48, CAM-AHD-004 Narol--Naroda 09:05, CAM-AHD-001 SG Highway 09:22, CAM-GNR-003 Koba 09:51, CAM-GNR-001 Gandhinagar Sector 21 10:04. Live confirm on \code{cam04} appended. CSV columns include plate, camera, timestamp, location.
 \end{example}
 
-Roles: \code{superadmin}, \code{soc\_operator} (\code{judge}), \code{dept\_viewer} (\code{home.viewer} sees Home only), \code{auditor} (GET only). Stream tiles use a 60-second HMAC token. Responses to the browser omit \code{rtsp://}. Private-permitted cameras require \code{consent=true}. Audit rows cover onboard, watchlist edit, ack, report download, and confirm. Stream URLs are not stored in audit detail.
+Cross-camera tracking in this PoC is plate sightings joined to camera GIS. It is not a Re-ID embedding across Paldi Circle. A teleport flag fires if implied speed exceeds 180\,km/h. That flag is information, not a hard fail.
 
-\section{Official evaluation, mapped}
-The problems page scores seven common areas. Bonus does not rescue a failed mandatory item.
+Alerts push on WebSocket \code{/ws/alerts}. The UI also polls every 5\,s so a blocked socket does not hide a CRITICAL card. Person cards show a name or gallery id, not a blank plate.
 
-\begin{enumerate}
-\item Successful test case on the government feed. MEASURED: 30 cameras onboarded from the live catalogue; RTSP-TCP frame on disk; confirm and CSV on \code{cam04}. Screen-record of that path is still a human task.
-\item Solution presentation. This notes file and \code{slides.tex} (BITS Beamer, logo top right) cover model justification, architecture, analytics, watchlist, stack, scale, and impact.
-\item Solution architecture. HLD at \code{04\_Documents/PRAHARI\_HLD.md} matches the running APIs. Model 4 is not faked.
-\item Working platform. Own-feed file \code{own\_feed.mp4} and the live catalogue both write detection rows. Mock UIs without a database row are rejected by the official page and by this team.
-\item Video analytics. Confirm path is MEASURED. OCR is blocked until Tesseract is on PATH. Face recognition is not the demo.
-\item Scalability and PoC readiness. Section~\ref{sec:scale} is DESIGN TARGET. The laptop count is MEASURED.
-\item Submission completeness. GitHub \url{https://github.com/amitduabits/PRAHARI} is live. Unlisted YouTube, Drive Anyone+Viewer, and a hosted URL remain human work before 07 September 2026.
-\end{enumerate}
+\section{Security and privacy}
+Roles: \code{superadmin}, \code{soc\_operator} (\code{judge}), \code{dept\_viewer}, \code{auditor}. A Home viewer sees Home cameras only. An auditor cannot POST. Stream tiles use a 60-second HMAC token. Responses to the browser omit \code{rtsp://}. The Sentinel cookie stays on the server.
 
-Bonus already in the product, and scoring only if a video or this deck shows it: hybrid justification, cross-camera track, RBAC and audit, gap report (Dahod offline, short retention), WebSocket alerts, 1\,fps regional cost sentence.
+Path jail keeps crops inside the media root. HLS origin is pinned to the configured Sentinel host. Passwords compare with \code{hmac.compare\_digest}.
+
+Audit rows cover onboard, watchlist edit, ack, report download, plate confirm, and face confirm. Stream URLs are not stored in audit detail.
 
 \section{Scale and cost}
 \label{sec:scale}
-Numbers below are DESIGN TARGET for a statewide intelligence plane, not measured laptop throughput.
+A ten-year-old version: do not ship every school video to one room. Ship a tiny still once a second, and only from cameras that matter. The wall shows 16 to 64 live tiles. The rest is metadata.
 
-Assume 45{,}000 public-domain cameras run ANPR at 1\,fps with an 80\,KB JPEG crop. Naive centralisation is $45{,}000 \times 80\,\mathrm{KB/s} \approx 3.6\,\mathrm{GB/s}$. Five regional GPU sites (Ahmedabad, Surat, Rajkot, Vadodara, Bhuj) cut that to about 720\,MB/s per site. The SOC wall pulls 16 to 64 HLS tiles. Everything else is metadata and crops. Low-connectivity outposts send events only.
+Numbers below mix MEASURED laptop facts with DESIGN TARGET statewide arithmetic.
 
-Order-of-magnitude yearly cost of that plane, not of replacing 26 VMS estates: GPU nodes 1.8--2.4 Cr, object storage 0.8--1.2 Cr, bandwidth 0.6--1.0 Cr, twelve engineers 1.5 Cr; total about 5--6 Cr.
+Assume 45{,}000 public-domain cameras run analytics at 1\,fps with an 80\,KB JPEG crop (DESIGN TARGET). Naive centralisation is $45{,}000 \times 80\,\mathrm{KB/s} \approx 3.6\,\mathrm{GB/s}$. Five regional GPU sites (Ahmedabad, Surat, Rajkot, Vadodara, Bhuj) cut that to about 720\,MB/s per site. Low-connectivity outposts send events only.
+
+MEASURED on 04 September 2026 on this laptop: four open file captures succeed; the fifth is rejected. Mean JPEG from eight own-feed stills is 41\,KB. \code{/api/health} p99 is 9.4\,ms over 50 calls. GPU count is 0. Statewide 80\,KB and regional GPUs remain DESIGN TARGET.
+
+Order-of-magnitude yearly cost of the intelligence plane, not of replacing 26 VMS estates (DESIGN TARGET): GPU nodes 1.8--2.4 Cr, object storage 0.8--1.2 Cr, bandwidth 0.6--1.0 Cr, twelve engineers 1.5 Cr; total about 5--6 Cr.
 
 Hot / warm / cold recording of every frame is Model 4 and Phase-2, selected cameras only.
 
-\section{How to run the PoC}
-Clone \url{https://github.com/amitduabits/PRAHARI}. From \code{02\_Code/prahari} copy \code{.env.example} to \code{.env}. Set the judge password before any hosted demo. Set the Sentinel host, password, and RTSP IP after the live portal login. Run \code{run.ps1} (Windows) or \code{run.sh} (Unix). Open \url{http://127.0.0.1:8080} and sign in as \code{judge}. Tests on 03 September 2026: 33 passed, 1 skipped (Tesseract binary). Integrator checks live in \code{test\_integrator\_laws.py}.
+\section{Test cases and experiments}
+The suite on 04 September 2026: 74 passed, 1 skipped (Tesseract binary). \code{scripts/audit\_gate.py} prints PASS. \code{scripts/run\_experiments.py --suite smoke} writes \code{05\_Output/experiments/EXPERIMENT\_LOG.md}.
 
-Three-minute walk: Operations map (seeded pins, Dahod offline), Cameras table Open tile on \code{cam04}, Vehicle Track reconstruct \code{GJ01AB1234} and download CSV, Alerts CRITICAL and Ack, Onboard confirm if OCR misses, Analytics \& Gaps for short-retention Food and Civil Supplies cameras.
+\begin{langbox}[What each family proves]
+\begin{tabular}{@{}llp{0.46\textwidth}@{}}
+\toprule
+Family & Files & Claim \\
+\midrule
+Integrator & \code{test\_integrator\_laws}, \code{test\_scene\_cut} & TCP, no FPS timing, scene-cut reset \\
+Registry & \code{test\_cameras}, \code{test\_catalogue} & CSV, consent, catalogue 400 without host \\
+ANPR & \code{test\_plate\_normaliser}, negatives, honesty & Confirm is not ANPR. Junk drops. \\
+Objects & \code{test\_objects} & Person blob inserts. YOLO without weights does not crash. \\
+FRS & \code{test\_faces}, \code{test\_privacy\_frs} & Same gallery matches. \code{cam04} emits zero faces. \\
+Intrusion & \code{test\_intrusion} & ROI overlap CRITICAL. Missing ROI is a no-op. \\
+Matcher & \code{test\_matcher} & Stolen, blacklist, \code{WL-004} without a plate, 120\,s dedupe \\
+Track & \code{test\_track} & Six seed cameras. Append does not drop \code{seed-1}. \\
+Security & \code{test\_security}, path jail, no RTSP leak & Viewer 403 on enroll. Auditor 403 on confirm-face. \\
+\bottomrule
+\end{tabular}
+\end{langbox}
+
+Experiment labels: E-A1 ANPR fixture (skipped without Tesseract), E-O1 person blob MEASURED, E-F1 gallery hit MEASURED, E-I1 intrusion MEASURED, E-W1 track count $\ge 6$ MEASURED, E-S1 fifth session rejected MEASURED, E-S6 GPU 0 MEASURED. Government live grab (E-G*) SKIPPED when that process sees an empty \code{SENTINEL\_HOST}.
+
+\section{How to run the PoC}
+Clone \code{https://github.com/amitduabits/PRAHARI}. From \code{02\_Code/prahari} copy \code{.env.example} to \code{.env}. Set the judge password before any hosted demo. Set the Sentinel host, password, and RTSP IP after the live portal login. Run \code{run.ps1} (Windows) or \code{run.sh} (Unix). Open \code{http://127.0.0.1:8080} and sign in as \code{judge}.
+
+Three-minute walk: Operations map (seeded pins, Dahod offline), Cameras table Open tile on \code{cam04}, Vehicle Track reconstruct \code{GJ01AB1234} and download CSV, Alerts CRITICAL and Ack, Onboard Analyse this still or confirm if OCR misses, Analytics \& Gaps for short-retention Food and Civil Supplies cameras.
+
+\section{What is done, what is still human}
+Done in code and notes: hybrid plane, catalogue sync, RTSP-TCP frame, confirm CSV, objects, intrusion, lawful FRS with gov refuse, RBAC, experiment harness, this deck.
+
+Still human before 12:00 IST on 07 September 2026: Tesseract on PATH if OCR should appear on camera; two consented adult photos for a live face demo; own-feed Unlisted YouTube $\le 3$ minutes; gov-feed Unlisted YouTube $\le 3$ minutes with no FRS; Drive Anyone+Viewer for the plate CSV; portal receipt.
 
 \end{document}

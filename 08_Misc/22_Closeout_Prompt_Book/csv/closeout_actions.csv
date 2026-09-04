@@ -1,0 +1,57 @@
+prompt_id,day,date,phase,category,assignee,expected_output,depends_on,estimated_minutes,priority,eval_area,status
+C00-001,D4,2026-09-04,C00,preflight,agent,pytest -q green or documented skips,,20,P0,platform,DONE
+C00-002,D4,2026-09-04,C00,preflight,agent,audit_gate.py PASS,,10,P0,security,DONE
+C00-003,D4,2026-09-04,C00,preflight,agent,no edits under nested PRAHARI/PRAHARI/,C00-001,5,P0,platform,DONE
+C00-004,D4,2026-09-04,C00,preflight,agent,05_Output/experiments/EXPERIMENT_LOG.md header,,10,P0,analytics,DONE
+C01-001,D4,2026-09-04,C01,schema,agent,test_event_schema.py green,C00-001,40,P0,architecture,DONE
+C01-002,D4,2026-09-04,C01,schema,agent,test_track.py still count>=6,C01-001,15,P0,test_case,DONE
+C01-003,D4,2026-09-04,C01,schema,agent,analyse.py engines_for drops faces on Gov,C01-001,25,P0,privacy,DONE
+C02-001,D4,2026-09-04,C02,objects,agent,objects.detect fixture person,C01-003,50,P0,analytics,DONE
+C02-002,D4,2026-09-04,C02,objects,agent,POST /api/ingest/analyse inserts object rows,C02-001,30,P0,analytics,DONE
+C02-003,D4,2026-09-04,C02,objects,agent,GET /api/objects/report.csv,C02-002,20,P0,analytics,DONE
+C02-004,D4,2026-09-04,C02,objects,agent,scene-cut resets object track_ids,C02-001,20,P0,integrator,DONE
+C02-005,D4,2026-09-04,C02,objects,agent,OBJECT_ENGINE=yolo without weights does not crash,C02-001,15,P1,analytics,DONE
+C03-001,D4,2026-09-04,C03,frs,agent,test_faces.py same-id match other-id reject,C01-003,50,P0,analytics,DONE
+C03-002,D4,2026-09-04,C03,frs,agent,enroll API + confirm-face audited,C03-001,30,P0,watchlist,DONE
+C03-003,D4,2026-09-04,C03,frs,agent,zero face events on cam04 and Gov,C03-001,30,P0,privacy,DONE
+C03-004,D4,2026-09-04,C03,frs,agent,gallery JSON has no embeddings,C03-002,10,P0,privacy,DONE
+C03-005,D4,2026-09-04,C03,frs,aria,HUMAN two consented adult photos in 03_Data/samples/faces/WL-004,,30,P0,own_feed,NOT_STARTED
+C04-001,D4,2026-09-04,C04,intrusion,agent,person-in-ROI CRITICAL on CAM-FCS-001,C02-001,30,P0,analytics,DONE
+C04-002,D4,2026-09-04,C04,intrusion,agent,negative + missing ROI tests,C04-001,15,P0,analytics,DONE
+C05-001,D4,2026-09-04,C05,watchlist,agent,matcher hits face_id,C03-002,25,P0,watchlist,DONE
+C05-002,D4,2026-09-04,C05,watchlist,agent,WL-004 alert without plate,C05-001,15,P0,watchlist,DONE
+C05-003,D4,2026-09-04,C05,watchlist,agent,BLACKLIST GJ05CD5678 HIGH,C05-001,10,P0,watchlist,DONE
+C05-004,D4,2026-09-04,C05,watchlist,agent,WS test CRITICAL payload,C05-001,25,P1,watchlist,DONE
+C06-001,D5,2026-09-05,C06,anpr,aria,HUMAN tesseract --version on PATH,,20,P0,analytics,NOT_STARTED
+C06-002,D5,2026-09-05,C06,anpr,agent,test_anpr_negative + variants,C00-001,25,P0,analytics,DONE
+C06-003,D5,2026-09-05,C06,anpr,agent,confirm cannot be source=anpr,C01-001,15,P0,honesty,DONE
+C06-004,D5,2026-09-05,C06,anpr,agent,E-A2 own_feed stills logged,C06-002,20,P0,own_feed,DONE
+C07-001,D5,2026-09-05,C07,ui,agent,Onboard Analyse this still,C02-002,30,P0,presentation,DONE
+C07-002,D5,2026-09-05,C07,ui,agent,Alerts render person name not blank plate,C05-002,20,P0,watchlist,DONE
+C07-003,D5,2026-09-05,C07,ui,agent,Analytics tab object counts + CSV link,C02-003,20,P0,analytics,DONE
+C07-004,D5,2026-09-05,C07,ui,agent,test_tabs_smoke.py green,C07-001,10,P0,platform,DONE
+C08-001,D5,2026-09-05,C08,experiments,agent,run_experiments.py --suite smoke,"C02-001,C03-001,C04-001",40,P0,analytics,DONE
+C08-002,D5,2026-09-05,C08,experiments,agent,EXPERIMENT_LOG.md rows,C08-001,10,P0,submission,DONE
+C09-001,D5,2026-09-05,C09,live,agent,own_feed E-A E-O E-F logged,C08-001,30,P0,own_feed,DONE
+C09-002,D5,2026-09-05,C09,live,agent,E-G1-G4 MEASURED or SKIPPED,C08-001,40,P0,gov_feed,DONE
+C09-003,D5,2026-09-05,C09,live,agent,E-F3 zero faces on cam04,C03-003,15,P0,privacy,DONE
+C09-004,D5,2026-09-05,C09,live,agent,gov_feed_plates.csv regenerated + NOTE honesty,C09-002,20,P0,gov_feed,DONE
+C10-001,D6,2026-09-06,C10,scale,agent,SCALE_BENCH.md E-S1-S6,C08-001,40,P0,scale,DONE
+C10-002,D6,2026-09-06,C10,scale,agent,HLD crop-size note if MEASURED differs,C10-001,15,P0,architecture,DONE
+C11-001,D6,2026-09-06,C11,security,agent,T-S04 T-S05 T-S07 T-K02 green,C03-003,30,P0,security,DONE
+C11-002,D6,2026-09-06,C11,security,agent,audit_gate still PASS,C11-001,10,P0,security,DONE
+C12-001,D6,2026-09-06,C12,docs,agent,HLD section 6 rewritten to implemented engines,"C02-002,C03-003,C04-001",30,P0,architecture,DONE
+C12-002,D6,2026-09-06,C12,docs,agent,slides+notes FRS law + objects frame,C12-001,40,P0,presentation,DONE
+C12-003,D6,2026-09-06,C12,docs,agent,own/gov demo scripts updated,C12-001,20,P0,own_feed,DONE
+C12-004,D6,2026-09-06,C12,docs,agent,forbidden_claims.md FRS law; audit_gate PASS,C12-002,20,P0,honesty,DONE
+C12-005,D6,2026-09-06,C12,docs,lead,HUMAN PPT/PDF refresh if Beamer not the submitted deck,C12-002,20,P1,presentation,NOT_STARTED
+C13-001,D5,2026-09-05,C13,demo,lead,HUMAN preflight_demo.ps1 PASS,,15,P0,own_feed,NOT_STARTED
+C13-002,D5,2026-09-05,C13,demo,lead,HUMAN own-feed Unlisted YouTube <=3 min,C13-001,40,P0,own_feed,NOT_STARTED
+C13-003,D5,2026-09-05,C13,demo,lead,HUMAN gov-feed Unlisted YouTube <=3 min,C13-001,40,P0,gov_feed,NOT_STARTED
+C13-004,D5,2026-09-05,C13,demo,lead,HUMAN Drive Anyone+Viewer CSV,C09-004,15,P0,submission,NOT_STARTED
+C13-005,D6,2026-09-06,C13,demo,agent,DEMO_ACCEPTANCE.md ticked,"C13-002,C13-003",20,P0,submission,NOT_STARTED
+C14-001,D6,2026-09-06,C14,submit,lead,HUMAN optional hosted URL after audit_gate PASS,,40,P1,submission,NOT_STARTED
+C14-002,D6,2026-09-06,C14,submit,arnav,HUMAN push main no .env,,20,P0,submission,NOT_STARTED
+C14-003,D7,2026-09-07,C14,submit,lead,HUMAN portal before 12:00 IST receipt png,"C13-002,C13-003,C13-004",30,P0,submission,NOT_STARTED
+C14-004,D6,2026-09-06,C14,submit,lead,HUMAN incognito all submitted links,"C13-002,C13-003,C13-004",30,P0,submission,NOT_STARTED
+C14-005,D8,2026-09-08,C14,finale,all,HUMAN finale bag two laptops db clip dongle print,C14-003,60,P0,scale,NOT_STARTED

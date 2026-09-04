@@ -22,6 +22,7 @@ def auth():
 def client(tmp_path, monkeypatch) -> TestClient:
     monkeypatch.setenv("DB_PATH", str(tmp_path / "prahari.db"))
     monkeypatch.setenv("CROP_DIR", str(tmp_path / "crops"))
+    monkeypatch.setenv("FACE_DIR", str(tmp_path / "faces"))
     monkeypatch.setenv("JUDGE_PASSWORD", "set-this-before-submit")
     monkeypatch.delenv("SENTINEL_HOST", raising=False)
     monkeypatch.delenv("SENTINEL_PASSWORD", raising=False)

@@ -1,0 +1,14 @@
+{
+  "id": "E-S6",
+  "utc": "2026-09-04T08:22:30Z",
+  "label": "MEASURED",
+  "ok": true,
+  "skipped": false,
+  "skip_reason": "",
+  "metrics": {
+    "gpu_count_MEASURED": 0,
+    "note": "regional GPU remains DESIGN TARGET"
+  },
+  "notes": "",
+  "command": "GPU count"
+}

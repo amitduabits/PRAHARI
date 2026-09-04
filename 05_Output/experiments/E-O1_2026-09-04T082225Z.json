@@ -1,0 +1,16 @@
+{
+  "id": "E-O1",
+  "utc": "2026-09-04T08:22:25Z",
+  "label": "MEASURED",
+  "ok": true,
+  "skipped": false,
+  "skip_reason": "",
+  "metrics": {
+    "n": 1,
+    "classes": [
+      "person"
+    ]
+  },
+  "notes": "",
+  "command": "detect(person_blob)"
+}

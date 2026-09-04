@@ -41,6 +41,13 @@ DETECTION_COLUMNS = (
     "category",
     "priority",
     "source_case_id",
+    "entity_type",
+    "entity_id",
+    "face_id",
+    "object_class",
+    "bbox_json",
+    "track_id",
+    "source",
 )
 
 

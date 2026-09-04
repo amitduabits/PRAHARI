@@ -1,0 +1,13 @@
+{
+  "id": "E-F1",
+  "utc": "2026-09-04T08:22:25Z",
+  "label": "MEASURED",
+  "ok": true,
+  "skipped": false,
+  "skip_reason": "",
+  "metrics": {
+    "face_id": "WL-004"
+  },
+  "notes": "",
+  "command": "synthetic gallery match"
+}

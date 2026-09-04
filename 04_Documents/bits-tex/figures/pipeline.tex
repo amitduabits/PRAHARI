@@ -1,0 +1,20 @@
+\begin{tikzpicture}[
+  font=\sffamily\footnotesize,
+  node distance=6mm and 7mm,
+  box/.style={draw=bitsblue, rounded corners=2pt, align=center,
+              inner sep=4pt, minimum height=9mm, minimum width=22mm, fill=white},
+  arr/.style={-{Stealth[length=2.2mm]}, bitsblue, thick}]
+\node[box, fill=codebg] (cam) {Camera\\RTSP / file};
+\node[box, right=of cam] (cap) {Capture\\TCP + PTS};
+\node[box, right=of cap] (an) {analyse()};
+\node[box, right=of an] (ev) {Detection\\JSON};
+\node[box, right=of ev] (m) {Matcher\\$O(1)$};
+\node[box, below=of m] (soc) {Alert + CSV\\SOC UI};
+\node[box, below=of an] (eng) {ANPR / objects\\FRS Own-only\\intrusion};
+\draw[arr] (cam) -- (cap);
+\draw[arr] (cap) -- (an);
+\draw[arr] (an) -- (ev);
+\draw[arr] (ev) -- (m);
+\draw[arr] (m) -- (soc);
+\draw[arr] (an) -- (eng);
+\end{tikzpicture}

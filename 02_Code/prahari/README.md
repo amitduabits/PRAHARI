@@ -12,7 +12,7 @@ PRAHARI **consumes live streams** (RTSP-TCP, HLS, WHEP) from the Sentinel catalo
 4. Operations: Gujarat map, coloured health pins
 5. Vehicle Track: plate `GJ01AB1234` → Reconstruct → Download CSV
 6. Alerts: CRITICAL stolen queue, Ack
-7. Onboard: ANPR this still, or Operator confirm `GJ01AB1234`
+7. Onboard: ANPR this still, Analyse this still (objects / own-feed faces), or Operator confirm
 8. Analytics & Gaps: Dahod offline, short retention
 9. Do not expect raw `rtsp://` in the browser; tiles are tokenised
 10. `SENTINEL_HOST` empty is valid: sample cameras still run
@@ -56,6 +56,9 @@ WHEP preview is a P1 link-out, not a full WebRTC stack in this PoC.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe scripts\run_experiments.py --suite smoke
 ```
+
+Logs: `../../05_Output/experiments/`. Government suite SKIPPED if `SENTINEL_HOST` is empty.
 
 Integrator guide: https://sentinel.gujarat.gov.in/resource

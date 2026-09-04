@@ -176,11 +176,14 @@ async function loadAlerts() {
   if (!res.ok) return;
   const rows = await res.json();
   $("alert-empty").style.display = rows.length ? "none" : "block";
-  $("alert-list").innerHTML = rows.map((a) =>
-    "<div class='alert " + a.priority + "'><strong>" + a.priority + "</strong> " + a.plate +
-    " @ " + a.camera_id + " ×" + a.counter +
-    " <button data-ack='" + a.alert_id + "'>Ack</button></div>"
-  ).join("");
+  $("alert-list").innerHTML = rows.map((a) => {
+    let title = a.plate;
+    if (a.entity_type === "person") title = a.entity_id || a.plate || "person";
+    if (a.entity_type === "intrusion" || a.category === "INTRUSION") title = "INTRUSION @ " + a.camera_id;
+    return "<div class='alert " + a.priority + "'><strong>" + a.priority + "</strong> " + title +
+      " @ " + a.camera_id + " ×" + a.counter +
+      " <button data-ack='" + a.alert_id + "'>Ack</button></div>";
+  }).join("");
   $("alert-list").onclick = async (e) => {
     const id = e.target.getAttribute("data-ack");
     if (!id) return;
@@ -205,14 +208,25 @@ async function loadWatchlist() {
   const res = await api("/api/watchlist");
   if (!res.ok) return;
   const rows = await res.json();
-  $("wl-table").innerHTML = "<tr><th>id</th><th>plate</th><th>category</th><th>priority</th></tr>" +
-    rows.map((w) => "<tr><td>" + w.source_case_id + "</td><td>" + w.plate + "</td><td>" + w.category + "</td><td>" + w.priority + "</td></tr>").join("");
+  $("wl-table").innerHTML = "<tr><th>id</th><th>type</th><th>plate</th><th>name</th><th>gallery</th><th>category</th><th>priority</th></tr>" +
+    rows.map((w) => "<tr><td>" + w.source_case_id + "</td><td>" + (w.entity_type || "") + "</td><td>" + (w.plate || "") +
+      "</td><td>" + (w.name || "") + "</td><td>" + (w.gallery_id || "") + "</td><td>" + w.category + "</td><td>" + w.priority + "</td></tr>").join("");
 }
 
 async function loadGaps() {
   const res = await api("/api/gap-report");
   if (!res.ok) return;
   $("gap-out").textContent = JSON.stringify(await res.json(), null, 2);
+  const det = await api("/api/detections");
+  if (det.ok && $("entity-counts")) {
+    const rows = await det.json();
+    const counts = {};
+    rows.forEach((r) => {
+      const k = r.entity_type || "vehicle";
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    $("entity-counts").textContent = "Detections by entity_type: " + JSON.stringify(counts);
+  }
 }
 
 document.querySelectorAll(".tab").forEach((btn) => {
@@ -255,12 +269,30 @@ $("anpr-file").onchange = async (e) => {
   $("anpr-out").textContent = JSON.stringify(await res.json(), null, 2);
   loadAlerts();
 };
+$("analyse-file").onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("camera_id", $("analyse-cam").value);
+  fd.append("engines", $("analyse-cam").value.indexOf("cam") === 0 ? "anpr,objects" : "anpr,objects,faces");
+  const res = await api("/api/ingest/analyse", { method: "POST", body: fd });
+  $("analyse-out").textContent = JSON.stringify(await res.json(), null, 2);
+  loadAlerts();
+  loadGaps();
+};
 $("confirm-form").onsubmit = async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
   await api("/api/ingest/confirm", { method: "POST", json: { camera_id: fd.get("camera_id"), plate: fd.get("plate") } });
   loadAlerts();
   loadTrack();
+};
+$("confirm-face-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  await api("/api/ingest/confirm-face", { method: "POST", json: { camera_id: fd.get("camera_id"), gallery_id: fd.get("gallery_id") } });
+  loadAlerts();
 };
 $("wl-form").onsubmit = async (e) => {
   e.preventDefault();

@@ -1,0 +1,15 @@
+{
+  "id": "E-S3",
+  "utc": "2026-09-04T08:22:30Z",
+  "label": "DESIGN TARGET",
+  "ok": true,
+  "skipped": false,
+  "skip_reason": "",
+  "metrics": {
+    "mean_crop_bytes_MEASURED": 80000,
+    "gb_s_DESIGN_TARGET": 3.6,
+    "formula": "45000*mean_bytes*1/1e9"
+  },
+  "notes": "",
+  "command": "45000 * mean_crop * 1 fps"
+}

@@ -2,7 +2,7 @@
 \usepackage[listings]{csf301-beamer}
 \usepackage{ifthen}
 \input{tikz-library}
-\moduleinfo{01}{PRAHARI}{Hackathon demo}{Amit Dua, Arnav, Aria}
+\moduleinfo{01}{PRAHARI}{Stakeholder briefing}{Amit Dua, Arnav, Aria}
 \renewcommand{\coursecode}{GPIC 2026}
 \renewcommand{\coursetitle}{Gujarat Police Innovation Challenge}
 \renewcommand{\bitssemester}{September 2026}
@@ -11,27 +11,40 @@
 \titleframecsf
 
 \outcomesframe{
-\item Recite the official test case: onboard the grid, track a plate, raise a watchlist alert
+\item Tell the school-notebook story: cameras already exist, the watchlist is unused
 \item Name the hybrid (Models 1 + 2 + thin 3) and say why Model 4 is Phase-2
-\item State the MEASURED live result: 30 catalogue cameras, RTSP-TCP frame, \code{cam04} confirm
-\item Separate MEASURED laptop facts from DESIGN TARGET 80k / 5--6 Cr numbers}
+\item Trace one frame through capture, analyse(), matcher, alert, CSV
+\item Separate MEASURED laptop facts from DESIGN TARGET 80k / 5--6 Cr numbers
+\item State the FRS law: enrolled gallery on Own cameras, never Paldi Circle}
 
-\begin{frame}{Official challenge (source)}
+\begin{frame}{Who this briefing is for}
 \begin{itemize}\itemsep0.7em
-\item Home Department, Government of Gujarat. CCTV Integration Hackathon 2026
-\item Page: \url{https://sentinel.gujarat.gov.in/problems}
-\item Category 1 student team. Phase 1 lock 07 September 2026, 12:00 IST
-\item Transcript of every word on that page: \code{06\_References/SENTINEL\_Problems\_Page.md}
+\item Home Department evaluators, departmental operators, the student team
+\item Voice: a lecturer naming parts a ten-year-old can follow
+\item Every number is MEASURED, DESIGN TARGET, or unused (CONJECTURED)
+\item Page: \code{https://sentinel.gujarat.gov.in/problems}
+\item Category 1 student. Lock 07 September 2026, 12:00 IST
+\end{itemize}
+\end{frame}
+
+\begin{frame}{The school-notebook analogy}
+\begin{itemize}\itemsep0.65em
+\item 26 schools. Each bought a different cupboard for tapes
+\item Some cupboards keep 7 days. Some keep 15
+\item Head office has a notebook of stolen bicycles and missing children
+\item Nobody in the camera room opens that notebook
+\item That is Gujarat CCTV: 26 departments, analog and IP, 1{,}000\,km
+\item Watchlists exist (VAHAN, SARTHI, eGujCop, AFIS, NAFIS) and sit unused
 \end{itemize}
 \end{frame}
 
 \begin{frame}{What the State already has}
 \begin{itemize}\itemsep0.65em
-\item 26 departments run independent CCTV estates (analog and IP)
-\item Sites from border districts to Valsad, Dahod, Somnath, Jamnagar, Dwarka
-\item Cloud NVR in some estates, local storage in others; 7-day vs 15-day retention
-\item Watchlists already exist: VAHAN, SARTHI, eGujCop, AFIS, NAFIS
-\item The cameras do not match against those lists. There is no statewide census
+\item Independent CCTV estates. No statewide camera census
+\item Cloud NVR in some estates, local storage in others
+\item Sites: border districts, Valsad, Dahod, Somnath, Jamnagar, Dwarka
+\item The official goal: use existing infrastructure first
+\item A new cupboard for every tape is the wrong first move
 \end{itemize}
 \end{frame}
 
@@ -52,12 +65,12 @@ Core goal on the official page: use existing infrastructure to the maximum pract
 \begin{center}
 \begin{tabular}{@{}llp{0.42\textwidth}@{}}
 \toprule
-Model & Official name & What it does \\
+Model & Official name & School picture \\
 \midrule
-1 & Registry and GIS & Census, health, gaps. No central recording \\
-2 & Unified viewing & Direct RTSP / ONVIF / API + ANPR \\
-3 & VMS federation & Middleware, adapters, event bus \\
-4 & Central VMS & Ingest, store, playback, full AI \\
+1 & Registry and GIS & Roll call. No live picture required \\
+2 & Unified viewing & One window, many classrooms \\
+3 & VMS federation & Post office between cupboards \\
+4 & Central VMS & One giant cupboard for the city \\
 H & Hybrid & Combine two or more \\
 \bottomrule
 \end{tabular}
@@ -68,6 +81,17 @@ H & Hybrid & Combine two or more \\
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Options we rejected}
+\begin{itemize}\itemsep0.55em
+\item Model 1 only: a roll call does not catch a stolen car
+\item Model 2 only: viewing without a watchlist fails the test case
+\item Full Model 3 SDK zoo: seven days cannot wrap every vendor
+\item Model 4 statewide: we cannot host 80{,}000 recordings (DESIGN TARGET)
+\item Wild FRS on Paldi Circle: unknown members of the public
+\item A ministry biometric or vehicle API: we have none. Claiming one is false
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Chosen model}
 \begin{center}
 \begin{tabular}{@{}lll@{}}
@@ -75,7 +99,7 @@ H & Hybrid & Combine two or more \\
 Layer & Official model & PoC \\
 \midrule
 Census, GIS, health, gaps & 1 & now \\
-Unified viewing + ANPR & 2 & now \\
+Unified viewing + analytics & 2 & now \\
 Event bus, watchlist, track & thin 3 & now \\
 Central VMS recording & 4 & Phase-2, selected cameras \\
 \bottomrule
@@ -85,7 +109,15 @@ Central VMS recording & 4 & Phase-2, selected cameras \\
 \begin{itemize}\itemsep0.55em
 \item A new vendor is one adapter on RTSP / HLS / WHEP / ONVIF
 \item Detection JSON does not change if the bus later becomes Kafka
-\item Model 4 on day one would fake a VMS rip-out this team cannot host
+\end{itemize}
+\end{frame}
+
+\begin{frame}{How a picture becomes a red card}
+\begin{center}\resizebox{0.96\textwidth}{!}{\input{figures/pipeline}}\end{center}
+\medskip
+\begin{itemize}\itemsep0.45em
+\item Capture stamps PTS. \code{analyse()} samples about 1 fps
+\item Matcher is $O(1)$. Stolen plate raises CRITICAL. CSV keeps timestamps
 \end{itemize}
 \end{frame}
 
@@ -93,8 +125,8 @@ Central VMS recording & 4 & Phase-2, selected cameras \\
 \begin{center}\resizebox{0.96\textwidth}{!}{\input{figures/arch}}\end{center}
 \medskip
 \begin{itemize}\itemsep0.5em
+\item PoC bus is an in-process WebSocket. The JSON is the contract
 \item Analytics samples 1 frame per second, not a 25\,fps GOP
-\item PoC bus is an in-process WebSocket; the JSON is the contract
 \end{itemize}
 \end{frame}
 
@@ -104,18 +136,18 @@ Central VMS recording & 4 & Phase-2, selected cameras \\
 \item Integrate live feeds. Enable monitoring and video analytics
 \item Identify a designated vehicle registration number across the grid
 \item Reconstruct route, timestamps, locations. Plot on GIS
-\item Match live detections to a representative watchlist. Raise automated alerts
+\item Match detections to a representative watchlist. Raise automated alerts
 \item Output: working platform, not a mock. CSV / report with timestamps
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Live Sentinel contract (03 Sep 2026)}
 \begin{itemize}\itemsep0.5em
-\item Portal: \code{https://cctv.corp8.cloud/} after access-password login
+\item Portal: \code{cctv.corp8.cloud} after access-password login
 \item Catalogue: \code{GET /cameras.json} returns 30 rows \code{\{id, name\}}
 \item \code{/api/ingest} is HTTP 404 on this host
 \item HLS: \code{https://cctv.corp8.cloud/<id>/index.m3u8} (cookie + browser UA)
-\item RTSP: \code{rtsp://103.250.160.189:8554/stream/<id>} (TCP). TLS host does not pass 8554
+\item RTSP: \code{rtsp://103.250.160.189:8554/stream/<id>} (TCP)
 \item One second of video takes one second to arrive. There is no file download
 \end{itemize}
 \end{frame}
@@ -127,8 +159,18 @@ Central VMS recording & 4 & Phase-2, selected cameras \\
 \item Reconnect backoff starts at 2\,s and caps at 30\,s
 \item Decoder warnings at join are logged, not fatal
 \item PTS rewind or gap $>$ 5\,s is a scene cut (feeds loop)
-\item Consume only. Do not publish. Do not wget \code{/stream/<id>}
+\item Consume only. Do not wget \code{/stream/<id>}
 \item Tests: \code{tests/test\_integrator\_laws.py}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Why those laws (ten-year-old version)}
+\begin{itemize}\itemsep0.55em
+\item UDP across a firewall arrives as a broken picture that looks like a bad model
+\item After join, extra frames may arrive fast. Wall-clock time invents flying cars
+\item Feeds restart. Reconnecting in a tight loop is shouting at a locked door
+\item The tape loops. At the splice, forget the old object ids
+\item A downloaded \code{/stream} file is a fake dataset
 \end{itemize}
 \end{frame}
 
@@ -138,7 +180,7 @@ Central VMS recording & 4 & Phase-2, selected cameras \\
 \item RTSP-TCP probe live: \code{cam04} Paldi Circle, \code{cam01} Chimanbhai Bridge
 \item First live frame: \code{03\_Data/recordings/first\_live\_frame.png}
 \item Size 1920$\times$1080, PTS 1080\,ms. UDP SETUP 461 then TCP succeeds
-\item Manifest has no \code{live} flag and no lat/lon. Pins stay off the map until GIS arrives
+\item Manifest has no \code{live} flag and no lat/lon. Pins stay off the map
 \item Open tiles from the Cameras table, not from a 0,0 marker
 \end{itemize}
 \end{frame}
@@ -163,29 +205,102 @@ Time & Camera & Location \\
 \begin{itemize}\itemsep0.45em
 \item Plate \code{GJ01AB1234}, watchlist \code{WL-001} / STOLEN
 \item Live confirm appends. It does not drop the six seed points
-\item Track length MEASURED: 8 cameras. CSV: \code{gov\_feed\_plates.csv}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{ANPR and operator confirm}
+\begin{frame}{\code{analyse()}: one door}
+\begin{itemize}\itemsep0.55em
+\item Default engines: \code{anpr,objects}
+\item Own cameras may add \code{faces}
+\item \code{cam} plus digits, and any \code{Gov} camera, never run FRS
+\item Godown \code{CAM-FCS-001} also runs person-in-ROI intrusion
+\item Plate fields stay frozen. New fields are additive
+\item Ingest writes crops, inserts SQLite, then calls the matcher
+\end{itemize}
+\end{frame}
+
+\begin{frame}{ANPR: options}
+\begin{itemize}\itemsep0.55em
+\item Train a detector from scratch: no labelled Gujarat set in seven days
+\item Require GPU YOLO now: GPU count MEASURED 0 on this laptop
+\item Morphology + Tesseract behind \code{recognize()}: CPU, swappable
+\item Operator confirm: a readable plate cannot fail a live demo
+\item Confirm writes \code{source=operator\_confirm}. Never labelled ANPR
+\end{itemize}
+\end{frame}
+
+\begin{frame}{ANPR: mechanism}
 \begin{itemize}\itemsep0.55em
 \item Sampled frame $\to$ plate box $\to$ Tesseract $\to$ Indian normaliser
 \item Regex after stripping space and hyphen: \code{\^{}[A-Z]\{2\}[0-9]\{1,2\}[A-Z]\{1,3\}[0-9]\{3,4\}\$}
 \item Interface: \code{recognize(frame) -> \{plate, plate\_raw, confidence, crop\}}
-\item Operator confirm writes confidence 1.0 so a readable plate cannot fail the demo
-\item MEASURED 03 Sep: Tesseract binary absent. Confirm path used on \code{cam04}
+\item Missing Tesseract binary: empty plate, no crash
+\item MEASURED 03 Sep: confirm on \code{cam04}, confidence 1.0
 \item Production swap (same function): YOLO plate detector + PaddleOCR
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Objects: options}
+\begin{itemize}\itemsep0.55em
+\item YOLOv8n as the only path: extra dependency, tests would skip
+\item OpenCV DNN with large weights: allowed later, not required for pytest
+\item Skin-tone blob fallback: a rectangle $\ge 8\%$ of the frame is a person
+\item Skipping objects: eval area 05 names person and vehicle detection
+\item Classes kept: person, car, motorcycle, bus, truck, bicycle
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Intrusion on a godown}
+\begin{itemize}\itemsep0.55em
+\item Food and Civil Supplies watches a warehouse, not a highway
+\item ROI lives in \code{cameras.extra\_json}
+\item Person box overlapping the ROI by $\ge 30\%$ of its area fires
+\item Event: \code{entity\_type=intrusion}, CRITICAL
+\item Same camera within 120\,s increments a counter
+\item No fourth neural net. Intrusion wraps object boxes
+\end{itemize}
+\end{frame}
+
+\begin{frame}{FRS: options we refused}
+\begin{itemize}\itemsep0.55em
+\item No FRS: HLD text and eval 05 name recognition
+\item Wild FRS on Paldi Circle: unknown members of the public
+\item Live AFIS / NAFIS: we have no ministry API. Claiming one is false
+\item Enrolled gallery on Own cameras: consented adults or synthetic fixtures
+\item Human confirm-face exists, same safety net as plate confirm
+\end{itemize}
+\end{frame}
+
+\begin{frame}{FRS law (non-negotiable)}
+\begin{itemize}\itemsep0.55em
+\item Own-feed may show a gallery match on \code{CAM-OWN-001}
+\item Government CCTV of unknown people never runs FRS
+\item Tests post a face-like still to \code{cam04} and expect zero person events
+\item Gallery JSON has no embeddings
+\item Spoken line: representative person watchlist, not a NAFIS join
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Watchlist and alerts}
 \begin{itemize}\itemsep0.55em
-\item In-memory plate set, $O(1)$ match, reload every 60\,s
-\item Representative sources: VAHAN, SARTHI, eGujCop. No live ministry API in the PoC
-\item CRITICAL stolen/wanted (red); HIGH (amber); LOW (log)
-\item Same plate + same camera within 120\,s increments a counter
+\item Representative sources. No live ministry API in the PoC
+\item $O(1)$ on plate and on \code{face\_id} / \code{gallery\_id}
+\item CRITICAL stolen/wanted/intrusion. HIGH blacklist or person associate
+\item Same entity + same camera within 120\,s increments a counter
 \item WebSocket \code{/ws/alerts} plus 5\,s poll fallback
-\item MEASURED: confirm on \code{cam04} raised a CRITICAL alert for \code{GJ01AB1234}
+\item \code{WL-004} fires without a plate. Person cards show a name, not a blank
+\item MEASURED: confirm on \code{cam04} raised CRITICAL for \code{GJ01AB1234}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Registry, GIS, gaps}
+\begin{itemize}\itemsep0.55em
+\item CSV, form, REST, catalogue sync
+\item Dahod GSRTC is seeded offline on purpose
+\item Short retention: Food and Civil Supplies 7-day cameras
+\item Private-permitted mall requires \code{consent=true}
+\item \code{home.viewer} never sees that mall
+\item Live catalogue has no coordinates. Open \code{cam04} from the table
 \end{itemize}
 \end{frame}
 
@@ -196,7 +311,7 @@ Time & Camera & Location \\
 Official area & PRAHARI now \\
 \midrule
 1 Test case on gov feed & 30 cameras onboarded. RTSP-TCP frame. Confirm + CSV on \code{cam04} \\
-2 Solution presentation & This deck + PDF. Hybrid justified \\
+2 Solution presentation & This deck + notes. Hybrid justified \\
 3 Architecture & HLD. Open adapters. Model 4 not faked \\
 4 Working platform & FastAPI on :8080. Own-feed file + live catalogue \\
 \bottomrule
@@ -210,13 +325,25 @@ Official area & PRAHARI now \\
 \toprule
 Official area & PRAHARI now \\
 \midrule
-5 Analytics output & Confirm row + timestamps. OCR pending Tesseract on PATH \\
-6 Scale / PoC ready & 1\,fps regional design target in HLD \S5 / \S10 \\
+5 Analytics output & ANPR/confirm + objects CSV + godown intrusion + own-feed gallery FRS \\
+6 Scale / PoC ready & 1\,fps regional DESIGN TARGET in HLD \S5 / \S10 \\
 7 Completeness & GitHub live. YouTube and Drive still human \\
-Bonus (on camera) & Hybrid, track, RBAC, gaps, WS alerts, 1\,fps cost sentence \\
+Bonus (on camera) & Hybrid, track, objects, intrusion, lawful FRS, RBAC, gaps, WS \\
 \bottomrule
 \end{tabular}
 \end{center}
+\end{frame}
+
+\begin{frame}{Test families (04 Sep 2026)}
+\begin{itemize}\itemsep0.45em
+\item 74 passed, 1 skipped (Tesseract binary). \code{audit\_gate.py} PASS
+\item Integrator: TCP, no \code{CAP\_PROP\_FPS}, scene-cut resets track ids
+\item ANPR: normaliser, junk drop, confirm $\neq$ \code{source=anpr}
+\item Objects: person blob inserts. YOLO without weights does not crash
+\item FRS: same gallery matches. \code{cam04} emits zero person events
+\item Matcher: stolen, blacklist, \code{WL-004} without a plate, 120\,s dedupe
+\item Security: viewer 403 on enroll. Auditor 403 on confirm-face. No RTSP in JSON
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Eighty thousand cameras (DESIGN TARGET)}
@@ -226,6 +353,16 @@ Bonus (on camera) & Hybrid, track, RBAC, gaps, WS alerts, 1\,fps cost sentence \
 \item Five regions (Ahmedabad, Surat, Rajkot, Vadodara, Bhuj): $\approx$ 720\,MB/s each
 \item SOC wall pulls 16--64 HLS tiles. Everything else is metadata + crops
 \item These numbers are design targets, not measured laptop throughput
+\end{itemize}
+\end{frame}
+
+\begin{frame}{MEASURED on this laptop (04 Sep 2026)}
+\begin{itemize}\itemsep0.55em
+\item Four open file captures succeed. The fifth is rejected
+\item Mean JPEG from eight own-feed stills: 41\,KB
+\item \code{/api/health} p99: 9.4\,ms over 50 calls
+\item GPU count: 0. Regional GPUs stay DESIGN TARGET
+\item Statewide 80\,KB crop remains DESIGN TARGET (ratio 1.9$\times$)
 \end{itemize}
 \end{frame}
 
@@ -257,7 +394,7 @@ Total intelligence plane & $\sim$5--6 Cr \\
 \item HLS/file tiles use a 60\,s HMAC token. Raw RTSP never reaches the browser
 \item Sentinel cookie stays on the server. The browser never sees it
 \item Private-permitted onboard requires \code{consent=true}
-\item Audit: onboard, watchlist edit, ack, report download, operator confirm
+\item Audit: onboard, watchlist, ack, report, plate confirm, face confirm
 \end{itemize}
 \end{frame}
 
@@ -276,32 +413,28 @@ Alerts & in-process WebSocket & Redis / Kafka \\
 \bottomrule
 \end{tabular}
 \end{center}
-\medskip
-\begin{itemize}\itemsep0.45em
-\item Tests MEASURED 03 Sep: 33 passed, 1 skipped (Tesseract binary)
-\end{itemize}
 \end{frame}
 
 \begin{frame}{What is done, what is still human}
 \begin{itemize}\itemsep0.5em
 \item Done: platform, HLD, this deck, live catalogue sync, RTSP frame, confirm CSV
-\item Done: GitHub \url{https://github.com/amitduabits/PRAHARI}
-\item Human: own-feed YouTube $\le$ 3 min (script \code{own\_feed\_demo\_script.md})
-\item Human: gov-feed YouTube $\le$ 3 min (sync, tile, confirm, CSV)
-\item Human: Drive link, Anyone + Viewer, for \code{gov\_feed\_plates.csv}
-\item Human: change \code{JUDGE\_PASSWORD}; optional hosted URL
+\item Done: objects, intrusion, lawful FRS with gov refuse, 74 tests
+\item Done: GitHub \code{github.com/amitduabits/PRAHARI}
+\item Human: own-feed YouTube $\le$ 3 min. Gov-feed YouTube $\le$ 3 min, no FRS
+\item Human: Drive Anyone+Viewer for \code{gov\_feed\_plates.csv}
+\item Human: Tesseract on PATH if OCR should appear on camera
 \item Stop product edits after the portal receipt on 07 Sep
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Demo run (3 minutes)}
 \begin{itemize}\itemsep0.5em
-\item Open \url{http://127.0.0.1:8080}. Login \code{judge}
+\item Open \code{http://127.0.0.1:8080}. Login \code{judge}
 \item Operations map: seeded pins, Dahod offline on purpose
 \item Cameras table: Open tile on \code{cam04} or \code{cam01}
 \item Vehicle Track: reconstruct \code{GJ01AB1234}, download CSV
 \item Alerts: CRITICAL queue, Ack writes audit
-\item Onboard: Operator confirm if OCR misses
+\item Onboard: Analyse this still, or Operator confirm if OCR misses
 \item Gaps: short retention on Food and Civil Supplies
 \end{itemize}
 \end{frame}

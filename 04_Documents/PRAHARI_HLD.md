@@ -38,8 +38,8 @@ Dept VMS / NVR / raw camera / private-permitted RTSP
                       │ 1 fps sampled frame (not 25 fps video)
                       ▼
 ┌───────────────┐    ┌─────────────────────┐
-│ Registry+GIS  │    │ ANPR / object worker│
-│ PostGIS later │    │ edge or regional GPU│
+│ Registry+GIS  │    │ analyse(): ANPR +   │
+│ PostGIS later │    │ objects + lawful FRS│
 └───────┬───────┘    └──────────┬──────────┘
         │                       │ detection event
         │                       ▼
@@ -105,16 +105,22 @@ Hot / warm / cold storage (Phase-2, selected cameras only):
 
 PoC stores crops + metadata, not full GOP archives.
 
+PoC mean JPEG from own-feed stills MEASURED 41 KB on 04 Sep 2026. Statewide 80 KB remains DESIGN TARGET.
+
 ## 6. AI / analytics
 
-Phase-1 (this submission): ANPR.
-Pipeline: sampled frame → plate localisation → OCR → Indian-plate normaliser (`^[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{3,4}$`) → event.
+`analyse(frame, camera, pts_ms)` is the only worker entry. Engines are selected per camera.
 
-PoC engine: OpenCV morphology + Tesseract. Production swap: YOLOv8 / YOLO11 plate detector + PaddleOCR or a commercial ANPR SDK behind the same `recognize()` interface.
+Phase-1 implemented (CPU, no GPU required):
 
-Phase-1.5 (bonus if GPU arrives): vehicle make-model, person/vehicle count, intrusion on godown cameras.
+- **ANPR.** Sampled frame → plate box → Tesseract (or empty if the binary is absent) → Indian-plate normaliser (`^[A-Z]{2}[0-9]{1,2}[A-Z]{1,3}[0-9]{3,4}$`) → event with `source=anpr`. Operator confirm writes `source=operator_confirm`, confidence 1.0. Confirm is never labelled ANPR.
+- **Object detection.** Person, car, motorcycle, bus, truck, bicycle. OpenCV DNN when weights exist; deterministic skin-tone blob fallback so tests and the demo do not need a GPU. CSV: `GET /api/objects/report.csv`.
+- **Intrusion.** Person-in-ROI on `CAM-FCS-001` (Food & Civil Supplies godown). Wrapper on object boxes, not a fourth network. CRITICAL alert, 120 s dedupe.
+- **Lawful FRS.** Enrolled gallery of consented adults or synthetic fixtures, Own cameras only (`CAM-OWN-001`). Operator confirm-face exists. **Never** on government CCTV of unknown people (`cam04` and any `ownership=Gov`). Not AFIS, not NAFIS, not a live ministry biometric pipe.
 
-Phase-2: FRS only against a lawful watchlist, on dedicated cameras, with a human-in-the-loop confirm. FRS is **not** the evaluation test and is not demo-critical.
+Cross-camera vehicle tracking in the PoC is plate sightings (`GET /api/track/{plate}`). Optional object `track_id` is per camera and resets on a scene cut.
+
+Production swap (same functions): YOLO plate + PaddleOCR behind `recognize()`; YOLO11 on regional GPUs at 1 fps; dedicated FRS cameras with human confirm; AFIS/NAFIS as Phase-2 APIs, not pixels.
 
 ## 7. Watchlist correlation and alerts
 
@@ -219,6 +225,7 @@ Consume only. No publish, no gateway control API, no file download of `/stream/<
 | Onboard gov + own feeds | `POST /api/cameras`, `POST /api/cameras/import`, `POST /api/cameras/sync-catalogue`, Onboard tab |
 | Unified viewing | Operations Leaflet map, `POST /api/sessions`, tokenised `GET /api/stream/{id}` (no RTSP in the browser) |
 | ANPR + timestamps | `POST /api/ingest/frame`, `POST /api/ingest/confirm`, `GET /api/detections` |
+| Objects + intrusion + lawful FRS | `POST /api/ingest/analyse`, `GET /api/objects/report.csv`, `POST /api/ingest/confirm-face` (Own cameras only) |
 | Designated vehicle path | `GET /api/track/GJ01AB1234` + `GET /api/track/{plate}/report.csv` |
 | Watchlist + realtime alert | `GET/POST /api/watchlist`, `GET /api/alerts`, `POST /api/alerts/{id}/ack`, `WS /ws/alerts` |
 | 80k readiness | §5 (DESIGN TARGET) and §10 of this HLD |

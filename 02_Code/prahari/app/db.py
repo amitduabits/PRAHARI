@@ -41,7 +41,9 @@ CREATE TABLE IF NOT EXISTS watchlist (
     category TEXT,
     priority TEXT,
     source TEXT,
-    notes TEXT
+    notes TEXT,
+    gallery_id TEXT,
+    embedding_uri TEXT
 );
 
 CREATE TABLE IF NOT EXISTS detections (
@@ -57,7 +59,14 @@ CREATE TABLE IF NOT EXISTS detections (
     crop_uri TEXT,
     category TEXT,
     priority TEXT,
-    source_case_id TEXT
+    source_case_id TEXT,
+    entity_type TEXT DEFAULT 'vehicle',
+    entity_id TEXT,
+    face_id TEXT,
+    object_class TEXT,
+    bbox_json TEXT,
+    track_id TEXT,
+    source TEXT DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS alerts (
@@ -71,7 +80,9 @@ CREATE TABLE IF NOT EXISTS alerts (
     status TEXT,
     ack_by TEXT,
     ack_ts TEXT,
-    counter INTEGER DEFAULT 1
+    counter INTEGER DEFAULT 1,
+    entity_type TEXT,
+    entity_id TEXT
 );
 
 CREATE TABLE IF NOT EXISTS audit (
@@ -171,7 +182,11 @@ def _seed_cameras(conn: sqlite3.Connection, data_dir: Path) -> None:
                 "rtsp": row.get("rtsp", ""),
                 "whep": row.get("whep", ""),
                 "hls": row.get("hls", ""),
-                "extra_json": "",
+                "extra_json": (
+                    json.dumps({"roi": [[0, 0.5], [1, 0.5], [1, 1], [0, 1]]})
+                    if row.get("camera_id") == "CAM-FCS-001"
+                    else ""
+                ),
             }
             for row in rows
         ],
@@ -190,9 +205,11 @@ def _seed_watchlist(conn: sqlite3.Connection, data_dir: Path) -> None:
     conn.executemany(
         """
         INSERT OR REPLACE INTO watchlist (
-            source_case_id, entity_type, plate, name, category, priority, source, notes
+            source_case_id, entity_type, plate, name, category, priority, source, notes,
+            gallery_id, embedding_uri
         ) VALUES (
-            :source_case_id, :entity_type, :plate, :name, :category, :priority, :source, :notes
+            :source_case_id, :entity_type, :plate, :name, :category, :priority, :source, :notes,
+            :gallery_id, :embedding_uri
         )
         """,
         [
@@ -205,6 +222,13 @@ def _seed_watchlist(conn: sqlite3.Connection, data_dir: Path) -> None:
                 "priority": row.get("priority", ""),
                 "source": row.get("source", ""),
                 "notes": row.get("notes", ""),
+                "gallery_id": row.get("gallery_id")
+                or (
+                    row["source_case_id"]
+                    if (row.get("entity_type") or "").lower() == "person"
+                    else ""
+                ),
+                "embedding_uri": row.get("embedding_uri", ""),
             }
             for row in rows
         ],
@@ -220,25 +244,69 @@ def _seed_detections(conn: sqlite3.Connection) -> None:
         """
         INSERT OR REPLACE INTO detections (
             event_id, plate, plate_raw, confidence, camera_id, lat, lon, ts,
-            pts_ms, crop_uri, category, priority, source_case_id
+            pts_ms, crop_uri, category, priority, source_case_id,
+            entity_type, entity_id, source
         ) VALUES (
             :event_id, :plate, :plate_raw, :confidence, :camera_id, :lat, :lon, :ts,
-            :pts_ms, :crop_uri, :category, :priority, :source_case_id
+            :pts_ms, :crop_uri, :category, :priority, :source_case_id,
+            :entity_type, :entity_id, :source
         )
         """,
-        payload,
+        [
+            {
+                **row,
+                "entity_type": row.get("entity_type") or "vehicle",
+                "entity_id": row.get("entity_id") or row.get("plate") or "",
+                "source": row.get("source") or "seed",
+            }
+            for row in payload
+        ],
     )
+
+
+_ADD_COLUMNS = {
+    "watchlist": [
+        ("gallery_id", "TEXT"),
+        ("embedding_uri", "TEXT"),
+    ],
+    "detections": [
+        ("entity_type", "TEXT DEFAULT 'vehicle'"),
+        ("entity_id", "TEXT"),
+        ("face_id", "TEXT"),
+        ("object_class", "TEXT"),
+        ("bbox_json", "TEXT"),
+        ("track_id", "TEXT"),
+        ("source", "TEXT DEFAULT ''"),
+    ],
+    "alerts": [
+        ("entity_type", "TEXT"),
+        ("entity_id", "TEXT"),
+    ],
+}
+
+
+def migrate_schema(conn: sqlite3.Connection) -> None:
+    for table, cols in _ADD_COLUMNS.items():
+        existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+        for name, decl in cols:
+            if name not in existing:
+                try:
+                    conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
+                except sqlite3.OperationalError:
+                    pass
 
 
 def init_db() -> None:
     data_dir = config.ROOT / "data"
     crops = config.crop_dir()
     crops.mkdir(parents=True, exist_ok=True)
+    config.face_dir().mkdir(parents=True, exist_ok=True)
     data_dir.mkdir(parents=True, exist_ok=True)
 
     conn = connect()
     try:
         conn.executescript(SCHEMA)
+        migrate_schema(conn)
         camera_count = conn.execute("SELECT COUNT(*) AS n FROM cameras").fetchone()["n"]
         if camera_count == 0:
             _seed_cameras(conn, data_dir)
@@ -247,6 +315,12 @@ def init_db() -> None:
         conn.commit()
     finally:
         conn.close()
+    try:
+        from app.services import faces
+
+        faces.ensure_synthetic_gallery()
+    except Exception:
+        pass
 
 
 def count_table(name: str) -> int:

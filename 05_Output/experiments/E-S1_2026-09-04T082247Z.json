@@ -1,0 +1,33 @@
+{
+  "id": "E-S1",
+  "utc": "2026-09-04T08:22:47Z",
+  "label": "MEASURED",
+  "ok": true,
+  "skipped": false,
+  "skip_reason": "",
+  "metrics": {
+    "counts": {
+      "1": {
+        "ok": true,
+        "pts_ms": 0,
+        "open": 1,
+        "s": 0.016
+      },
+      "2": {
+        "ok": true,
+        "pts_ms": 0,
+        "open": 2,
+        "s": 0.012
+      },
+      "4": {
+        "ok": true,
+        "pts_ms": 0,
+        "open": 4,
+        "s": 0.0
+      }
+    },
+    "fifth_rejected": true
+  },
+  "notes": "",
+  "command": "1/2/4 file captures"
+}

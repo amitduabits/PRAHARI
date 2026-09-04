@@ -53,6 +53,11 @@ ANPR_MIN_CONFIDENCE = float(getenv("ANPR_MIN_CONFIDENCE", "0.35") or "0.35")
 MAX_OPEN_CAPTURES = int(getenv("MAX_OPEN_CAPTURES", "4") or "4")
 ANPR_ENGINE = getenv("ANPR_ENGINE", "tesseract")
 STREAM_TOKEN_TTL_S = int(getenv("STREAM_TOKEN_TTL_S", "60") or "60")
+ANALYTICS_ENGINES = getenv("ANALYTICS_ENGINES", "anpr,objects")
+OBJECT_ENGINE = getenv("OBJECT_ENGINE", "opencv")
+OBJECT_MIN_CONFIDENCE = float(getenv("OBJECT_MIN_CONFIDENCE", "0.45") or "0.45")
+FACE_ENGINE = getenv("FACE_ENGINE", "lbph")
+FACE_MATCH_MIN_CONFIDENCE = float(getenv("FACE_MATCH_MIN_CONFIDENCE", "0.55") or "0.55")
 
 
 def users() -> list[dict]:
@@ -94,6 +99,14 @@ def db_path() -> Path:
 
 def crop_dir() -> Path:
     raw = getenv("CROP_DIR", "data/crops")
+    path = Path(raw)
+    if not path.is_absolute():
+        path = ROOT / path
+    return path
+
+
+def face_dir() -> Path:
+    raw = getenv("FACE_DIR", "data/faces")
     path = Path(raw)
     if not path.is_absolute():
         path = ROOT / path

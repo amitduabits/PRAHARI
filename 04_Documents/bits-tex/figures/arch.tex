@@ -6,7 +6,7 @@
   arr/.style={-{Stealth[length=2.2mm]}, bitsblue, thick}]
 \node[box, fill=codebg] (src) {Dept VMS / NVR};
 \node[box, right=of src] (ing) {Ingest\\RTSP-TCP / HLS};
-\node[box, right=of ing] (anpr) {ANPR 1 fps};
+\node[box, right=of ing] (anpr) {analyse()\\ANPR + objects};
 \node[box, right=of anpr] (bus) {Event JSON};
 \node[box, above=of bus] (reg) {Registry + GIS};
 \node[box, right=of bus] (act) {Watchlist\\Track CSV\\SOC UI};

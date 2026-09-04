@@ -17,6 +17,7 @@ Team site (slides, notes, run instructions): https://amitduabits.github.io/PRAHA
 | Notes | [PRAHARI-Notes.pdf](04_Documents/PRAHARI-Notes.pdf) |
 | TeX sources | [04_Documents/bits-tex/](04_Documents/bits-tex/) |
 | Official problems page (verbatim) | [SENTINEL_Problems_Page.md](06_References/SENTINEL_Problems_Page.md) |
+| Closeout prompt book (audit, FRS, objects, tests, videos) | [START_HERE.md](08_Misc/22_Closeout_Prompt_Book/START_HERE.md) |
 | Audit remediation prompt book | [START_HERE.md](08_Misc/21_Audit_Remediation/START_HERE.md) |
 | HLD | [PRAHARI_HLD.md](04_Documents/PRAHARI_HLD.md) |
 
@@ -240,9 +241,10 @@ From `02_Code/prahari`:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe scripts\run_experiments.py --suite smoke
 ```
 
-Expect the suite green. One test skips if the Tesseract binary is missing; `POST /api/ingest/confirm` still inserts a real detection row.
+Expect the suite green. One test skips if the Tesseract binary is missing; `POST /api/ingest/confirm` still inserts a real detection row. Experiment logs: `05_Output/experiments/EXPERIMENT_LOG.md`. Government suite SKIPPED if `SENTINEL_HOST` is empty.
 
 ---
 

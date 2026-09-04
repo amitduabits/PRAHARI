@@ -143,19 +143,27 @@ def set_camera_health(camera_id: str, health: str, extra: dict | None = None) ->
 def insert_detection(event: dict[str, Any]) -> dict[str, Any]:
     if not event.get("event_id"):
         event = {**event, "event_id": str(uuid.uuid4())}
+    plate = event.get("plate") or ""
+    entity_type = event.get("entity_type") or ("vehicle" if plate else "object")
+    entity_id = event.get("entity_id") or plate or event.get("face_id") or event.get("object_class") or ""
+    bbox = event.get("bbox_json")
+    if bbox is None and event.get("bbox") is not None:
+        bbox = json.dumps(event.get("bbox"))
     execute(
         """
         INSERT INTO detections (
             event_id, plate, plate_raw, confidence, camera_id, lat, lon, ts,
-            pts_ms, crop_uri, category, priority, source_case_id
+            pts_ms, crop_uri, category, priority, source_case_id,
+            entity_type, entity_id, face_id, object_class, bbox_json, track_id, source
         ) VALUES (
             :event_id, :plate, :plate_raw, :confidence, :camera_id, :lat, :lon, :ts,
-            :pts_ms, :crop_uri, :category, :priority, :source_case_id
+            :pts_ms, :crop_uri, :category, :priority, :source_case_id,
+            :entity_type, :entity_id, :face_id, :object_class, :bbox_json, :track_id, :source
         )
         """,
         {
             "event_id": event["event_id"],
-            "plate": event.get("plate") or "",
+            "plate": plate,
             "plate_raw": event.get("plate_raw") or "",
             "confidence": float(event.get("confidence") or 0),
             "camera_id": event.get("camera_id") or "",
@@ -167,12 +175,26 @@ def insert_detection(event: dict[str, Any]) -> dict[str, Any]:
             "category": event.get("category") or "",
             "priority": event.get("priority") or "",
             "source_case_id": event.get("source_case_id") or "",
+            "entity_type": entity_type,
+            "entity_id": entity_id,
+            "face_id": event.get("face_id") or "",
+            "object_class": event.get("object_class") or "",
+            "bbox_json": bbox or "",
+            "track_id": event.get("track_id") or "",
+            "source": event.get("source") or "",
         },
     )
+    event["entity_type"] = entity_type
+    event["entity_id"] = entity_id
+    event["source"] = event.get("source") or ""
     return event
 
 
-def list_detections(plate: str | None = None, camera_id: str | None = None) -> list[dict[str, Any]]:
+def list_detections(
+    plate: str | None = None,
+    camera_id: str | None = None,
+    entity_type: str | None = None,
+) -> list[dict[str, Any]]:
     sql = "SELECT * FROM detections WHERE 1=1"
     params: list[Any] = []
     if plate:
@@ -181,6 +203,9 @@ def list_detections(plate: str | None = None, camera_id: str | None = None) -> l
     if camera_id:
         sql += " AND camera_id = ?"
         params.append(camera_id)
+    if entity_type:
+        sql += " AND entity_type = ?"
+        params.append(entity_type)
     sql += " ORDER BY ts"
     return fetchall(sql, tuple(params))
 
@@ -196,8 +221,14 @@ def get_watchlist_item(source_case_id: str) -> dict[str, Any] | None:
 def upsert_watchlist(row: dict[str, Any]) -> None:
     execute(
         """
-        INSERT INTO watchlist (source_case_id, entity_type, plate, name, category, priority, source, notes)
-        VALUES (:source_case_id, :entity_type, :plate, :name, :category, :priority, :source, :notes)
+        INSERT INTO watchlist (
+            source_case_id, entity_type, plate, name, category, priority, source, notes,
+            gallery_id, embedding_uri
+        )
+        VALUES (
+            :source_case_id, :entity_type, :plate, :name, :category, :priority, :source, :notes,
+            :gallery_id, :embedding_uri
+        )
         ON CONFLICT(source_case_id) DO UPDATE SET
             entity_type=excluded.entity_type,
             plate=excluded.plate,
@@ -205,7 +236,9 @@ def upsert_watchlist(row: dict[str, Any]) -> None:
             category=excluded.category,
             priority=excluded.priority,
             source=excluded.source,
-            notes=excluded.notes
+            notes=excluded.notes,
+            gallery_id=excluded.gallery_id,
+            embedding_uri=excluded.embedding_uri
         """,
         {
             "source_case_id": row["source_case_id"],
@@ -216,6 +249,8 @@ def upsert_watchlist(row: dict[str, Any]) -> None:
             "priority": row.get("priority") or "LOW",
             "source": row.get("source") or "",
             "notes": row.get("notes") or "",
+            "gallery_id": row.get("gallery_id") or "",
+            "embedding_uri": row.get("embedding_uri") or "",
         },
     )
 
@@ -243,10 +278,10 @@ def insert_alert(row: dict[str, Any]) -> dict[str, Any]:
         """
         INSERT INTO alerts (
             alert_id, event_id, plate, camera_id, ts, category, priority, status,
-            ack_by, ack_ts, counter
+            ack_by, ack_ts, counter, entity_type, entity_id
         ) VALUES (
             :alert_id, :event_id, :plate, :camera_id, :ts, :category, :priority, :status,
-            :ack_by, :ack_ts, :counter
+            :ack_by, :ack_ts, :counter, :entity_type, :entity_id
         )
         """,
         {
@@ -261,6 +296,8 @@ def insert_alert(row: dict[str, Any]) -> dict[str, Any]:
             "ack_by": row.get("ack_by"),
             "ack_ts": row.get("ack_ts"),
             "counter": int(row.get("counter") or 1),
+            "entity_type": row.get("entity_type") or "",
+            "entity_id": row.get("entity_id") or row.get("plate") or row.get("face_id") or "",
         },
     )
     return row

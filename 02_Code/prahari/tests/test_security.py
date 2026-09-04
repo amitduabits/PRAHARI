@@ -38,7 +38,37 @@ def test_expired_stream_token():
         assert exc.status_code == 401
 
 
+def test_viewer_cannot_enroll_faces(client):
+    res = client.post(
+        "/api/faces/enroll",
+        data={"gallery_id": "WL-004", "name": "nope"},
+        files={"file": ("x.png", b"xxxx", "image/png")},
+        auth=("home.viewer", "viewer"),
+    )
+    assert res.status_code == 403
+
+
+def test_auditor_cannot_confirm_face(client):
+    res = client.post(
+        "/api/ingest/confirm-face",
+        json={"camera_id": "CAM-OWN-001", "gallery_id": "WL-004"},
+        auth=("auditor", "auditor"),
+    )
+    assert res.status_code == 403
+
+
+def test_unauthenticated_analyse_401(client):
+    res = client.post(
+        "/api/ingest/analyse",
+        files={"file": ("x.png", b"xxxx", "image/png")},
+        data={"camera_id": "CAM-OWN-001"},
+    )
+    assert res.status_code == 401
+
+
 def test_tampered_password_fails_lookup():
-    assert lookup_user("judge", "set-this-before-submit") is not None
+    from app import config
+
+    assert lookup_user("judge", config.JUDGE_PASSWORD) is not None
     assert lookup_user("judge", "wrong-password-value") is None
     assert lookup_user("judge", "x") is None

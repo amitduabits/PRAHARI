@@ -40,17 +40,33 @@ def detect_scene_cut(prev_pts: int | None, pts: int, gap_ms: int = SCENE_CUT_GAP
     return False
 
 
+def _reset_trackers(camera_id: str) -> None:
+    try:
+        from app.services import objects as objects_mod
+
+        objects_mod.reset(camera_id)
+    except Exception:
+        pass
+    try:
+        from app.services import faces as faces_mod
+
+        faces_mod.reset(camera_id)
+    except Exception:
+        pass
+
+
 class StreamSession:
-    def __init__(self, on_scene_cut: Callable[[], None] | None = None) -> None:
+    def __init__(self, on_scene_cut: Callable[[], None] | None = None, camera_id: str = "") -> None:
         self.cap: cv2.VideoCapture | None = None
         self.url = ""
         self.protocol = ""
+        self.camera_id = camera_id
         self.on_scene_cut = on_scene_cut
         self.prev_pts: int | None = None
         self.reconnects = 0
         self._id = id(self)
 
-    def open(self, url: str, protocol: str = "rtsp") -> None:
+    def open(self, url: str, protocol: str = "rtsp", camera_id: str = "") -> None:
         max_open = config.MAX_OPEN_CAPTURES
         if self._id not in _OPEN and len(_OPEN) >= max_open:
             raise RuntimeError(
@@ -58,6 +74,8 @@ class StreamSession:
             )
         self.url = url
         self.protocol = protocol
+        if camera_id:
+            self.camera_id = camera_id
         self._open_cap()
         _OPEN[self._id] = self
 
@@ -88,6 +106,7 @@ class StreamSession:
                     log.info("scene cut at pts_ms=%s prev=%s", pts_ms, self.prev_pts)
                     if self.on_scene_cut:
                         self.on_scene_cut()
+                    _reset_trackers(self.camera_id)
                 self.prev_pts = pts_ms
                 return True, frame, pts_ms
             if not reconnect:

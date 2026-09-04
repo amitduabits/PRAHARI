@@ -1,0 +1,113 @@
+from __future__ import annotations
+
+from io import BytesIO
+from pathlib import Path
+
+import cv2
+import numpy as np
+
+from app.services import faces as faces_mod
+
+
+def test_same_gallery_matches_other_rejects(tmp_path, monkeypatch):
+    monkeypatch.setenv("FACE_DIR", str(tmp_path / "faces"))
+    root = Path(tmp_path / "faces")
+    faces_mod.write_fixture_pair(root, "WL-004", seed=4)
+    faces_mod.write_fixture_pair(root, "WL-X", seed=99)
+    faces_mod.load_gallery(force=True)
+    probe = cv2.imread(str(root / "WL-004" / "a.png"))
+    hits = faces_mod.match(probe)
+    assert hits
+    assert hits[0]["face_id"] == "WL-004"
+    other = cv2.imread(str(root / "WL-X" / "a.png"))
+    other_hits = faces_mod.match(other)
+    assert other_hits
+    assert other_hits[0]["face_id"] != "WL-004"
+
+
+def test_enroll_api_and_confirm_face(client, auth, tmp_path, monkeypatch):
+    from app.services.faces import write_fixture_pair
+
+    a, _ = write_fixture_pair(tmp_path, "WL-004", seed=4)
+    png = Path(a).read_bytes()
+    res = client.post(
+        "/api/faces/enroll",
+        data={"gallery_id": "WL-004", "name": "Ramesh K"},
+        files={"file": ("a.png", BytesIO(png), "image/png")},
+        auth=auth,
+    )
+    assert res.status_code == 200, res.text
+    gal = client.get("/api/faces/gallery", auth=auth).json()
+    blob = str(gal)
+    assert "embedding" not in blob.lower()
+    assert "descriptor" not in blob.lower()
+    assert "lbph" not in blob.lower()
+    confirm = client.post(
+        "/api/ingest/confirm-face",
+        json={"camera_id": "CAM-OWN-001", "gallery_id": "WL-004"},
+        auth=auth,
+    )
+    assert confirm.status_code == 200, confirm.text
+    body = confirm.json()
+    assert body["inserted"] is True
+    assert body["event"]["source"] == "operator_confirm"
+    assert body["event"]["confidence"] == 1.0
+    assert body["event"]["entity_type"] == "person"
+    assert body["alert"] is not None
+    assert body["alert"]["priority"] == "HIGH"
+
+
+def test_no_face_events_on_cam04(client, auth, tmp_path):
+    from app.services.faces import write_fixture_pair
+
+    a, _ = write_fixture_pair(tmp_path, "tmpface", seed=4)
+    client.post(
+        "/api/cameras",
+        json={
+            "camera_id": "cam04",
+            "ownership": "Gov",
+            "consent": True,
+            "lat": 23.01,
+            "lon": 72.57,
+            "location": "Paldi Circle",
+            "department": "Home",
+        },
+        auth=auth,
+    )
+    png = Path(a).read_bytes()
+    res = client.post(
+        "/api/ingest/analyse",
+        files={"file": ("face.png", BytesIO(png), "image/png")},
+        data={"camera_id": "cam04", "engines": "anpr,objects,faces"},
+        auth=auth,
+    )
+    assert res.status_code == 200, res.text
+    people = [e for e in res.json()["events"] if e.get("entity_type") == "person"]
+    assert people == []
+
+
+def test_no_face_events_on_gov_ownership(client, auth, tmp_path):
+    from app.services.faces import write_fixture_pair
+
+    a, _ = write_fixture_pair(tmp_path, "tmpface", seed=4)
+    png = Path(a).read_bytes()
+    res = client.post(
+        "/api/ingest/analyse",
+        files={"file": ("face.png", BytesIO(png), "image/png")},
+        data={"camera_id": "CAM-VAL-001", "engines": "faces"},
+        auth=auth,
+    )
+    assert res.status_code == 200
+    people = [e for e in res.json()["events"] if e.get("entity_type") == "person"]
+    assert people == []
+
+
+def test_unknown_face_no_alert(tmp_path, monkeypatch):
+    monkeypatch.setenv("FACE_DIR", str(tmp_path / "faces"))
+    faces_mod.write_fixture_pair(Path(tmp_path / "faces"), "WL-004", seed=4)
+    faces_mod.load_gallery(force=True)
+    blank = np.zeros((128, 128, 3), dtype=np.uint8)
+    blank[:] = (10, 10, 10)
+    hits = faces_mod.match(blank)
+    if hits:
+        assert hits[0]["face_id"] == ""

@@ -1,0 +1,11 @@
+{
+  "id": "E-S2",
+  "utc": "2026-09-04T08:22:30Z",
+  "label": "MEASURED",
+  "ok": true,
+  "skipped": true,
+  "skip_reason": "no jpeg crops yet",
+  "metrics": {},
+  "notes": "",
+  "command": "mean crop bytes"
+}

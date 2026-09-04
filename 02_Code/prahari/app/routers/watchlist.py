@@ -19,6 +19,8 @@ class WatchIn(BaseModel):
     priority: str = "LOW"
     source: str = ""
     notes: str = ""
+    gallery_id: str = ""
+    embedding_uri: str = ""
 
 
 @router.get("/api/watchlist")

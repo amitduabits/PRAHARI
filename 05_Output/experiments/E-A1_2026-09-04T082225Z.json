@@ -1,0 +1,11 @@
+{
+  "id": "E-A1",
+  "utc": "2026-09-04T08:22:25Z",
+  "label": "MEASURED",
+  "ok": true,
+  "skipped": true,
+  "skip_reason": "tesseract absent: tesseract is not installed or it's not in your PATH. See README file for more information.",
+  "metrics": {},
+  "notes": "",
+  "command": "recognize(plate fixture)"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "E-S4",
+  "utc": "2026-09-04T08:22:30Z",
+  "label": "DESIGN TARGET",
+  "ok": true,
+  "skipped": false,
+  "skip_reason": "",
+  "metrics": {
+    "bytes": 2177280000000000,
+    "tb_approx": 2177.28
+  },
+  "notes": "",
+  "command": "7-day crop storage"
+}

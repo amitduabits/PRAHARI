@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app import config
 from app.db import init_db
-from app.routers import alerts, cameras, health, ingest, login, stream, track, watchlist
+from app.routers import alerts, cameras, faces, health, ingest, login, stream, track, watchlist
 from app.services import matcher
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -30,6 +30,7 @@ app.include_router(login.router)
 app.include_router(cameras.router)
 app.include_router(stream.router)
 app.include_router(ingest.router)
+app.include_router(faces.router)
 app.include_router(watchlist.router)
 app.include_router(alerts.router)
 app.include_router(track.router)

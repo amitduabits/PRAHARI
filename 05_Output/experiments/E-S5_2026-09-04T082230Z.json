@@ -1,0 +1,14 @@
+{
+  "id": "E-S5",
+  "utc": "2026-09-04T08:22:30Z",
+  "label": "MEASURED",
+  "ok": true,
+  "skipped": false,
+  "skip_reason": "",
+  "metrics": {
+    "p50_ms": 2.57,
+    "p99_ms": 9.35
+  },
+  "notes": "",
+  "command": "GET /api/health x50"
+}
