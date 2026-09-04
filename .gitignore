@@ -17,6 +17,7 @@ __pycache__/
 02_Code/prahari/data/hls/
 02_Code/prahari/data/faces/**/*.jpg
 02_Code/prahari/data/faces/WL-0041/
+03_Data/samples/faces/
 03_Data/sentinel_catalogue/catalogue.last.json
 03_Data/sentinel_catalogue/*.html
 03_Data/sentinel_catalogue/*.raw
@@ -26,12 +27,37 @@ __pycache__/
 03_Data/recordings/*.png
 05_Output/deliverables/*.mp4
 
-# Internal working notes (not part of the submission tree)
-08_Misc/20_Prompts/
-08_Misc/30_Project_Management/
-08_Misc/23_Arnav_Integration/_upstream/
+# Internal working notes (not part of the public product tree)
+08_Misc/
+06_References/
+07_Communications/
+Patent docs/
+SUBMISSION.md
+04_Documents/PRAHARI_Investment_Audit.md
+04_Documents/PRAHARI_Solution.pptx
+04_Documents/tex/preview/
+04_Documents/tex/*.aux
+04_Documents/tex/*.log
+04_Documents/tex/*.out
+04_Documents/tex/*.nav
+04_Documents/tex/*.snm
+04_Documents/tex/*.toc
+05_Output/deliverables/PORTAL_FILL.md
+05_Output/deliverables/SUBMISSION_PACK.md
+05_Output/deliverables/FINALE_RUNCARD.md
+05_Output/deliverables/PPT_PUNCH_LIST.md
+05_Output/deliverables/SUBMISSION_LINKS.md
+05_Output/deliverables/gov_feed_demo_script.md
+05_Output/deliverables/own_feed_demo_script.md
+05_Output/deliverables/HLD_CHANGELOG.md
+05_Output/experiments/I00_PREFLIGHT.md
+05_Output/experiments/I10_VISION.md
+05_Output/experiments/I12_DEMO_NOTES.md
+05_Output/experiments/U07_UX.md
+05_Output/experiments/C09_LIVE.md
+05_Output/experiments/PREFLIGHT.md
 
-# Nested copies and local reference dumps (not the submission tree)
+# Nested copies and local reference dumps
 /PRAHARI/
 /Reference ppt and notes/
 /Reference slides and notes/
@@ -40,8 +66,10 @@ __pycache__/
 *.pt
 02_Code/prahari/app/models_data/*.pt
 02_Code/prahari/AGENTS.md
-05_Output/deliverables/PPT_PUNCH_LIST.md
-05_Output/deliverables/SUBMISSION_LINKS.md
+
+# Local fetch scratch
+scripts_tmp_fetch_logo.py
+_tmp_*
 
 # OS / editor
 .DS_Store
@@ -49,4 +77,3 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
-07_Communications/*.png

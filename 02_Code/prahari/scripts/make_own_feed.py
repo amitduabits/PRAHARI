@@ -1,4 +1,4 @@
-"""Synthetic own-feed clip so the demo tile has a file. Replace with Aria's road clip when it exists."""
+"""Synthetic own-feed clip so the demo tile has a file. Replace with a consented road clip when it exists."""
 
 from __future__ import annotations
 

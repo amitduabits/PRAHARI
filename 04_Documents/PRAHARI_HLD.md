@@ -1,28 +1,28 @@
 # PRAHARI High-Level Design
-**Gujarat Police Innovation Challenge 2026 · CCTV Integration**
-Team: student team (Lead + Arnav + Aria)  
-Architecture class: **Hybrid (Reference Models 1 + 2 + thin 3)**  
-PoC target: ~50 Sentinel sandbox cameras  
+**Yushu Excellence Technologies Pvt. Ltd.**  
+Collaborator: Amit Dua · https://yushuexcellence.in/  
+Architecture: **hybrid intelligence plane** (registry + GIS, unified viewing + ANPR, thin event bus)  
+PoC target: seeded registry plus live catalogue cameras  
 DESIGN TARGET: ~80,000 statewide cameras. MEASURED PoC is the seeded registry plus live catalogue sync.
 
-Working tree: `02_Code/prahari/` · Integrator guide: `06_References/SENTINEL_Integrator_Guide.md` (source https://sentinel.gujarat.gov.in/resource)
+Working tree: `02_Code/prahari/`
 
 ---
 
 ## 1. Problem reading (what we are not building)
 
-Departments already own VMS, AMC contracts, NVRs and storage. Replacing them in 7 days, or even in Phase-1, is neither feasible nor cost-effective. Model 4 (central VMS ingesting every frame for 15 days) would require statewide dark fibre, petabytes of hot storage and a GPU farm that a student PoC cannot honestly claim.
+Departments already own VMS, AMC contracts, NVRs and storage. Replacing them in a first deployment is neither feasible nor cost-effective. A central VMS ingesting every frame for 15 days would require statewide dark fibre, petabytes of hot storage and a GPU farm this PoC does not claim.
 
 PRAHARI therefore **does not rip and replace**. It adds a statewide intelligence plane on top of what already exists.
 
 ## 2. Chosen model and justification
 
-| Layer | Source model | Why |
-|---|---|---|
-| Camera census, GIS, health, gap analysis | Model 1 | Zero disturbance to departmental VMS. Unlocks planning immediately. |
-| Unified viewing + ANPR on accessible streams | Model 2 | Direct RTSP / ONVIF / HLS / WHEP. Satisfies the evaluation test case. |
-| Event / metadata bus, correlation, alerts | Thin Model 3 | Watchlist matching and cross-camera tracks without a federation SDK zoo. |
-| Central recording + full VMS | Model 4 (Phase-2 only) | Selected cameras, not all 80k (DESIGN TARGET). Written as a roadmap, not faked in the PoC. |
+| Layer | Why |
+|---|---|
+| Camera census, GIS, health, gap analysis | Zero disturbance to departmental VMS. Unlocks planning immediately. |
+| Unified viewing + ANPR on accessible streams | Direct RTSP / ONVIF / HLS / WHEP on cameras the department already paid for. |
+| Event / metadata bus, correlation, alerts | Watchlist matching and cross-camera tracks without a federation SDK zoo. |
+| Central recording + full VMS | Roadmap, selected cameras only, not all 80k (DESIGN TARGET). Not faked in this PoC. |
 
 This is vendor-neutral: adapters speak open protocols. A new VMS is one connector, not a redesign.
 
@@ -33,7 +33,7 @@ Dept VMS / NVR / raw camera / private-permitted RTSP
         │  RTSP-TCP · HLS · WHEP · ONVIF · vendor API
         ▼
 ┌───────────────────────────────────────────┐
-│  Ingest adapters + stream session control │  Model 2
+│  Ingest adapters + stream session control │  viewing layer
 └─────────────────────┬─────────────────────┘
                       │ 1 fps sampled frame (not 25 fps video)
                       ▼
@@ -44,7 +44,7 @@ Dept VMS / NVR / raw camera / private-permitted RTSP
         │                       │ detection event
         │                       ▼
         │            ┌─────────────────────┐
-        └────────────┤ Event bus (Redis/   │  Model 3
+        └────────────┤ Event bus (Redis/   │  event layer
                      │ Kafka statewide)    │
                      └──────────┬──────────┘
                                 │
@@ -120,13 +120,13 @@ Phase-1 implemented (CPU, no GPU required):
 
 Cross-camera vehicle tracking in the PoC is plate sightings (`GET /api/track/{plate}`). Optional object `track_id` is per camera and resets on a scene cut.
 
-Optional vision engines (Arnav pack): FaceNet when `FACE_ENGINE=facenet`; YOLO when `OBJECT_ENGINE` or `ANPR_ENGINE=yolo`; ByteTrack when `TRACK_ENGINE=bytetrack`. Default remains histogram + blob + Tesseract + IoU. GPU count MEASURED 0 unless a later bench says otherwise. Next-camera `GET /api/predict/{plate}` is frequency plus distance, not Kalman. `POST /api/query` is a keyword filter (`engine=keyword_rules`), not a language model. Branded reconstruction models are not in this PoC.
+Optional vision engines: FaceNet when `FACE_ENGINE=facenet`; YOLO when `OBJECT_ENGINE` or `ANPR_ENGINE=yolo`; ByteTrack when `TRACK_ENGINE=bytetrack`. Default remains histogram + blob + Tesseract + IoU. GPU count MEASURED 0 unless a later bench says otherwise. Next-camera `GET /api/predict/{plate}` is frequency plus distance, not Kalman. `POST /api/query` is a keyword filter (`engine=keyword_rules`), not a language model. Branded reconstruction models are not in this PoC.
 
-Production swap (same functions): YOLO plate + PaddleOCR behind `recognize()`; YOLO11 on regional GPUs at 1 fps; dedicated FRS cameras with human confirm; AFIS/NAFIS as Phase-2 APIs, not pixels. Workshop FaceNet/YOLO/ByteTrack lives at ArAv-1/PRAHARI-3.0; the production tree remains https://github.com/amitduabits/PRAHARI.
+Production swap (same functions): YOLO plate + PaddleOCR behind `recognize()`; YOLO11 on regional GPUs at 1 fps; dedicated FRS cameras with human confirm; AFIS/NAFIS as later APIs, not pixels. This repository is the production tree: https://github.com/amitduabits/PRAHARI.
 
 ### 6.1 Engine contract
 
-Env defaults (judge laptop, no GPU):
+Env defaults (CPU-only workstation, no GPU):
 
 | Env | Default | Optional |
 |---|---|---|
@@ -175,7 +175,7 @@ Priority: CRITICAL (stolen / wanted) → audible + red queue; HIGH → amber; LO
 
 Operator ack is audited. Duplicate suppression: same plate + same camera within 120 seconds collapses to one alert with a counter. Face hits match on `face_id` / `gallery_id` (`WL-004`) without a plate. Reconstructed face crops insert `pending_review` instead of an open CRITICAL card.
 
-## 8. Multi-camera vehicle track (evaluation test)
+## 8. Multi-camera vehicle track
 
 `GET /api/track/{plate}` returns chronological sightings joined to camera GIS.
 
@@ -184,7 +184,7 @@ Route reconstruction is a time-ordered polyline. No Kalman filter in PoC; Phase-
 - travel-time sanity window so a plate cannot “teleport”
 - interpolation on the road network, not as-the-crow-flies
 
-CSV / PDF report is the evaluators’ artefact.
+CSV / PDF report is the operator artefact.
 
 ## 9. Security
 
@@ -231,11 +231,11 @@ Horizontal scale unit = regional worker. Adding cameras is a registry row + work
 
 This is *not* the cost of replacing 26 departmental VMS estates. That is the point of the hybrid model.
 
-## 12a. Sentinel integrator compliance
+## 12a. Live ingest contract
 
 Gated by `02_Code/prahari/tests/test_integrator_laws.py` plus live soak when `SENTINEL_HOST` is set.
 
-| Official checklist | Implementation |
+| Ingest rule | Implementation |
 |---|---|
 | RTSP over TCP | `OPENCV_FFMPEG_CAPTURE_OPTIONS=rtsp_transport;tcp` before `import cv2`; FFmpeg `-rtsp_transport tcp` |
 | No CAP_PROP_FPS / arrival-time metrics | Event time = `CAP_PROP_POS_MSEC`; sampler uses PTS deltas |
@@ -248,20 +248,20 @@ Gated by `02_Code/prahari/tests/test_integrator_laws.py` plus live soak when `SE
 
 Consume only. No publish, no gateway control API, no file download of `/stream/<id>`.
 
-## 13. PoC mapped to evaluation
+## 13. Capability map
 
-| Evaluation item | Where it lives |
+| Capability | Where it lives |
 |---|---|
-| Onboard gov + own feeds | `POST /api/cameras`, `POST /api/cameras/import`, `POST /api/cameras/sync-catalogue`, Onboard tab |
+| Onboard government + own feeds | `POST /api/cameras`, `POST /api/cameras/import`, `POST /api/cameras/sync-catalogue`, Onboard tab |
 | Unified viewing | Operations Leaflet map, `POST /api/sessions`, tokenised `GET /api/stream/{id}` (no RTSP in the browser) |
 | ANPR + timestamps | `POST /api/ingest/frame`, `POST /api/ingest/confirm`, `GET /api/detections` |
 | Objects + intrusion + lawful FRS | `POST /api/ingest/analyse`, `GET /api/objects/report.csv`, `POST /api/ingest/confirm-face` (Own cameras only) |
 | Designated vehicle path | `GET /api/track/GJ01AB1234` + `GET /api/track/{plate}/report.csv` |
 | Watchlist + realtime alert | `GET/POST /api/watchlist`, `GET /api/alerts`, `POST /api/alerts/{id}/ack`, `WS /ws/alerts` |
 | 80k readiness | §5 (DESIGN TARGET) and §10 of this HLD |
-| Bonus GIS / gaps / private feeds | Registry + `GET /api/gap-report` |
-| Next-camera (bonus) | `GET /api/predict/{plate}` |
-| Keyword filter (bonus) | `POST /api/query` (`engine=keyword_rules`) |
+| GIS / gaps / private feeds | Registry + `GET /api/gap-report` |
+| Next-camera | `GET /api/predict/{plate}` |
+| Keyword filter | `POST /api/query` (`engine=keyword_rules`) |
 
 ## 14. HTTP surface (PoC)
 
@@ -295,4 +295,4 @@ Auth: HTTP Basic (judge / admin / home.viewer / auditor). Write routes 403 for v
 
 Default pytest (04 Sep 2026, no torch): 88 passed, 4 skipped (Tesseract binary, FaceNet extras, YOLO weights, ByteTrack). `scripts/audit_gate.py` must print PASS: path jail, HLS origin pin, full HMAC, vendored `hls.min.js`, no live-ministry needles, 80k labelled DESIGN TARGET.
 
-Vision pack T-V01–T-V11 lives under `02_Code/prahari/tests/`. Optional engines skip with an explicit reason. They must not fail a judge laptop that skipped `requirements-vision.txt`.
+Vision pack tests live under `02_Code/prahari/tests/`. Optional engines skip with an explicit reason. They must not fail a CPU-only workstation that skipped `requirements-vision.txt`.

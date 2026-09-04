@@ -46,6 +46,15 @@ h3 { margin: 16px 0 6px; font-size: 13px; font-weight: 600; }
   background: var(--panel);
   border: 1px solid var(--line);
 }
+.login .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.login .brand img { background: #000; }
 .login .field { display: block; margin: 0.55rem 0; color: var(--muted); }
 .login input { width: 100%; margin-top: 4px; }
 
@@ -61,6 +70,12 @@ h3 { margin: 16px 0 6px; font-size: 13px; font-weight: 600; }
   border-bottom: 3px solid var(--khaki);
 }
 .top h1 { color: var(--paper); }
+.wordmark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wordmark img { background: #000; }
 .wordmark .dept { margin: 0; font-size: 12px; color: var(--paper); }
 .top .chip {
   color: var(--paper);

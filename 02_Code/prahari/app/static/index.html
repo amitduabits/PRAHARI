@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PRAHARI · Gujarat Police Innovation Challenge 2026</title>
+  <title>PRAHARI · Yushu Excellence</title>
+  <link rel="icon" href="/logo-yushu.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -12,8 +13,8 @@
 </head>
 <body>
   <div id="login-card" class="login">
-    <h1>PRAHARI</h1>
-    <p class="dept">Home Department · SOC</p>
+    <p class="brand"><img src="/logo-yushu.png" alt="Yushu Excellence" width="36" height="36">PRAHARI</p>
+    <p class="dept">Yushu Excellence · SOC</p>
     <label class="field" for="user">User
       <input id="user" value="judge" autocomplete="username">
     </label>
@@ -22,16 +23,19 @@
     </label>
     <button type="button" id="login-btn">Log in</button>
     <p id="login-err" class="err" role="alert"></p>
-    <p class="hint">Judge password is JUDGE_PASSWORD in the local environment. Change before submit.</p>
+    <p class="hint">SOC operator password is JUDGE_PASSWORD in the local environment. Change defaults before a hosted demo.</p>
   </div>
 
   <div id="app" class="hidden">
     <header class="top">
       <div class="wordmark">
-        <h1>PRAHARI</h1>
-        <p class="dept">Home Department · SOC</p>
+        <img src="/logo-yushu.png" alt="Yushu Excellence" width="28" height="28">
+        <div>
+          <h1>PRAHARI</h1>
+          <p class="dept">Yushu Excellence · SOC</p>
+        </div>
       </div>
-      <span class="chip" id="hybrid-chip">Hybrid 1+2+thin 3</span>
+      <span class="chip" id="hybrid-chip">Intelligence plane</span>
       <div id="health-line" class="health-chips">Loading health…</div>
       <div id="banner" class="hint"></div>
       <span id="clock"></span>

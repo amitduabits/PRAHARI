@@ -3,32 +3,33 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PRAHARI · BITS Pilani</title>
+  <title>PRAHARI · Yushu Excellence</title>
+  <link rel="icon" href="logo-yushu.png">
   <style>
     body { font-family: "Segoe UI", system-ui, sans-serif; max-width: 44rem; margin: 2rem auto; padding: 0 1rem; color: #111; line-height: 1.45; }
-    a { color: #1A1A80; }
+    a { color: #111; }
     code { font-size: 0.95em; }
     table { border-collapse: collapse; width: 100%; }
     td, th { border-bottom: 1px solid #ddd; padding: 0.35rem 0.4rem; text-align: left; }
+    .brand { display: flex; align-items: center; gap: 0.75rem; }
+    .brand img { width: 48px; height: 48px; background: #000; }
   </style>
 </head>
 <body>
+  <p class="brand"><img src="logo-yushu.png" alt="Yushu Excellence Technologies Pvt. Ltd."><span>Yushu Excellence Technologies Pvt. Ltd.</span></p>
   <h1>PRAHARI</h1>
-  <p>BITS Pilani student entry. Gujarat Police Innovation Challenge 2026. Hybrid CCTV intelligence plane (Models 1 + 2 + thin 3). Source: <a href="https://github.com/amitduabits/PRAHARI">github.com/amitduabits/PRAHARI</a>.</p>
+  <p>Statewide CCTV intelligence plane. Registry, unified viewing, ANPR, watchlist alerts, and multi-camera tracks on top of existing VMS estates. Source: <a href="https://github.com/amitduabits/PRAHARI">github.com/amitduabits/PRAHARI</a>.</p>
 
   <h2>Documents</h2>
   <ul>
-    <li><a href="PRAHARI-Slides.pdf">Slides (PDF, BITS Beamer)</a></li>
+    <li><a href="PRAHARI-Slides.pdf">Slides (PDF)</a></li>
     <li><a href="PRAHARI-Notes.pdf">Notes (PDF)</a></li>
-    <li><a href="https://github.com/amitduabits/PRAHARI/blob/gpic-2026-submission/04_Documents/PRAHARI_HLD.md">High-level design</a></li>
-    <li><a href="https://github.com/amitduabits/PRAHARI/blob/gpic-2026-submission/SUBMISSION.md">Submission packet</a></li>
+    <li><a href="https://github.com/amitduabits/PRAHARI/blob/main/04_Documents/PRAHARI_HLD.md">High-level design</a></li>
   </ul>
 
-  <h2>Run the PoC on your machine</h2>
+  <h2>Run on your machine</h2>
   <pre><code>git clone https://github.com/amitduabits/PRAHARI.git
-cd PRAHARI
-git checkout gpic-2026-submission
-cd 02_Code/prahari
+cd PRAHARI/02_Code/prahari
 copy .env.example .env
 .\run.ps1</code></pre>
   <p>Unix: <code>cp .env.example .env</code> then <code>./run.sh</code>. Open <code>http://127.0.0.1:8080</code>.</p>
@@ -40,5 +41,6 @@ copy .env.example .env
     <tr><td><code>auditor</code></td><td>read only</td></tr>
   </table>
   <p>Passwords are in <code>.env.example</code>. Change them before a public host. Reconstruct plate <code>GJ01AB1234</code>.</p>
+  <p>Collaborator: Amit Dua · <a href="https://yushuexcellence.in/">yushuexcellence.in</a> · mail.amitdua@gmail.com</p>
 </body>
 </html>

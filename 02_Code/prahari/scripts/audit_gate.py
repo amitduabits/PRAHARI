@@ -1,4 +1,4 @@
-"""Machine gate for 08_Misc/21_Audit_Remediation. Exit 1 if S2/S3/S4/S5/K1/K3 fail."""
+"""Honesty gate for claims in HLD, notes, slides, and README. Exit 1 if S2/S3/S4/S5/K1/K3 fail."""
 
 from __future__ import annotations
 
@@ -43,8 +43,8 @@ claim_files = [
     REPO / "05_Output" / "deliverables" / "gov_feed_demo_script.md",
     REPO / "05_Output" / "deliverables" / "FINALE_RUNCARD.md",
     REPO / "04_Documents" / "PRAHARI_HLD.md",
-    REPO / "04_Documents" / "bits-tex" / "slides.tex",
-    REPO / "04_Documents" / "bits-tex" / "notes.tex",
+    REPO / "04_Documents" / "tex" / "slides.tex",
+    REPO / "04_Documents" / "tex" / "notes.tex",
     REPO / "README.md",
 ]
 blob = "\n".join(read(p) for p in claim_files)
