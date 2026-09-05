@@ -152,18 +152,47 @@ def apply_origin_urls(cam: dict[str, Any], web: str, rtsp_host: str = "") -> dic
 
 
 def _looks_json(response: httpx.Response) -> bool:
+    if str(response.url.path).rstrip("/").endswith("login"):
+        return False
     ctype = (response.headers.get("content-type") or "").lower()
+    text = response.text.lstrip()
+    if text.lower().startswith("<!doctype") or text.lower().startswith("<html"):
+        return False
     if "json" in ctype:
         return True
-    text = response.text.lstrip()
     return text.startswith("{") or text.startswith("[")
 
 
-def _login(client: httpx.Client, base: str) -> None:
+def _is_login_page(response: httpx.Response) -> bool:
+    path = str(response.url.path).lower()
+    if "login" in path:
+        return True
+    head = response.text[:800].lower()
+    return "sign in" in head and "<html" in head
+
+
+def _login(client: httpx.Client, base: str) -> httpx.Response | None:
+    """Portal form is email + access password. Session cookie is set on success.
+
+    Bearer / Basic are not the live contract. A password-only POST stays on
+    /auth/login with HTML 'Email or access password is incorrect.'
+    """
     password = config.getenv("SENTINEL_PASSWORD", "").strip()
+    email = (
+        config.getenv("SENTINEL_USER", "").strip()
+        or config.getenv("SENTINEL_EMAIL", "").strip()
+    )
     if not password:
-        return
-    client.post(base + "/auth/login", data={"password": password})
+        return None
+    data = {"password": password}
+    if email:
+        data["email"] = email
+    response = client.post(
+        base + "/auth/login",
+        data=data,
+        headers={"Referer": base + "/auth/login", "Origin": base},
+    )
+    return response
 
 
 def session(host: str | None = None) -> tuple[httpx.Client, str]:
@@ -220,26 +249,43 @@ def fetch(host: str | None = None) -> list[dict[str, Any]]:
     if not configured.startswith("/"):
         configured = "/" + configured
     candidates = [configured]
-    for alt in ("/cameras.json", "/api/ingest"):
-        if alt not in candidates:
-            candidates.append(alt)
+    if "/cameras.json" not in candidates:
+        candidates.append("/cameras.json")
     last_error = "catalogue unreachable"
     payload: Any = None
+    email = (
+        config.getenv("SENTINEL_USER", "").strip()
+        or config.getenv("SENTINEL_EMAIL", "").strip()
+    )
+    password = config.getenv("SENTINEL_PASSWORD", "").strip()
     for path in candidates:
         response = client.get(base + path)
         if response.status_code == 404:
             last_error = f"{path} HTTP 404"
             continue
-        if not _looks_json(response):
-            if not config.getenv("SENTINEL_PASSWORD", "").strip():
+        if _is_login_page(response) or not _looks_json(response):
+            if not password:
                 raise RuntimeError(
-                    "catalogue is session-gated; set SENTINEL_PASSWORD in .env"
+                    "catalogue is session-gated HTML login; set SENTINEL_PASSWORD in .env"
                 )
-            _login(client, base)
+            if not email:
+                raise RuntimeError(
+                    "catalogue login form requires email + access password; "
+                    "set SENTINEL_USER (or SENTINEL_EMAIL) and SENTINEL_PASSWORD. "
+                    "GET /cameras.json redirected to /auth/login (HTML), not JSON."
+                )
+            login_resp = _login(client, base)
             response = client.get(base + path)
-        if not _looks_json(response):
-            last_error = f"{path} HTTP {response.status_code} not JSON"
-            continue
+            if _is_login_page(response) or not _looks_json(response):
+                hint = "login still HTML"
+                if login_resp is not None and "incorrect" in login_resp.text.lower():
+                    hint = "email or access password rejected"
+                last_error = (
+                    f"{path} HTTP {response.status_code} {hint} "
+                    f"(final path {response.url.path}, content-type "
+                    f"{response.headers.get('content-type')})"
+                )
+                continue
         payload = response.json()
         break
     if payload is None:

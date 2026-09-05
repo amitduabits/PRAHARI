@@ -1,4 +1,12 @@
-from app.services.catalogue import apply_origin_urls, load_fixture, origin_allowed, parse_payload
+import httpx
+
+from app.services.catalogue import (
+    apply_origin_urls,
+    load_fixture,
+    origin_allowed,
+    parse_payload,
+    _looks_json,
+)
 
 
 def test_fixture_three_cameras_mixed_codec():
@@ -99,3 +107,24 @@ def test_off_host_hls_stream_is_pinned(client, auth):
     streamed = client.get("/api/stream/CAM-PIN", params={"token": token})
     assert streamed.status_code == 502
     assert "not pinned" in streamed.json()["detail"]
+
+
+def test_login_html_is_not_json():
+    html = (
+        "<!doctype html><html lang=\"en\"><title>Sign in · Sentinel</title>"
+        "<body>Sign in</body></html>"
+    )
+    login = httpx.Response(
+        200,
+        headers={"content-type": "text/html; charset=utf-8"},
+        text=html,
+        request=httpx.Request("GET", "https://cctv.corp8.cloud/auth/login"),
+    )
+    assert _looks_json(login) is False
+    ok = httpx.Response(
+        200,
+        headers={"content-type": "application/json"},
+        text='[{"id":"cam04","name":"04 Paldi Circle"}]',
+        request=httpx.Request("GET", "https://cctv.corp8.cloud/cameras.json"),
+    )
+    assert _looks_json(ok) is True
