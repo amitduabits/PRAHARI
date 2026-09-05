@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+files.zip
+*.aux
+*.log
+*.out
+*.bbl
+*.blg

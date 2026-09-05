@@ -1,0 +1,4 @@
+literature/pdf/
+**/literature/pdf/
+*.pyc
+__pycache__/

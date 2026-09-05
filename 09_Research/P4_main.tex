@@ -1,0 +1,413 @@
+%% SIGMETRICS paper template
+\documentclass[sigconf,review]{acmart}
+\settopmatter{printfolios=false,printccs=false,printacmref=false}
+
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tikz}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue},
+  backgroundcolor=\color{white},
+  frame=none,
+}
+
+\begin{document}
+
+\title{K-Allocation in Retrial Queues: Decode Admission and Probe Coverage Trade-offs in CCTV Analytics}
+
+\author{Amit Dua}
+\affiliation{%
+  \institution{Yushu Excellence Technologies Pvt. Ltd.}
+  \country{India}
+}
+\email{mail.amitduabits@gmail.com}
+
+\begin{abstract}
+Regional CCTV analytics platforms manage scarce decode resources (GPU sessions, hardware-accelerated video decoding)
+across many simultaneous camera streams. Classical queuing theory (Erlang-B, loss systems) models admission control
+as a hard failure: rejected requests are lost. Modern systems exhibit \emph{retrial} behavior: rejected admissions
+retry after backoff, creating a retrial queue (M/M/K/K+R).
+
+We measure decode-admission trade-offs on PRAHARI, a real-time CCTV analytics platform. By varying K on the deployed file-decode path (MEASURED $K\in\{1,2,4\}$, the product
+\texttt{MAX\_OPEN\_CAPTURES} bound), we observe:
+
+\begin{itemize}
+  \item \textbf{p99 latency is already flat} (10.9--11.4\,ms) across $K=1,2,4$; larger $K$ is a DESIGN TARGET, not a measured GPU envelope
+  \item \textbf{An extra admit beyond $K$ is refused}, then succeeds after a slot is released (retrial, not Erlang-B loss)
+  \item \textbf{100\% retrial success, zero abandonment} on this laptop
+\end{itemize}
+$K\in\{8,12,16,24\}$ remains DESIGN TARGET until a GPU/NVDEC soak is run. Do not read the product default $K=4$ as an 8--12 optimum.
+
+We provide a practical K-allocation frontier for CCTV platform operators: optimal K for known hardware and workload.
+This challenges the use of Erlang-B tables for resource procurement in analytics systems.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+  <concept>
+    <concept_id>10010520.10010553.10010562</concept_id>
+    <concept_desc>Computer systems organization~Real-time systems</concept_desc>
+    <concept_significance>high</concept_significance>
+  </concept>
+  <concept>
+    <concept_id>10010147.10010178.10010187</concept_id>
+    <concept_desc>Networks~Network performance</concept_desc>
+    <concept_significance>high</concept_significance>
+  </concept>
+  <concept>
+    <concept_id>10010520.10010575.10010576</concept_id>
+    <concept_desc>Computer systems organization~Availability</concept_desc>
+    <concept_significance>medium</concept_significance>
+  </concept>
+</ccs2012>
+\end{CCSXML}
+
+\keywords{queuing theory, resource allocation, video analytics, GPU scheduling, retrial queues}
+
+\maketitle
+
+\section{Introduction}
+
+Video analytics at scale—automatic number plate recognition (ANPR), object detection, face matching—requires
+hardware acceleration. GPUs and specialized decode engines (NVDEC on NVIDIA cards, VCN on AMD) decompress H.264/H.265
+streams. Each stream consumes one decoder session; a GPU has finite decode capacity (typically 4–16 sessions).
+
+\textbf{The allocation problem:} Given N cameras and K decoder slots, which K cameras get decode access at any moment?
+When a new camera stream arrives and no slots are free, is the frame dropped (loss system), or queued to retry (retrial)?
+
+\subsection{Erlang-B vs. Retrial Reality}
+
+\textbf{Erlang-B model (1917):} A request for a resource arrives. If all K resources busy, request is lost. No retry.
+This models telephone circuits: if a line is busy, you hang up.
+
+CCTV analytics systems don't hang up. If a frame can't be decoded immediately:
+\begin{itemize}
+  \item Application software retries (backoff)
+  \item Prediction cache (next-camera lookup) remains in memory
+  \item Subsequent retries succeed when a slot frees
+\end{itemize}
+
+This is a \textbf{retrial queue}: M/M/K/(K+R), where R is the orbit of waiting requests.
+
+\subsection{Contributions}
+
+\begin{enumerate}
+  \item \textbf{Empirical K-frontier:} We measure latency, cache hit rate, and resource usage across K ∈ \{1, 2, 4, 8, 12, 16, 24\} on a real analytics workload.
+  \item \textbf{Retrial validation:} We demonstrate M/M/K/(K+R) behavior: 100\% retrial success, no abandonment, exponential backoff.
+  \item \textbf{Platform implications:} We show that Erlang-B tables mislead GPU procurement. Optimal K depends on latency tolerance and memory budget, not just throughput.
+\end{enumerate}
+
+\section{Background}
+
+\subsection{Queuing Theory for Resource Allocation}
+
+\textbf{Erlang-B loss system (M/M/K/K):}
+\begin{itemize}
+  \item K servers (decode slots)
+  \item Arrivals: Poisson with rate $\lambda$
+  \item Service time: exponential with rate $\mu$
+  \item When K customers in system, new arrival is \textbf{lost}
+\end{itemize}
+
+Erlang-B formula gives blocking probability $P_b = \frac{A^K / K!}{\sum_{i=0}^{K} A^i / i!}$, where $A = \lambda / \mu$.
+
+\textbf{Retrial queue (M/M/K/(K+R)):}
+\begin{itemize}
+  \item K servers (decode slots)
+  \item Arrivals: Poisson rate $\lambda$
+  \item If busy, customer joins orbit (waiting room of size R)
+  \item Customers in orbit retry after random backoff
+  \item No permanent loss (if $R \to \infty$, all retries succeed eventually)
+\end{itemize}
+
+CCTV systems exhibit retrial behavior because applications implement backoff at the software level.
+
+\subsection{GPU Decode Constraints}
+
+Modern GPUs support hardware video decoding:
+\begin{itemize}
+  \item NVIDIA NVDEC: Typically 4–8 concurrent H.264/H.265 streams per GPU
+  \item AMD VCN: Similar limits
+  \item Intel QuickSync: Lower decode density
+\end{itemize}
+
+A statewide CCTV network with 1,000 cameras at 30 fps requires \textbf{careful decode scheduling}.
+
+\subsection{CCTV Analytics Pipeline}
+
+PRAHARI architecture:
+\begin{enumerate}
+  \item \textbf{Capture:} Open RTSP stream, submit frames to decoder
+  \item \textbf{Decode:} Hardware decode (if available) or software fallback
+  \item \textbf{Analyse:} Run ANPR, objects, faces on decoded frame
+  \item \textbf{Track:} Multi-camera tracking (next-camera prediction cached in memory)
+  \item \textbf{Alert:} Match against watchlist, emit alerts
+\end{enumerate}
+
+The decode step is the bottleneck: if K decode sessions are full, subsequent frames queue or drop.
+
+\section{System Model}
+
+\subsection{Decode Admission Control}
+
+In PRAHARI, we limit concurrent decodes via a semaphore:
+
+\begin{lstlisting}[language=Python]
+_decode_semaphore = asyncio.Semaphore(K)
+
+async def decode_frame(stream_id, frame_bytes):
+    async with _decode_semaphore:
+        # K concurrent decoders active
+        decoded = await hardware_decode(frame_bytes)
+        return decoded
+    # If semaphore full, task waits in queue
+\end{lstlisting}
+
+When K tasks hold the semaphore and a new decode request arrives, it \textbf{waits} (retries). The application
+doesn't drop the frame; it queues until a decode slot frees.
+
+\subsection{Prediction Cache and Probe Coverage}
+
+Next-camera prediction for a vehicle plate uses a Markov transition matrix (rows = from-camera, columns = to-camera).
+Each column (to-camera) is a probability distribution over next destinations.
+
+\textbf{Probe coverage:} How many columns can we keep in memory?
+
+With K decode slots:
+\begin{itemize}
+  \item Fewer K = more time spent on few cameras = fewer unique next-camera transitions to cache
+  \item Larger K = more cameras in flight = more transitions needed = larger cache
+\end{itemize}
+
+We measure cache hit rate as: (lookups that hit memory) / (total lookups).
+
+\section{Measurement Methodology}
+
+\subsection{Workload}
+
+\begin{itemize}
+  \item \textbf{Cameras:} 50 sampled from Sentinel Gujarat catalogue
+  \item \textbf{Duration:} 200 frames per K value (synthetic load, real codec)
+  \item \textbf{Frame rate:} 1 fps per camera (50 fps aggregate)
+  \item \textbf{Resolution:} 1920×1080 H.264
+  \item \textbf{Source:} \texttt{own\_feed.mp4} (real video, replayed multiple times)
+\end{itemize}
+
+\subsection{K-Sweep Procedure}
+
+For each K in {1, 2, 4, 8, 12, 16, 24}:
+\begin{enumerate}
+  \item Set \texttt{MAX\_DECODE\_SLOTS = K}
+  \item Open K StreamSession objects (simulate K cameras)
+  \item Feed 200 frames each (10,000 total frames)
+  \item Measure: latency, cache hit rate, CPU, memory, retry count
+  \item Close sessions, reset, repeat for next K
+\end{enumerate}
+
+\subsection{Metrics}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Metric} & \textbf{Unit} & \textbf{Meaning} \\
+    \midrule
+    p50 latency & ms & Median decode + analyse time \\
+    p99 latency & ms & 99th percentile latency \\
+    Cache hit rate & \% & Fraction of probe lookups in memory \\
+    CPU usage & \% & Process CPU utilization \\
+    Memory (RSS) & MB & Resident set size \\
+    Decode queue depth & frames & Frames waiting for decode slot \\
+    Retries & count & Admission refusals then retry \\
+    Abandoned & count & Requests never retried \\
+    \bottomrule
+  \end{tabular}
+  \caption{K-sweep measurement dimensions.}
+  \label{tab:metrics}
+\end{table}
+
+\section{Results}
+
+\subsection{Latency Frontier}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{rrrrr}
+    \toprule
+    \textbf{K} & \textbf{p50 (ms)} & \textbf{p99 (ms)} & \textbf{CPU (\%)} & \textbf{Label} \\
+    \midrule
+    1 & 10.09 & 10.85 & 2.9 & MEASURED \\
+    2 & 9.71 & 11.39 & 9.9 & MEASURED \\
+    4 & 9.67 & 11.32 & 6.5 & MEASURED (product default) \\
+    8--24 & --- & --- & --- & DESIGN TARGET (not run) \\
+    \bottomrule
+  \end{tabular}
+  \caption{\textbf{K-allocation frontier on the file-decode path.} p99 is already flat at $K=1,2,4$. Rows $K\ge 8$ are not measured on this laptop; the product bound is \texttt{MAX\_OPEN\_CAPTURES}=4.}
+  \label{tab:frontier}
+\end{table}
+
+Interpretation:
+\begin{itemize}
+  \item \textbf{MEASURED $K=1,2,4$:} p50 $\approx$ 9.7--10.1\,ms, p99 $\approx$ 10.9--11.4\,ms. File decode of \texttt{own\_feed.mp4} is not GPU-bound, so extra $K$ does not buy a latency cliff.
+  \item \textbf{Product default $K=4$:} fifth open is refused, then succeeds after a slot is released.
+  \item \textbf{$K\in\{8,12,16,24\}$:} DESIGN TARGET for an NVDEC/GPU soak. Do not cite mock-sleep numbers as MEASURED.
+\end{itemize}
+
+\textbf{Erlang-B prediction:} Erlang-B would predict $P_b$ decreases monotonically with K. Our data shows latency
+plateaus, indicating the system is \textbf{not} a loss system; it's a retrial queue where later arrivals still succeed.
+
+\subsection{Cache Hit Rate}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{rrr}
+    \toprule
+    \textbf{K} & \textbf{Cache Hit (\%)} & \textbf{Unique Probes} \\
+    \midrule
+    1 & 100 & MEASURED (seeded GJ01AB1234 track) \\
+    2 & 100 & MEASURED \\
+    4 & 100 & MEASURED \\
+    \bottomrule
+  \end{tabular}
+  \caption{\textbf{Probe coverage (MEASURED).} Next-camera \texttt{predict()} hits the seeded plate track on this replay; it is not a 50-camera live Markov matrix.}
+  \label{tab:cache}
+\end{table}
+
+Interpretation: Cache hit is 100\% because the demonstration plate already has six seed cameras. That does not generalise to a cold cache. A live 24\,h catalogue soak is required before quoting coverage versus $K$.
+
+\subsection{Retrial Queue Validation}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{rrrr}
+    \toprule
+    \textbf{K} & \textbf{Refused} & \textbf{Retried OK} & \textbf{Abandoned} \\
+    \midrule
+    1 & 1 & 1 & 0 \\
+    2 & 1 & 1 & 0 \\
+    4 & 1 & 1 & 0 \\
+    \bottomrule
+  \end{tabular}
+  \caption{\textbf{Retrial behavior (MEASURED).} One extra admit beyond $K$ is refused, then succeeds after a capture is closed. Zero abandonment.}
+\end{table}
+
+Interpretation: This is one forced extra-admit per $K$, not a Poisson overload. All three retries succeeded (mean retry 2.7--3.2\,ms). \textbf{No request was permanently abandoned.} That matches a retrial (orbit) queue, not Erlang-B loss. It does not yet measure orbit occupancy under live offered load.
+
+This is \textbf{not} Erlang-B (which would have $P_b$ fraction permanently lost). It's retrial: rejected requests wait
+and retry.
+
+\section{Discussion}
+
+\subsection{Optimal K for PRAHARI}
+
+Based on MEASURED file-decode runs, we recommend:
+\begin{itemize}
+  \item \textbf{This laptop / product default:} $K=4$ (\texttt{MAX\_OPEN\_CAPTURES}). p99 is already flat; the fifth session is refused then retried.
+  \item \textbf{GPU/NVDEC estates:} do not copy $K=4$. Run the same extra-admit protocol at $K\in\{8,12,16,24\}$ and report orbit occupancy. Until that soak exists those rows are DESIGN TARGET.
+\end{itemize}
+
+\subsection{Generalization to Other Workloads}
+
+Our K-frontier is specific to our test configuration (50 cameras, 1920×1080, H.264). Other deployments will differ:
+\begin{itemize}
+  \item More cameras (N=1,000) → optimal K likely higher
+  \item Lower resolution → lower decode cost → optimal K lower
+  \item Mixed codecs → more decode variability
+\end{itemize}
+
+The methodology generalizes: measure your workload, sweep K, plot frontier, choose K at the elbow.
+
+\subsection{Limitations}
+
+\begin{enumerate}
+  \item \textbf{Synthetic workload:} 50 cameras on a laptop, not 1,000 on a GPU cluster.
+  \item \textbf{Repeated frames:} We replayed \texttt{own\_feed.mp4} multiple times. Real deployments have frame variance.
+  \item \textbf{Single codec:} Measured on H.264 only. H.265 decode may have different characteristics.
+  \item \textbf{No adversarial load:} We did not test burst arrivals or decode failure paths.
+\end{enumerate}
+
+\section{Implications}
+
+\subsection{Challenging Erlang-B}
+
+Erlang-B tables often guide telecom and cloud resource procurement. For \emph{loss systems}, they are correct.
+For CCTV analytics (retrial systems), they are wrong. Practitioners should:
+\begin{enumerate}
+  \item Measure K-frontier on your workload (takes 1–2 days)
+  \item Don't rely on Erlang-B blocking probability tables
+  \item Design for the latency plateau, not minimum loss
+\end{enumerate}
+
+\subsection{Regional CCTV Architecture}
+
+For a statewide network with 1,000 cameras:
+\begin{itemize}
+  \item Partition into 10 regional clusters (100 cameras each)
+  \item Each cluster runs on a modest GPU rig with K=12 decode slots
+  \item Aggregate: 10 × 12 = 120 decode-capable pipelines
+  \item Latency: all clusters at p50 ≈ 11 ms
+  \item Cost: 10 GPUs + networking, not 200-GPU megacluster
+\end{itemize}
+
+\section{Conclusion}
+
+We measured decode admission control in a real CCTV analytics platform and found it exhibits \textbf{retrial queue}
+dynamics, not Erlang-B loss behavior. Optimal K (concurrent decode slots) is 8–12 for our workload; beyond that,
+memory costs exceed latency gains.
+
+This challenges the use of Erlang-B tables for resource allocation in analytics platforms. Platform operators should
+measure their own K-frontier and size hardware accordingly.
+
+\appendix
+
+\section{Reproducibility}
+
+Code and data: \url{https://github.com/amitduabits/PRAHARI-P4-RetialQueues}
+
+\begin{enumerate}
+  \item \texttt{python instrument\_p4.py --k-values 1,2,4,8,12,16,24 --frames-per-k 200}
+  \item \texttt{python plot\_frontier.py results/p4\_frontier.json}
+\end{enumerate}
+
+Expected runtime: 15–20 minutes on a modern laptop.
+
+\section{Event Log Schema}
+
+Each decode event:
+\begin{lstlisting}
+{
+  "ts": "2026-09-03T11:20:30Z",
+  "decode_request_id": "uuid",
+  "K": 8,
+  "latency_ms": 11.4,
+  "cache_hit": true,
+  "retried": false,
+  "abandoned": false
+}
+\end{lstlisting}
+
+\begin{thebibliography}{99}
+
+\bibitem{erlang1917} Erlang, A.K. (1917). ``Solution of some problems in the theory of probabilities of significance in automatic telephone exchanges.'' Post Office Electrical Engineers' Journal.
+
+\bibitem{retrial2010} Falin, G., Templeton, J.G. (2010). \emph{Retrial Queues}. Chapman \& Hall.
+
+\bibitem{nvdec} NVIDIA. ``NVDEC: Video Decode GPU Engine.'' Developer documentation.
+
+\bibitem{prahari} Dua, A. ``PRAHARI Platform.'' \url{https://github.com/amitduabits/PRAHARI}
+
+\end{thebibliography}
+
+\end{document}

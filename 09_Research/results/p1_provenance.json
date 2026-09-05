@@ -1,0 +1,182 @@
+{
+  "paper": "P1 Provenance-aware inference dispatch",
+  "results": [
+    {
+      "experiment": "E1.1_dispatch_latency",
+      "frames": 20000,
+      "cameras": 800,
+      "rows": [
+        {
+          "policy_rules": 6,
+          "method": "provenance_gated",
+          "median_ns": 500.0,
+          "p99_ns": 1400.0,
+          "rule_evaluations": 0
+        },
+        {
+          "policy_rules": 6,
+          "method": "query_time_rbac",
+          "median_ns": 1400.0,
+          "p99_ns": 4700.0,
+          "rule_evaluations": 121200
+        },
+        {
+          "policy_rules": 12,
+          "method": "provenance_gated",
+          "median_ns": 500.0,
+          "p99_ns": 800.0,
+          "rule_evaluations": 0
+        },
+        {
+          "policy_rules": 12,
+          "method": "query_time_rbac",
+          "median_ns": 2100.0,
+          "p99_ns": 3000.0,
+          "rule_evaluations": 242400
+        },
+        {
+          "policy_rules": 24,
+          "method": "provenance_gated",
+          "median_ns": 500.0,
+          "p99_ns": 800.0,
+          "rule_evaluations": 0
+        },
+        {
+          "policy_rules": 24,
+          "method": "query_time_rbac",
+          "median_ns": 3500.0,
+          "p99_ns": 7400.0,
+          "rule_evaluations": 484800
+        },
+        {
+          "policy_rules": 48,
+          "method": "provenance_gated",
+          "median_ns": 500.0,
+          "p99_ns": 1000.0,
+          "rule_evaluations": 0
+        },
+        {
+          "policy_rules": 48,
+          "method": "query_time_rbac",
+          "median_ns": 6300.0,
+          "p99_ns": 15400.0,
+          "rule_evaluations": 969600
+        },
+        {
+          "policy_rules": 96,
+          "method": "provenance_gated",
+          "median_ns": 500.0,
+          "p99_ns": 700.0,
+          "rule_evaluations": 0
+        },
+        {
+          "policy_rules": 96,
+          "method": "query_time_rbac",
+          "median_ns": 11700.0,
+          "p99_ns": 22100.99999999984,
+          "rule_evaluations": 1939200
+        },
+        {
+          "policy_rules": 192,
+          "method": "provenance_gated",
+          "median_ns": 500.0,
+          "p99_ns": 700.0,
+          "rule_evaluations": 0
+        },
+        {
+          "policy_rules": 192,
+          "method": "query_time_rbac",
+          "median_ns": 22800.0,
+          "p99_ns": 55600.99999999984,
+          "rule_evaluations": 3878400
+        }
+      ]
+    },
+    {
+      "experiment": "E1.2_privacy_exposure",
+      "rows": [
+        {
+          "method": "provenance_gated",
+          "frames": 20000,
+          "forbidden_inference_calls": 0,
+          "forbidden_face_calls": 0,
+          "forbidden_records_returned": 0,
+          "total_inference_calls": 55555
+        },
+        {
+          "method": "query_time_rbac",
+          "frames": 20000,
+          "forbidden_inference_calls": 0,
+          "forbidden_face_calls": 0,
+          "forbidden_records_returned": 0,
+          "total_inference_calls": 55555
+        },
+        {
+          "method": "stateless_fallback",
+          "frames": 20000,
+          "forbidden_inference_calls": 24445,
+          "forbidden_face_calls": 17377,
+          "forbidden_records_returned": 24445,
+          "total_inference_calls": 80000
+        },
+        {
+          "method": "naive_union_postfilter",
+          "frames": 20000,
+          "forbidden_inference_calls": 24445,
+          "forbidden_face_calls": 17377,
+          "forbidden_records_returned": 0,
+          "total_inference_calls": 80000
+        }
+      ]
+    },
+    {
+      "experiment": "E1.3_lazy_construction",
+      "cameras": 800,
+      "frames": 5000,
+      "rows": [
+        {
+          "method": "provenance_gated",
+          "face_weights_resident": false,
+          "face_model_builds": 0,
+          "resident_weight_bytes": 50331648
+        },
+        {
+          "method": "query_time_rbac",
+          "face_weights_resident": false,
+          "face_model_builds": 0,
+          "resident_weight_bytes": 50331648
+        },
+        {
+          "method": "stateless_fallback",
+          "face_weights_resident": true,
+          "face_model_builds": 1,
+          "resident_weight_bytes": 67108864
+        },
+        {
+          "method": "naive_union_postfilter",
+          "face_weights_resident": true,
+          "face_model_builds": 1,
+          "resident_weight_bytes": 67108864
+        }
+      ]
+    },
+    {
+      "experiment": "E1.4_audit_growth",
+      "rows": [
+        {
+          "method": "provenance_gated",
+          "bytes_per_record": 68,
+          "records_per_camera_per_day": 0,
+          "bytes_per_camera_per_day": 0,
+          "note": "one record written at registration, none per frame"
+        },
+        {
+          "method": "query_time_rbac",
+          "bytes_per_record": 269,
+          "records_per_camera_per_day": 43200,
+          "bytes_per_camera_per_day": 11620800
+        }
+      ]
+    }
+  ]
+}

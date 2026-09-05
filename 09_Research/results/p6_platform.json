@@ -1,0 +1,405 @@
+{
+  "paper": "P6 Platform design for heterogeneous video analytics across multi-authority deployments",
+  "results": [
+    {
+      "experiment": "E6.1_onboarding_cost",
+      "rows": [
+        {
+          "scale": 800,
+          "total_cameras": 800,
+          "total_seconds": 4549.68,
+          "total_hours": 1.264
+        },
+        {
+          "scale": 800,
+          "authority": "StatePolice",
+          "cameras": 336,
+          "mode": "csv_bulk",
+          "seconds": 7.06,
+          "seconds_per_camera": 0.021
+        },
+        {
+          "scale": 800,
+          "authority": "MunicipalCorp",
+          "cameras": 224,
+          "mode": "csv_bulk",
+          "seconds": 4.7,
+          "seconds_per_camera": 0.021
+        },
+        {
+          "scale": 800,
+          "authority": "Highways",
+          "cameras": 144,
+          "mode": "rest_api",
+          "seconds": 25.92,
+          "seconds_per_camera": 0.18
+        },
+        {
+          "scale": 800,
+          "authority": "PrivateEstates",
+          "cameras": 80,
+          "mode": "web_form",
+          "seconds": 3760.0,
+          "seconds_per_camera": 47.0
+        },
+        {
+          "scale": 800,
+          "authority": "Pilot",
+          "cameras": 16,
+          "mode": "web_form",
+          "seconds": 752.0,
+          "seconds_per_camera": 47.0
+        },
+        {
+          "scale": 8000,
+          "total_cameras": 8000,
+          "total_seconds": 45496.8,
+          "total_hours": 12.638
+        },
+        {
+          "scale": 8000,
+          "authority": "StatePolice",
+          "cameras": 3360,
+          "mode": "csv_bulk",
+          "seconds": 70.56,
+          "seconds_per_camera": 0.021
+        },
+        {
+          "scale": 8000,
+          "authority": "MunicipalCorp",
+          "cameras": 2240,
+          "mode": "csv_bulk",
+          "seconds": 47.04,
+          "seconds_per_camera": 0.021
+        },
+        {
+          "scale": 8000,
+          "authority": "Highways",
+          "cameras": 1440,
+          "mode": "rest_api",
+          "seconds": 259.2,
+          "seconds_per_camera": 0.18
+        },
+        {
+          "scale": 8000,
+          "authority": "PrivateEstates",
+          "cameras": 800,
+          "mode": "web_form",
+          "seconds": 37600.0,
+          "seconds_per_camera": 47.0
+        },
+        {
+          "scale": 8000,
+          "authority": "Pilot",
+          "cameras": 160,
+          "mode": "web_form",
+          "seconds": 7520.0,
+          "seconds_per_camera": 47.0
+        },
+        {
+          "scale": 80000,
+          "total_cameras": 80000,
+          "total_seconds": 454968.0,
+          "total_hours": 126.38
+        },
+        {
+          "scale": 80000,
+          "authority": "StatePolice",
+          "cameras": 33600,
+          "mode": "csv_bulk",
+          "seconds": 705.6,
+          "seconds_per_camera": 0.021
+        },
+        {
+          "scale": 80000,
+          "authority": "MunicipalCorp",
+          "cameras": 22400,
+          "mode": "csv_bulk",
+          "seconds": 470.4,
+          "seconds_per_camera": 0.021
+        },
+        {
+          "scale": 80000,
+          "authority": "Highways",
+          "cameras": 14400,
+          "mode": "rest_api",
+          "seconds": 2592.0,
+          "seconds_per_camera": 0.18
+        },
+        {
+          "scale": 80000,
+          "authority": "PrivateEstates",
+          "cameras": 8000,
+          "mode": "web_form",
+          "seconds": 376000.0,
+          "seconds_per_camera": 47.0
+        },
+        {
+          "scale": 80000,
+          "authority": "Pilot",
+          "cameras": 1600,
+          "mode": "web_form",
+          "seconds": 75200.0,
+          "seconds_per_camera": 47.0
+        }
+      ],
+      "counterfactual": [
+        {
+          "scale": 800,
+          "all_web_form_hours": 10.444
+        },
+        {
+          "scale": 8000,
+          "all_web_form_hours": 104.444
+        },
+        {
+          "scale": 80000,
+          "all_web_form_hours": 1044.444
+        }
+      ]
+    },
+    {
+      "experiment": "E6.2_transport_negotiation",
+      "rows": [
+        {
+          "scale": 800,
+          "counts": {
+            "rtsp_tcp": 532,
+            "hls": 197,
+            "whep": 33,
+            "file": 36
+          },
+          "shares": {
+            "rtsp_tcp": 0.666,
+            "hls": 0.247,
+            "whep": 0.0414,
+            "file": 0.0456
+          },
+          "cameras_needing_decoder": 565,
+          "decoder_free_share": 0.2926
+        },
+        {
+          "scale": 8000,
+          "counts": {
+            "rtsp_tcp": 5328,
+            "hls": 1976,
+            "whep": 331,
+            "file": 364
+          },
+          "shares": {
+            "rtsp_tcp": 0.666,
+            "hls": 0.247,
+            "whep": 0.0414,
+            "file": 0.0456
+          },
+          "cameras_needing_decoder": 5659,
+          "decoder_free_share": 0.2926
+        },
+        {
+          "scale": 80000,
+          "counts": {
+            "rtsp_tcp": 53280,
+            "hls": 19760,
+            "whep": 3312,
+            "file": 3648
+          },
+          "shares": {
+            "rtsp_tcp": 0.666,
+            "hls": 0.247,
+            "whep": 0.0414,
+            "file": 0.0456
+          },
+          "cameras_needing_decoder": 56592,
+          "decoder_free_share": 0.2926
+        }
+      ]
+    },
+    {
+      "experiment": "E6.3_registry_and_audit_footprint",
+      "rows": [
+        {
+          "scale": 800,
+          "cameras": 800,
+          "days": 365,
+          "registry_bytes": 329600,
+          "audit_bytes": 588672000,
+          "audit_gb": 0.589,
+          "audit_per_camera_per_day": 12.0
+        },
+        {
+          "scale": 800,
+          "cameras": 800,
+          "days": 365,
+          "registry_bytes": 329600,
+          "audit_bytes": 5886720000,
+          "audit_gb": 5.887,
+          "audit_per_camera_per_day": 120.0
+        },
+        {
+          "scale": 800,
+          "cameras": 800,
+          "days": 365,
+          "registry_bytes": 329600,
+          "audit_bytes": 58867200000,
+          "audit_gb": 58.867,
+          "audit_per_camera_per_day": 1200.0
+        },
+        {
+          "scale": 8000,
+          "cameras": 8000,
+          "days": 365,
+          "registry_bytes": 3296000,
+          "audit_bytes": 5886720000,
+          "audit_gb": 5.887,
+          "audit_per_camera_per_day": 12.0
+        },
+        {
+          "scale": 8000,
+          "cameras": 8000,
+          "days": 365,
+          "registry_bytes": 3296000,
+          "audit_bytes": 58867200000,
+          "audit_gb": 58.867,
+          "audit_per_camera_per_day": 120.0
+        },
+        {
+          "scale": 8000,
+          "cameras": 8000,
+          "days": 365,
+          "registry_bytes": 3296000,
+          "audit_bytes": 588672000000,
+          "audit_gb": 588.672,
+          "audit_per_camera_per_day": 1200.0
+        },
+        {
+          "scale": 80000,
+          "cameras": 80000,
+          "days": 365,
+          "registry_bytes": 32960000,
+          "audit_bytes": 58867200000,
+          "audit_gb": 58.867,
+          "audit_per_camera_per_day": 12.0
+        },
+        {
+          "scale": 80000,
+          "cameras": 80000,
+          "days": 365,
+          "registry_bytes": 32960000,
+          "audit_bytes": 588672000000,
+          "audit_gb": 588.672,
+          "audit_per_camera_per_day": 120.0
+        },
+        {
+          "scale": 80000,
+          "cameras": 80000,
+          "days": 365,
+          "registry_bytes": 32960000,
+          "audit_bytes": 5886720000000,
+          "audit_gb": 5886.72,
+          "audit_per_camera_per_day": 1200.0
+        }
+      ]
+    },
+    {
+      "experiment": "E6.4_scale_to_coverage_interval",
+      "rows": [
+        {
+          "scale": 800,
+          "cameras_needing_decoder": 565,
+          "capacity": 4,
+          "mean_coverage_interval_s": 169.48435013262468,
+          "coverage_interval_minutes": 2.82,
+          "analytic_bound_s": 169.5
+        },
+        {
+          "scale": 800,
+          "cameras_needing_decoder": 565,
+          "capacity": 8,
+          "mean_coverage_interval_s": 84.7416445623339,
+          "coverage_interval_minutes": 1.41,
+          "analytic_bound_s": 84.75
+        },
+        {
+          "scale": 800,
+          "cameras_needing_decoder": 565,
+          "capacity": 16,
+          "mean_coverage_interval_s": 42.35013262599478,
+          "coverage_interval_minutes": 0.71,
+          "analytic_bound_s": 42.375
+        },
+        {
+          "scale": 800,
+          "cameras_needing_decoder": 565,
+          "capacity": 32,
+          "mean_coverage_interval_s": 21.13633952254644,
+          "coverage_interval_minutes": 0.35,
+          "analytic_bound_s": 21.1875
+        },
+        {
+          "scale": 8000,
+          "cameras_needing_decoder": 5659,
+          "capacity": 4,
+          "mean_coverage_interval_s": 1697.6774489884597,
+          "coverage_interval_minutes": 28.29,
+          "analytic_bound_s": 1697.7
+        },
+        {
+          "scale": 8000,
+          "cameras_needing_decoder": 5659,
+          "capacity": 8,
+          "mean_coverage_interval_s": 848.8236291390874,
+          "coverage_interval_minutes": 14.15,
+          "analytic_bound_s": 848.85
+        },
+        {
+          "scale": 8000,
+          "cameras_needing_decoder": 5659,
+          "capacity": 16,
+          "mean_coverage_interval_s": 424.3965763699023,
+          "coverage_interval_minutes": 7.07,
+          "analytic_bound_s": 424.425
+        },
+        {
+          "scale": 8000,
+          "cameras_needing_decoder": 5659,
+          "capacity": 32,
+          "mean_coverage_interval_s": 212.19733521574068,
+          "coverage_interval_minutes": 3.54,
+          "analytic_bound_s": 212.2125
+        },
+        {
+          "scale": 80000,
+          "cameras_needing_decoder": 56592,
+          "capacity": 4,
+          "mean_coverage_interval_s": 16977.57000741616,
+          "coverage_interval_minutes": 282.96,
+          "analytic_bound_s": 16977.6
+        },
+        {
+          "scale": 80000,
+          "cameras_needing_decoder": 56592,
+          "capacity": 8,
+          "mean_coverage_interval_s": 8488.788740461689,
+          "coverage_interval_minutes": 141.48,
+          "analytic_bound_s": 8488.8
+        },
+        {
+          "scale": 80000,
+          "cameras_needing_decoder": 56592,
+          "capacity": 16,
+          "mean_coverage_interval_s": 4172.384446565167,
+          "coverage_interval_minutes": 69.54,
+          "analytic_bound_s": 4244.4
+        },
+        {
+          "scale": 80000,
+          "cameras_needing_decoder": 56592,
+          "capacity": 32,
+          "mean_coverage_interval_s": 2122.1821590103714,
+          "coverage_interval_minutes": 35.37,
+          "analytic_bound_s": 2122.2
+        }
+      ]
+    }
+  ]
+}

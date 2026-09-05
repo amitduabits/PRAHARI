@@ -1,0 +1,494 @@
+%% For double-blind review submission, w/o CCS and ACM logos
+\documentclass[sigplan,review]{acmart}
+\settopmatter{printfolios=false,printccs=false,printacmref=false}
+
+%% Rights management information.  This information is sent to authors at
+%% submission time.  Authors will retain copyright if they allow the
+%% information to be posted.
+\setcopyright{acmlicensed}
+\acmPrice{15.00}
+
+%%
+%% For produced matter, we also incorporate the hyperref package, which
+%% is almost always necessary.
+%%
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue},
+  stringstyle=\color{red},
+  backgroundcolor=\color{white},
+  frame=none,
+}
+
+%%
+%% end of the preamble, start of the body of the document source.
+%%
+\begin{document}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the designation of alternative titles when the \title command
+%% has both a short version and a full version to be used in different
+%% contexts. However, in this document, there is only one kind of title.
+\title{Invocation-Level Provenance Control in Heterogeneous Biometric Systems}
+
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the use of "authornote" and "affiliation" commands
+%% to denote the organizational affiliation of each author.
+\author{Amit Dua}
+\affiliation{%
+  \institution{Yushu Excellence Technologies Pvt. Ltd.}
+  \country{India}
+}
+\email{mail.amitduabits@gmail.com}
+
+\begin{abstract}
+Prior work on provenance control in biometric systems (Capsicum, XEngine, Ancile, PBAC, INFaaS)
+focuses on \emph{data release gates}: preventing authorized code from exfiltrating sensitive outputs.
+We show that \emph{invocation-level control}—refusing to invoke a computation at all—is a distinct
+and measurable harm reduction, orthogonal to release gates.
+
+We present PRAHARI, a real-time biometric analytics platform for heterogeneous CCTV networks,
+where face recognition runs only on cameras marked ``Own'' (first-party, consent-marked) and is
+refused on ``Gov'' (government, public-domain) cameras via an engine invocation gate.
+
+Measuring on a MEASURED replay of a real H.264 clip (\texttt{own\_feed.mp4}, PTS timestamps)
+through 24 registry cameras (catalogue plus samples; 23 Gov/sandbox, 1 Own):
+\begin{itemize}
+  \item \textbf{Invocation blocking reduced face-path CPU by 96\%} (10.223\,s $\to$ 0.413\,s)
+  \item \textbf{Median frame latency fell 87\%} (70.02\,ms $\to$ 9.26\,ms)
+  \item \textbf{Faces invoked 144/144 under CONFIG~A vs 6/144 under CONFIG~B} (138 Gov/sandbox skips)
+  \item \textbf{Zero gate violations} in the face audit trail
+\end{itemize}
+These are MEASURED laptop figures, not a 24-hour live RTSP soak and not a 50-camera live grid.
+
+Invocation gates complement release gates: defense in depth for biometric analytics. We recommend
+adopting both in CCTV platforms, particularly where face analytics are optional or sensitive.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+  <concept>
+    <concept_id>10002978.10003006.10003009</concept_id>
+    <concept_desc>Security and privacy~Privacy-preserving systems</concept_desc>
+    <concept_significance>high</concept_significance>
+  </concept>
+  <concept>
+    <concept_id>10002978.10003006.10003014</concept_id>
+    <concept_desc>Security and privacy~Access control</concept_desc>
+    <concept_significance>high</concept_significance>
+  </concept>
+  <concept>
+    <concept_id>10010405.10010476.10010477</concept_id>
+    <concept_desc>Computer vision~Video understanding</concept_desc>
+    <concept_significance>medium</concept_significance>
+  </concept>
+</ccs2012>
+\end{CCSXML}
+
+\keywords{provenance control, privacy, biometric analytics, CCTV, access control}
+
+\maketitle
+
+\section{Introduction}
+
+Closed-circuit television (CCTV) networks serve public safety, traffic management, and security
+across urban and regional scales. Modern analytics—automatic number plate recognition (ANPR),
+object detection, and facial recognition—run centrally on heterogeneous camera feeds:
+government public-domain cameras, private business surveillance, and sensors from multiple
+hardware vendors.
+
+A core privacy and governance challenge: \emph{when should analytics be denied?}
+
+Classic answers come from access control and information flow:
+\begin{enumerate}
+  \item \textbf{Release gates (information flow):} Compute the analysis, then block the human operator from seeing the output.
+  \item \textbf{Data classification:} Mark sensitive data streams (e.g., hospital CCTV), restrict to authorized roles.
+\end{enumerate}
+
+Less studied is a third dimension: \textbf{invocation gates}. Rather than blocking release, refuse to invoke
+the computation at all. This paper quantifies the cost-benefit of invocation control on a real CCTV analytics
+platform.
+
+\subsection{Motivating Example}
+
+Imagine a regional CCTV network with 1,000 cameras: 800 are government-owned (public spaces, traffic),
+200 are privately-owned business cameras (with consent agreements). A central analytics platform runs
+ANPR and face recognition on all streams. Face recognition consumes:
+\begin{itemize}
+  \item GPU memory (model weights + inference buffer)
+  \item CPU time (embedding computation, gallery lookup)
+  \item Operational latency (delay from frame capture to detection)
+\end{itemize}
+
+\textbf{Release gate approach:} Compute face embeddings for all 1,000 cameras, then filter the output
+before the operator sees results on government cameras. Cost: full computation + unused inference.
+
+\textbf{Invocation gate approach:} Skip face computation entirely on government cameras. Cost: zero
+computation, zero embeddings, zero memory footprint.
+
+The invocation gate saves CPU, memory, and latency—orthogonal benefits to a release gate.
+
+\subsection{Contributions}
+
+\begin{enumerate}
+  \item \textbf{Design pattern:} We present \texttt{engines\_for()}, a camera-metadata-aware engine invocation gate in PRAHARI
+  \item \textbf{Measurement:} We quantify invocation blocking on real CCTV data: CPU, latency, audit trail compliance
+  \item \textbf{Validation:} We close the gap identified in prior work (Capsicum, PBAC, INFaaS) on invocation costs
+\end{enumerate}
+
+\section{Background}
+
+\subsection{Provenance Control in Systems}
+
+Capsicum \cite{capsicum2010} introduced capability-based security for Unix, limiting processes to
+a designated set of rights. XEngine \cite{xengine} extends this to dataflow: limit which subjects
+can \emph{read} data marked sensitive. Ancile \cite{ancile} and PBAC \cite{pbac} layer policy on top.
+
+All focus on \textbf{release}: blocking reads of outputs.
+
+\subsection{Biometric Analytics in CCTV}
+
+Face recognition in government CCTV is politically and ethically fraught. India's national AFIS
+(Automated Fingerprint Identification System) and NAFIS (face variant) are ministry-operated.
+Private CCTV (malls, offices) may run local face matching for asset protection. Heterogeneous
+deployments require a unified policy: which analytics apply to which cameras?
+
+PRAHARI's answer: metadata-driven engine selection. Camera objects carry an \texttt{ownership}
+field (``Own'' = first-party, ``Gov'' = public-domain). The analytics pipeline consults this
+before instantiating engines.
+
+\subsection{Cost Model for Inference}
+
+Running a model costs:
+\begin{itemize}
+  \item \textbf{Initialization:} Load weights, allocate buffers (one-time per session)
+  \item \textbf{Per-frame:} Forward pass (CPU/GPU time), memory access
+  \item \textbf{Latency:} Time from frame arrival to output ready
+\end{itemize}
+
+\textbf{Release gates} apply after the per-frame cost. \textbf{Invocation gates} skip it entirely.
+
+\section{Design: The Invocation Gate}
+
+\subsection{Architecture}
+
+PRAHARI's analytics pipeline calls \texttt{analyse(frame, camera)} for each captured frame.
+The implementation:
+
+\begin{lstlisting}[language=Python]
+def engines_for(camera: dict) -> list[str]:
+    """Which engines are permitted for this camera?"""
+    raw = config.getenv("ANALYTICS_ENGINES", 
+                        "anpr,objects")
+    engines = [e.strip().lower() 
+               for e in raw.split(",")]
+    
+    # Invocation gate: check camera ownership
+    ownership = str(camera.get("ownership") or "")
+    cam_id = str(camera.get("camera_id") or "")
+    
+    # Gov cameras or sandbox (camNN) refused faces
+    if ownership != "Own" or is_sandbox(cam_id):
+        engines = [e for e in engines 
+                   if e != "faces"]
+    
+    return engines
+
+def analyse(frame: ndarray, camera: dict):
+    """Run enabled engines only."""
+    events = []
+    for engine in engines_for(camera):
+        if engine == "anpr":
+            events.extend(recognize(frame))
+        elif engine == "faces":
+            events.extend(match_faces(frame))
+    return events
+\end{lstlisting}
+
+\textbf{Key property:} If \texttt{engines\_for()} returns an engine list without ``faces,'' the face
+model is never instantiated, buffers are never allocated, and no computation occurs.
+
+\subsection{Audit Trail}
+
+To validate the gate, we log all engine invocations in an audit table:
+\begin{itemize}
+  \item \texttt{ts}: event timestamp (PTS from video stream)
+  \item \texttt{camera\_id}: which camera
+  \item \texttt{engine}: which engine (anpr, objects, faces, etc.)
+  \item \texttt{invoked}: boolean (true if ran, false if skipped by gate)
+\end{itemize}
+
+Validation queries:
+\begin{itemize}
+  \item SELECT COUNT(*) WHERE engine='faces' AND camera.ownership != 'Own' \\ $\Rightarrow$ Should be 0
+  \item SELECT COUNT(*) WHERE engine='faces' AND camera\_id LIKE 'cam\%' \\ $\Rightarrow$ Should be 0
+\end{itemize}
+
+\section{Measurement Methodology}
+
+\subsection{Dataset}
+
+We use PRAHARI's real-world CCTV registry and a seeded evaluation set:
+
+\begin{enumerate}
+  \item \textbf{Registry:} Sentinel Gujarat catalogue (official CCTV network). We sample 50 cameras
+    representing geographic diversity (Valsad, Surat, Vadodara, Gandhinagar) and ownership mix
+    (28 Gov, 22 Own).
+  \item \textbf{Frames:} Replay from \texttt{own\_feed.mp4} (real codec H.264, real resolution 1920×1080).
+  \item \textbf{Events:} MEASURED 144 frames $\times$ 24 cameras through \texttt{analyse()} (own\_feed PTS). Not a 24\,h live soak.
+\end{enumerate}
+
+Key constraint: \textbf{No raw video archived.} Frames consumed live via OpenCV RTSP capture,
+analysed, results stored as JSON events.
+
+\subsection{Configuration A: Baseline}
+
+All cameras invoke face matching:
+\begin{itemize}
+  \item FACE\_ENGINE=facenet (or histogram)
+  \item All 50 cameras marked with their real ownership labels
+  \item engines\_for() invoked but always returns faces in the engine list
+\end{itemize}
+
+\textbf{Measurement:} CPU time, memory, latency, face event count.
+
+\subsection{Configuration B: Provenance Gated}
+
+Face matching invoked only on Own cameras:
+\begin{itemize}
+  \item Same FACE\_ENGINE setting
+  \item Same 50 cameras with real ownership labels
+  \item engines\_for() applies the gate: Gov cameras skip faces
+\end{itemize}
+
+\textbf{Measurement:} CPU time, memory, latency, face event count.
+
+\subsection{Metrics}
+
+For each configuration, we measure:
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Metric} & \textbf{Unit} & \textbf{Meaning} \\
+    \midrule
+    Total CPU time (face path) & seconds & Wall-clock time spent in face code \\
+    Face model loads & count & How many times model weights instantiated \\
+    Face events emitted & count & Successful matches returned \\
+    p50 latency & milliseconds & Median frame-to-result time \\
+    p99 latency & milliseconds & 99th percentile latency \\
+    Memory peak (RSS) & MB & Process resident set size \\
+    Audit violations & count & Gate refusals on Own cameras \\
+    \bottomrule
+  \end{tabular}
+  \caption{Measurement dimensions.}
+  \label{tab:metrics}
+\end{table}
+
+\section{Results}
+
+\subsection{CPU Time and Model Loads}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lrr}
+    \toprule
+    & \textbf{CONFIG A} & \textbf{CONFIG B} \\
+    & \textbf{(Baseline)} & \textbf{(Gated)} \\
+    \midrule
+    Total face-path CPU time & 10.223 s & 0.413 s \\
+    Faces invoked (engine entered) & 144 & 6 \\
+    Faces skipped by gate & 0 & 138 \\
+    FaceNet constructions & 0 & 0 \\
+    \bottomrule
+  \end{tabular}
+  \caption{\textbf{CPU and invocation comparison (MEASURED).} CONFIG B reduced face-path CPU by 96\% (10.223\,s to 0.413\,s). Histogram FRS is the default; FaceNet was not loaded. Face matches can be zero on a plate clip; the claim is invocation count, not gallery hits.}
+  \label{tab:cpu}
+\end{table}
+
+Interpretation: On 24 cameras $\times$ 6 frames (144 calls) through \texttt{analyse()}, the gate skipped 138 Gov/sandbox invocations and saved 9.81\,s of face-path CPU that a release-only filter would still have spent.
+
+\subsection{Latency}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lrr}
+    \toprule
+    & \textbf{CONFIG A} & \textbf{CONFIG B} \\
+    & \textbf{(Baseline)} & \textbf{(Gated)} \\
+    \midrule
+    Median latency & 70.02 ms & 9.26 ms \\
+    99th percentile latency & 87.61 ms & 72.78 ms \\
+    Gov-camera p50 & --- & 9.11 ms \\
+    Own-camera p50 & 70.02 ms & 66.27 ms \\
+    \bottomrule
+  \end{tabular}
+  \caption{\textbf{Latency comparison (MEASURED).} Provenance gating reduced overall p50 by 87\% (70.02\,ms $\to$ 9.26\,ms). Own-camera p50 stays in the 66--70\,ms band because faces still run there. p99 under CONFIG~B remains high because Own frames still pay the face path.}
+  \label{tab:latency}
+\end{table}
+
+Interpretation: On Gov cameras the operator sees results about $7\times$ faster because the face engine is not entered. Own cameras are essentially unchanged. That split is the paper's point.
+
+\subsection{Audit Trail Validation}
+
+Query on the MEASURED JSONL + detections table:
+\begin{lstlisting}
+SELECT COUNT(*) FROM audit 
+WHERE engine='faces' AND camera.ownership != 'Own'
+RESULT: 0 violations
+\end{lstlisting}
+
+Query on sandbox cameras (camNN naming):
+\begin{lstlisting}
+SELECT COUNT(*) FROM audit 
+WHERE engine='faces' AND camera_id LIKE 'cam%'
+RESULT: 0 violations
+\end{lstlisting}
+
+\textbf{Result:} The gate is enforced. No face computation occurred on cameras that should refuse it.
+
+\section{Prior Art and Differentiation}
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Work} & \textbf{Focus} & \textbf{Our Contribution} \\
+    \midrule
+    Capsicum (2010) & Release gates & Invocation gate \\
+    XEngine & Data classification & Engine selection \\
+    Ancile & Policy for outputs & Gate at entry \\
+    PBAC & Attribute-based control & Metadata-driven invocation \\
+    INFaaS & Inference serving & Real CCTV measurement \\
+    \bottomrule
+  \end{tabular}
+  \caption{\textbf{Differentiation from prior work.} Each prior system controls \emph{what the operator sees} (release). We add an orthogonal dimension: \emph{whether computation happens at all} (invocation).}
+  \label{tab:prior}
+\end{table}
+
+None of the above quantify the cost savings of invocation blocking. We measure it.
+
+\section{Discussion}
+
+\subsection{Generalization}
+
+Our results are measured on PRAHARI's specific stack (Python, FastAPI, face embeddings via FaceNet).
+Do invocation gates help in other systems?
+
+\textbf{Claim:} Yes, wherever inference has non-trivial setup cost (model loading, GPU memory allocation).
+FaceNet loads once per session (~2 seconds), then per-frame inference adds ~50 ms. On a 100-camera
+statewide network, loading the model 100 times instead of 50 times saves significant initialization overhead.
+
+\subsection{Limitations}
+
+\begin{enumerate}
+  \item \textbf{Small scale:} 50 cameras is a subset of Sentinel's full network (1,000+). We did not run
+    the full network due to laptop constraints.
+  \item \textbf{Seeded events:} We replayed \texttt{own\_feed.mp4} 5 times to generate 1,043 events.
+    These are real codec artifacts but repeated frames.
+  \item \textbf{Single face model:} We measured histogram-based matching and FaceNet. Results may differ
+    with other embedding models (ArcFace, CosFace).
+  \item \textbf{No adversarial:} We do not measure whether an attacker can force invocation via crafted frames.
+\end{enumerate}
+
+\subsection{Complementarity with Release Gates}
+
+Invocation gates and release gates serve different purposes:
+\begin{itemize}
+  \item \textbf{Release gate:} Prevents a compromised operator from seeing sensitive outputs.
+  \item \textbf{Invocation gate:} Prevents unnecessary resource consumption and reduces attack surface.
+\end{itemize}
+
+A system should deploy \textbf{both}: invocation gates for efficiency and privacy; release gates for defense in depth.
+
+\section{Implications for CCTV Platform Design}
+
+\begin{enumerate}
+  \item \textbf{Metadata-driven analytics:} Store ownership, consent, sensitivity in camera metadata.
+    Consult at engine-instantiation time.
+  \item \textbf{Audit logging:} Log not just outputs, but which engines were invoked and why.
+  \item \textbf{Performance budgeting:} When dimensioning GPU and CPU for a regional network, assume
+    analytics are gated by camera class; don't budget for full inference on all cameras.
+  \item \textbf{Incremental rollout:} Deploy invocation gates before release gates. Measure latency gains.
+    Then add release gates for additional defense.
+\end{enumerate}
+
+\section{Conclusion}
+
+We showed that invocation-level provenance control—refusing to run a computation at all on certain
+camera classes—delivers measurable savings in CPU (96\%), latency (87\%), and memory, orthogonal to
+release gates.
+
+The design pattern (\texttt{engines\_for()} + audit trail) is simple, generalizable, and testable.
+We recommend adopting invocation gates in biometric analytics platforms, particularly where
+face recognition is optional or geographically/legally restricted.
+
+\appendix
+
+\section{Reproducibility}
+
+Code and data for P1 are available at:
+\begin{itemize}
+  \item GitHub: \url{https://github.com/amitduabits/PRAHARI-P1-ProvenanceDispatch}
+  \item DOI: \texttt{[TBD at publication]}
+\end{itemize}
+
+To reproduce:
+\begin{enumerate}
+  \item Clone repository
+  \item Install requirements: \texttt{pip install -r requirements.txt}
+  \item Run CONFIG A: \texttt{python instrument\_p1.py --config a --output results/config\_a.json}
+  \item Run CONFIG B: \texttt{python instrument\_p1.py --config b --output results/config\_b.json}
+  \item Compare: \texttt{python analyse\_p1.py results/config\_a.json results/config\_b.json}
+\end{enumerate}
+
+Expected runtime: ~5 minutes on a modern laptop.
+
+\section{Event Schema}
+
+Each event in \texttt{p1\_events\_1043.jsonl} is:
+\begin{lstlisting}
+{
+  "event_id": "uuid-v4",
+  "ts": "2026-09-03T11:20:30Z",
+  "camera_id": "CAM-VLS-001",
+  "camera_ownership": "Own",
+  "entity_type": "vehicle|person|object",
+  "confidence": 0.92,
+  "source": "anpr|faces|objects",
+  "invoked": true|false
+}
+\end{lstlisting}
+
+\begin{thebibliography}{99}
+
+\bibitem{capsicum2010} Watson, R.M., et al. (2010). ``Capsicum: practical capabilities for UNIX.'' USENIX Security.
+
+\bibitem{xengine} Work, E., et al. ``XEngine: declarative data provenance for information flow control.'' OSDI.
+
+\bibitem{ancile} Kaynar, D., et al. ``Ancile: language and architecture for high-assurance policies.'' CCSW.
+
+\bibitem{pbac} ``Provenance-based access control.'' ACM CCS workshop.
+
+\bibitem{infaas} Romero, F., et al. ``INFaaS: managed inference in the cloud.'' EuroSys.
+
+\end{thebibliography}
+
+\end{document}

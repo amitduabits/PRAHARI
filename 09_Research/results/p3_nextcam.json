@@ -1,0 +1,563 @@
+{
+  "paper": "P3 Implicit motion models: next-camera prediction without road networks",
+  "results": [
+    {
+      "experiment": "E3.1_accuracy_by_topology",
+      "cameras": 400,
+      "rows": [
+        {
+          "method": "transition_frequency",
+          "n_queries": 10028,
+          "top1": 0.7208815317112086,
+          "top3": 0.9247108097327483,
+          "topology": "grid",
+          "train_trips": 2800
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 10028,
+          "top1": 0.7208815317112086,
+          "top3": 0.9260071798962903,
+          "topology": "grid",
+          "train_trips": 2800
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 10028,
+          "top1": 0.2747307538891105,
+          "top3": 0.4813522138013562,
+          "topology": "grid",
+          "train_trips": 2800
+        },
+        {
+          "method": "constant_velocity",
+          "n_queries": 10028,
+          "top1": 0.21489828480255285,
+          "top3": 0.3293777423214998,
+          "topology": "grid",
+          "train_trips": 2800
+        },
+        {
+          "method": "graph_neighbour_oracle",
+          "n_queries": 10028,
+          "top1": 0.2747307538891105,
+          "top3": 0.7869964100518548,
+          "topology": "grid",
+          "train_trips": 2800
+        },
+        {
+          "method": "transition_frequency",
+          "n_queries": 10248,
+          "top1": 0.724824355971897,
+          "top3": 0.90564012490242,
+          "topology": "smallworld",
+          "train_trips": 2800
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 10248,
+          "top1": 0.724824355971897,
+          "top3": 0.9053473848555815,
+          "topology": "smallworld",
+          "train_trips": 2800
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 10248,
+          "top1": 0.2147736143637783,
+          "top3": 0.4378415300546448,
+          "topology": "smallworld",
+          "train_trips": 2800
+        },
+        {
+          "method": "constant_velocity",
+          "n_queries": 10248,
+          "top1": 0.1555425448868072,
+          "top3": 0.2510733801717408,
+          "topology": "smallworld",
+          "train_trips": 2800
+        },
+        {
+          "method": "graph_neighbour_oracle",
+          "n_queries": 10248,
+          "top1": 0.2677595628415301,
+          "top3": 0.7459992193598751,
+          "topology": "smallworld",
+          "train_trips": 2800
+        },
+        {
+          "method": "transition_frequency",
+          "n_queries": 10128,
+          "top1": 0.7379541864139021,
+          "top3": 0.9097551342812006,
+          "topology": "irregular",
+          "train_trips": 2800
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 10128,
+          "top1": 0.7375592417061612,
+          "top3": 0.9088665086887836,
+          "topology": "irregular",
+          "train_trips": 2800
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 10128,
+          "top1": 0.10475908372827804,
+          "top3": 0.22176145339652448,
+          "topology": "irregular",
+          "train_trips": 2800
+        },
+        {
+          "method": "constant_velocity",
+          "n_queries": 10128,
+          "top1": 0.049861769352290676,
+          "top3": 0.08827014218009478,
+          "topology": "irregular",
+          "train_trips": 2800
+        },
+        {
+          "method": "graph_neighbour_oracle",
+          "n_queries": 10128,
+          "top1": 0.3068720379146919,
+          "top3": 0.7723143759873617,
+          "topology": "irregular",
+          "train_trips": 2800
+        }
+      ]
+    },
+    {
+      "experiment": "E3.2_history_sparsity",
+      "rows": [
+        {
+          "method": "transition_frequency",
+          "n_queries": 8487,
+          "top1": 0.4286555909037351,
+          "top3": 0.6552374219394368,
+          "topology": "grid",
+          "train_trips": 50
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 8487,
+          "top1": 0.30375868976081066,
+          "top3": 0.4559915164369035,
+          "topology": "grid",
+          "train_trips": 50
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 8487,
+          "top1": 0.2691174737834335,
+          "top3": 0.4723695063037587,
+          "topology": "grid",
+          "train_trips": 50
+        },
+        {
+          "method": "transition_frequency",
+          "n_queries": 8487,
+          "top1": 0.6290797690585601,
+          "top3": 0.8644986449864499,
+          "topology": "grid",
+          "train_trips": 200
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 8487,
+          "top1": 0.5920820077765995,
+          "top3": 0.7767173323907152,
+          "topology": "grid",
+          "train_trips": 200
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 8487,
+          "top1": 0.2691174737834335,
+          "top3": 0.4723695063037587,
+          "topology": "grid",
+          "train_trips": 200
+        },
+        {
+          "method": "transition_frequency",
+          "n_queries": 8487,
+          "top1": 0.7133262636974196,
+          "top3": 0.9115117238128903,
+          "topology": "grid",
+          "train_trips": 800
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 8487,
+          "top1": 0.711558854718982,
+          "top3": 0.8969011429244728,
+          "topology": "grid",
+          "train_trips": 800
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 8487,
+          "top1": 0.2691174737834335,
+          "top3": 0.4723695063037587,
+          "topology": "grid",
+          "train_trips": 800
+        },
+        {
+          "method": "transition_frequency",
+          "n_queries": 8487,
+          "top1": 0.7182750088370449,
+          "top3": 0.9190526687875574,
+          "topology": "grid",
+          "train_trips": 2000
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 8487,
+          "top1": 0.7183928361022741,
+          "top3": 0.9179922234004949,
+          "topology": "grid",
+          "train_trips": 2000
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 8487,
+          "top1": 0.2691174737834335,
+          "top3": 0.4723695063037587,
+          "topology": "grid",
+          "train_trips": 2000
+        },
+        {
+          "method": "transition_frequency",
+          "n_queries": 8487,
+          "top1": 0.7187463178979616,
+          "top3": 0.9177565688700365,
+          "topology": "grid",
+          "train_trips": 5000
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 8487,
+          "top1": 0.7187463178979616,
+          "top3": 0.9178743961352657,
+          "topology": "grid",
+          "train_trips": 5000
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 8487,
+          "top1": 0.2691174737834335,
+          "top3": 0.4723695063037587,
+          "topology": "grid",
+          "train_trips": 5000
+        },
+        {
+          "method": "transition_frequency",
+          "n_queries": 8574,
+          "top1": 0.46337765337065545,
+          "top3": 0.5987870305574994,
+          "topology": "irregular",
+          "train_trips": 50
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 8574,
+          "top1": 0.45684627944949846,
+          "top3": 0.5374387683694891,
+          "topology": "irregular",
+          "train_trips": 50
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 8574,
+          "top1": 0.09832050384884534,
+          "top3": 0.21425239094938187,
+          "topology": "irregular",
+          "train_trips": 50
+        },
+        {
+          "method": "transition_frequency",
+          "n_queries": 8574,
+          "top1": 0.6606018194541637,
+          "top3": 0.8199206904595288,
+          "topology": "irregular",
+          "train_trips": 200
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 8574,
+          "top1": 0.6537205505015162,
+          "top3": 0.7988103568929321,
+          "topology": "irregular",
+          "train_trips": 200
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 8574,
+          "top1": 0.09832050384884534,
+          "top3": 0.21425239094938187,
+          "topology": "irregular",
+          "train_trips": 200
+        },
+        {
+          "method": "transition_frequency",
+          "n_queries": 8574,
+          "top1": 0.7337298810356893,
+          "top3": 0.8951481222299976,
+          "topology": "irregular",
+          "train_trips": 800
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 8574,
+          "top1": 0.7319804058782365,
+          "top3": 0.890716118497784,
+          "topology": "irregular",
+          "train_trips": 800
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 8574,
+          "top1": 0.09832050384884534,
+          "top3": 0.21425239094938187,
+          "topology": "irregular",
+          "train_trips": 800
+        },
+        {
+          "method": "transition_frequency",
+          "n_queries": 8574,
+          "top1": 0.7421273617914625,
+          "top3": 0.9084441334266387,
+          "topology": "irregular",
+          "train_trips": 2000
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 8574,
+          "top1": 0.7420107301142991,
+          "top3": 0.9078609750408211,
+          "topology": "irregular",
+          "train_trips": 2000
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 8574,
+          "top1": 0.09832050384884534,
+          "top3": 0.21425239094938187,
+          "topology": "irregular",
+          "train_trips": 2000
+        },
+        {
+          "method": "transition_frequency",
+          "n_queries": 8574,
+          "top1": 0.7421273617914625,
+          "top3": 0.9145089806391415,
+          "topology": "irregular",
+          "train_trips": 5000
+        },
+        {
+          "method": "markov_backoff",
+          "n_queries": 8574,
+          "top1": 0.7421273617914625,
+          "top3": 0.9135759272218335,
+          "topology": "irregular",
+          "train_trips": 5000
+        },
+        {
+          "method": "distance_only",
+          "n_queries": 8574,
+          "top1": 0.09832050384884534,
+          "top3": 0.21425239094938187,
+          "topology": "irregular",
+          "train_trips": 5000
+        }
+      ]
+    },
+    {
+      "experiment": "E3.3_gis_fallback_share",
+      "rows": [
+        {
+          "topology": "grid",
+          "train_trips": 50,
+          "top1": 0.4286555909037351,
+          "top3": 0.6552374219394368,
+          "gis_fallback_share": 0.48014610580888417,
+          "cameras_with_history": 170,
+          "cameras": 400
+        },
+        {
+          "topology": "grid",
+          "train_trips": 200,
+          "top1": 0.6290797690585601,
+          "top3": 0.8644986449864499,
+          "gis_fallback_share": 0.05985625073642041,
+          "cameras_with_history": 359,
+          "cameras": 400
+        },
+        {
+          "topology": "grid",
+          "train_trips": 800,
+          "top1": 0.7133262636974196,
+          "top3": 0.9115117238128903,
+          "gis_fallback_share": 0.0012960999175209143,
+          "cameras_with_history": 399,
+          "cameras": 400
+        },
+        {
+          "topology": "grid",
+          "train_trips": 2000,
+          "top1": 0.7182750088370449,
+          "top3": 0.9190526687875574,
+          "gis_fallback_share": 0.0,
+          "cameras_with_history": 400,
+          "cameras": 400
+        },
+        {
+          "topology": "grid",
+          "train_trips": 5000,
+          "top1": 0.7187463178979616,
+          "top3": 0.9177565688700365,
+          "gis_fallback_share": 0.0,
+          "cameras_with_history": 400,
+          "cameras": 400
+        },
+        {
+          "topology": "smallworld",
+          "train_trips": 50,
+          "top1": 0.46472836789065214,
+          "top3": 0.6748523109000347,
+          "gis_fallback_share": 0.32155681686551607,
+          "cameras_with_history": 203,
+          "cameras": 400
+        },
+        {
+          "topology": "smallworld",
+          "train_trips": 200,
+          "top1": 0.646009498436233,
+          "top3": 0.8425807946252751,
+          "gis_fallback_share": 0.04401714351905479,
+          "cameras_with_history": 358,
+          "cameras": 400
+        },
+        {
+          "topology": "smallworld",
+          "train_trips": 800,
+          "top1": 0.7207228078304182,
+          "top3": 0.8956330360245569,
+          "gis_fallback_share": 0.00023166917641607784,
+          "cameras_with_history": 399,
+          "cameras": 400
+        },
+        {
+          "topology": "smallworld",
+          "train_trips": 2000,
+          "top1": 0.7257036951233639,
+          "top3": 0.9038572917873277,
+          "gis_fallback_share": 0.0,
+          "cameras_with_history": 400,
+          "cameras": 400
+        },
+        {
+          "topology": "smallworld",
+          "train_trips": 5000,
+          "top1": 0.7266303718290281,
+          "top3": 0.904783968492992,
+          "gis_fallback_share": 0.0,
+          "cameras_with_history": 400,
+          "cameras": 400
+        },
+        {
+          "topology": "irregular",
+          "train_trips": 50,
+          "top1": 0.46337765337065545,
+          "top3": 0.5987870305574994,
+          "gis_fallback_share": 0.3009097270818754,
+          "cameras_with_history": 207,
+          "cameras": 400
+        },
+        {
+          "topology": "irregular",
+          "train_trips": 200,
+          "top1": 0.6606018194541637,
+          "top3": 0.8199206904595288,
+          "gis_fallback_share": 0.04210403545602986,
+          "cameras_with_history": 356,
+          "cameras": 400
+        },
+        {
+          "topology": "irregular",
+          "train_trips": 800,
+          "top1": 0.7337298810356893,
+          "top3": 0.8951481222299976,
+          "gis_fallback_share": 0.000583158385817588,
+          "cameras_with_history": 399,
+          "cameras": 400
+        },
+        {
+          "topology": "irregular",
+          "train_trips": 2000,
+          "top1": 0.7421273617914625,
+          "top3": 0.9084441334266387,
+          "gis_fallback_share": 0.0,
+          "cameras_with_history": 400,
+          "cameras": 400
+        },
+        {
+          "topology": "irregular",
+          "train_trips": 5000,
+          "top1": 0.7421273617914625,
+          "top3": 0.9145089806391415,
+          "gis_fallback_share": 0.0,
+          "cameras_with_history": 400,
+          "cameras": 400
+        }
+      ]
+    },
+    {
+      "experiment": "E3.4_collapse_window_sensitivity",
+      "rows": [
+        {
+          "collapse_window_s": 0,
+          "top1": 0.7421273617914625,
+          "top3": 0.9145089806391415,
+          "observations_merged": 0,
+          "distinct_transitions": 1562
+        },
+        {
+          "collapse_window_s": 30,
+          "top1": 0.7421273617914625,
+          "top3": 0.9145089806391415,
+          "observations_merged": 0,
+          "distinct_transitions": 1562
+        },
+        {
+          "collapse_window_s": 60,
+          "top1": 0.7421273617914625,
+          "top3": 0.9145089806391415,
+          "observations_merged": 0,
+          "distinct_transitions": 1562
+        },
+        {
+          "collapse_window_s": 120,
+          "top1": 0.7421273617914625,
+          "top3": 0.914159085607651,
+          "observations_merged": 194,
+          "distinct_transitions": 1611
+        },
+        {
+          "collapse_window_s": 240,
+          "top1": 0.6666666666666666,
+          "top3": 0.8546769302542571,
+          "observations_merged": 5362,
+          "distinct_transitions": 1957
+        },
+        {
+          "collapse_window_s": 600,
+          "top1": 0.6049685094471658,
+          "top3": 0.7623046419407511,
+          "observations_merged": 9207,
+          "distinct_transitions": 2182
+        }
+      ]
+    }
+  ]
+}

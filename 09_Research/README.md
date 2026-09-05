@@ -1,9 +1,16 @@
 # PRAHARI Research Programme: reference implementations and experiments
 
-Runnable code for the six papers in `Research papers/PRAHARI_Research_Strategy.md`.
-Each paper has a reference implementation of its method, at least two baselines,
-an experiment script that writes a results JSON, and a figure. Everything runs on
-CPU in about a minute, with fixed seeds, so a reviewer can reproduce every number.
+**Read `STATUS.md` first.** The literature review in `../Research papers/ACTION_PLAN.md`
+re-scoped the programme: **P1 and P4 are Tier A**; P3 and P6 are Tier B (need external
+data); P2 and P5 are workshop/hold. This is not six novel-mechanism papers.
+
+Runnable code for all six. Each paper has a reference implementation, at least two
+baselines, an experiment script that writes a results JSON, and a figure. Synthetic
+experiments run on CPU in about a minute, with fixed seeds.
+
+Headline P1/P4 numbers in `P1_main.tex` / `P4_main.tex` come from
+`results/real/` (production `analyse()` / `StreamSession`). The `instrument_p1.py`
+and `instrument_p4.py` files here are sleep() mocks and must not be quoted.
 
 ## Layout
 
