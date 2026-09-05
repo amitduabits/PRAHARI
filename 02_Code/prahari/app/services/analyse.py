@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import re
 import uuid
 from typing import Any
 
@@ -12,10 +11,11 @@ import numpy as np
 from app import config
 from app.services import matcher
 from app.services.anpr import recognize
+from app.services.provenance import CAM_RE, faces_allowed
 
 log = logging.getLogger("prahari.analyse")
 
-_CAM_RE = re.compile(r"^cam\d+", re.I)
+_CAM_RE = CAM_RE
 
 
 def engines_for(camera: dict) -> list[str]:
@@ -23,7 +23,7 @@ def engines_for(camera: dict) -> list[str]:
     engines = [e.strip().lower() for e in raw.split(",") if e.strip()]
     cam_id = str(camera.get("camera_id") or "")
     ownership = str(camera.get("ownership") or "")
-    if ownership != "Own" or _CAM_RE.match(cam_id):
+    if not faces_allowed(camera):
         engines = [e for e in engines if e != "faces"]
         log.info("frs_refused camera_id=%s ownership=%s", cam_id, ownership)
     return engines

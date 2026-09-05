@@ -158,11 +158,18 @@ def _try_write_embedding(path: Path, crop_bgr: np.ndarray) -> None:
         log.warning("facenet enroll embedding skipped: %s", exc)
 
 
-def enroll(gallery_id: str, images_bgr: list[np.ndarray]) -> dict[str, Any]:
+def enroll(
+    gallery_id: str,
+    images_bgr: list[np.ndarray],
+    allow_facenet: bool | None = None,
+) -> dict[str, Any]:
     dest = config.face_dir() / gallery_id
     dest.mkdir(parents=True, exist_ok=True)
     n = 0
-    want_facenet = _engine() == "facenet"
+    if allow_facenet is None:
+        want_facenet = _engine() == "facenet"
+    else:
+        want_facenet = bool(allow_facenet) and _engine() == "facenet"
     for img in images_bgr:
         if img is None:
             continue

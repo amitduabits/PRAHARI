@@ -1,0 +1,66 @@
+{
+  "label": "MEASURED",
+  "utc": "2026-09-05T06:28:20Z",
+  "frames_per_camera": 6,
+  "A_baseline": {
+    "config": "A_baseline",
+    "cameras_measured": 24,
+    "frames_total": 144,
+    "face_events_total": 0,
+    "face_events_blocked": 0,
+    "faces_invoked": 144,
+    "faces_skipped": 0,
+    "engines_invoked": {
+      "anpr": 144,
+      "objects": 144,
+      "faces": 144
+    },
+    "cpu_face_ms_total": 10223.393,
+    "model_load_count": 0,
+    "p50_latency_ms": 70.02,
+    "p99_latency_ms": 87.613,
+    "gov_p50_latency_ms": 0.0,
+    "gov_p99_latency_ms": 0.0,
+    "own_p50_latency_ms": 70.02,
+    "inference_distribution": {},
+    "rss_mb": 0.0,
+    "gpu_memory_mb": 0.0
+  },
+  "B_provenance_gated": {
+    "config": "B_provenance_gated",
+    "cameras_measured": 24,
+    "frames_total": 144,
+    "face_events_total": 0,
+    "face_events_blocked": 138,
+    "faces_invoked": 6,
+    "faces_skipped": 138,
+    "engines_invoked": {
+      "anpr": 144,
+      "objects": 144,
+      "faces": 6
+    },
+    "cpu_face_ms_total": 413.208,
+    "model_load_count": 0,
+    "p50_latency_ms": 9.264,
+    "p99_latency_ms": 72.776,
+    "gov_p50_latency_ms": 9.111,
+    "gov_p99_latency_ms": 13.456,
+    "own_p50_latency_ms": 66.265,
+    "inference_distribution": {},
+    "rss_mb": 0.0,
+    "gpu_memory_mb": 0.0
+  },
+  "diff": {
+    "face_events_blocked": 138,
+    "faces_invoked_A": 144,
+    "faces_invoked_B": 6,
+    "cpu_face_ms_saved": 9810.185,
+    "model_loads_A": 0,
+    "model_loads_B": 0,
+    "gov_p50_latency_ms_A": 0.0,
+    "gov_p50_latency_ms_B": 9.111,
+    "p50_latency_ms_A": 70.02,
+    "p50_latency_ms_B": 9.264
+  },
+  "notes": "CONFIG A rewrites every camera to Own so faces would be invoked. CONFIG B uses the real registry (Gov / camNN refuse). Same pixels (own_feed PTS). FaceNet loads only if FACE_ENGINE=facenet and extras exist; default histogram still exercises the invocation gate."
+}

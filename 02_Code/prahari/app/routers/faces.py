@@ -8,6 +8,7 @@ from app import config, store
 from app.auth import User, assert_write, require_user
 from app.services import faces as faces_mod
 from app.services import matcher
+from app.services.provenance import faces_allowed, refuse_reason
 
 router = APIRouter()
 
@@ -36,11 +37,48 @@ def list_gallery(user: User = Depends(require_user)) -> list[dict]:
 async def enroll_face(
     gallery_id: str = Form(...),
     name: str = Form(""),
+    camera_id: str = Form(""),
     files: list[UploadFile] = File(default=[]),
     file: UploadFile | None = File(default=None),
     user: User = Depends(require_user),
 ) -> dict:
     assert_write(user)
+    cam_id = (camera_id or "").strip()
+    camera: dict = {}
+    allow_facenet = False
+    if cam_id:
+        camera = store.get_camera(cam_id) or {}
+        if not camera:
+            store.audit(
+                user.username,
+                "face_enroll",
+                f"camera_id={cam_id} action=enroll gate_result=blocked reason=unknown_camera",
+            )
+            raise HTTPException(status_code=404, detail="camera not found")
+        if not faces_allowed(camera):
+            reason = refuse_reason(camera)
+            store.audit(
+                user.username,
+                "face_enroll",
+                f"camera_id={cam_id} action=enroll gate_result=blocked reason={reason}",
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="FRS enroll refused: Own cameras only, never sandbox camNN",
+            )
+        allow_facenet = True
+        store.audit(
+            user.username,
+            "face_enroll",
+            f"camera_id={cam_id} action=enroll gate_result=passed",
+        )
+    else:
+        # Desk enroll with no camera still writes crops. It must not construct FaceNet.
+        store.audit(
+            user.username,
+            "face_enroll",
+            "camera_id= action=enroll gate_result=passed allow_facenet=0",
+        )
     uploads = list(files)
     if file is not None:
         uploads.append(file)
@@ -55,7 +93,7 @@ async def enroll_face(
             images.append(frame)
     if not images:
         raise HTTPException(status_code=400, detail="could not decode image")
-    result = faces_mod.enroll(gallery_id, images)
+    result = faces_mod.enroll(gallery_id, images, allow_facenet=allow_facenet)
     existing = store.get_watchlist_item(gallery_id) or {}
     store.upsert_watchlist(
         {
@@ -71,5 +109,4 @@ async def enroll_face(
         }
     )
     matcher.reload()
-    store.audit(user.username, "face_enroll", gallery_id)
-    return {**result, "name": name}
+    return {**result, "name": name, "camera_id": cam_id, "allow_facenet": allow_facenet}

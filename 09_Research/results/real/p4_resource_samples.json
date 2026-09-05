@@ -1,0 +1,8 @@
+{
+  "label": "MEASURED",
+  "utc": "2026-09-05T06:28:28Z",
+  "samples": 8,
+  "log": "D:\\1_Projects\\Research_Ongoing\\PRAHARI\\09_Research\\results\\real\\p4_resource_log.jsonl",
+  "p99_latency_ms": 74.002,
+  "rss_mb": 0.0
+}

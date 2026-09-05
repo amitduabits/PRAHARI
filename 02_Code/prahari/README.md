@@ -53,6 +53,14 @@ HLS on the TLS host needs the access cookie and a browser User-Agent. If 8554 is
 
 WHEP preview is a documented link-out, not a full WebRTC stack in this tree.
 
+## P1 / P4 real-data instrumentation
+
+```powershell
+.\.venv\Scripts\python.exe scripts\instrument.py all --seconds 8 --frames 6 --k-frames 6 --seed-n 24 --k 1 2 4
+```
+
+Writes `09_Research/results/real/` (registry, JSONL events, invocation A vs B, audit CSV, K-frontier, retrial note). Does not archive raw video. Live RTSP needs `SENTINEL_HOST`. A 24h MEASURED capture is `--hours 24`.
+
 ## Tests
 
 ```powershell
