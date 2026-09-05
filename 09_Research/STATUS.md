@@ -45,8 +45,21 @@ python scripts/instrument.py all --seconds 8 --frames 6 --k-frames 6 --seed-n 24
 - One extra admit per $K$: refused then retried successfully; abandoned 0
 - $K\ge 8$: DESIGN TARGET
 
+## Paper GitHub remotes
+
+Packages live under `D:\1_Projects\Research_Ongoing\PRAHARI-Research\`. Parent platform remains https://github.com/amitduabits/PRAHARI.
+
+| Paper | Repo |
+|---|---|
+| P1 | https://github.com/amitduabits/PRAHARI-P1-ProvenanceDispatch |
+| P2 | https://github.com/amitduabits/PRAHARI-P2-NegativeResult |
+| P3 | https://github.com/amitduabits/PRAHARI-P3-NextCameraPrediction |
+| P4 | https://github.com/amitduabits/PRAHARI-P4-RetialQueues |
+| P5 | https://github.com/amitduabits/PRAHARI-P5-EventSchema |
+| P6 | https://github.com/amitduabits/PRAHARI-P6-PlatformArchitecture |
+
 ## What this folder will not do
 
-- Create six GitHub remotes. Papers stay in this repository.
 - Submit CCS/SIGMETRICS this week. Drafts exist; checklists that were pre-ticked “ready” are wrong until live data and losing baselines are in the tables.
 - Quote 1,043 events, 50 live cameras, or optimal $K=8$ as MEASURED.
+- Store 24 h JSONL or Sentinel passwords in those remotes.
